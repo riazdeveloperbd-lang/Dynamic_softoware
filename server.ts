@@ -5,7 +5,7 @@ import { build as buildVite, createServer as createViteServer } from 'vite';
 import {
   ApkEntryFile,
   assembleInstallableAndroidApk,
-} from './src/utils/androidApkSigner';
+} from './src/cloth_shop_frontend/utils/androidApkSigner';
 
 interface StoredApkBuild {
   id: string;

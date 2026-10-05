@@ -1,0 +1,1951 @@
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
+import { Provider } from 'react-redux';
+import {
+  AppWindow,
+  ArrowRight,
+  Boxes,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Code2,
+  Copy,
+  Download,
+  ExternalLink,
+  Eye,
+  FolderGit2,
+  ImagePlus,
+  Info,
+  Layers,
+  LayoutGrid,
+  Maximize2,
+  Moon,
+  Package,
+  Palette,
+  Plus,
+  QrCode,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  Shield,
+  ShoppingBag,
+  SlidersHorizontal,
+  Smartphone,
+  Sparkles,
+  Sun,
+  Trash2,
+  Type,
+  Utensils,
+  Dumbbell,
+  Building2,
+  X,
+  Zap,
+} from 'lucide-react';
+import { store } from './store';
+import {
+  useAppDispatch,
+  useAppNavigation,
+  useAppSelector,
+  useTheme,
+} from './hooks';
+import {
+  ScreenName,
+  ScreenVariant,
+  setBottomNavVariantAction,
+  setColorPresetAction,
+  setFontPresetAction,
+  setForceSkeleton,
+  setThemeModeAction as setReduxThemeMode,
+  toggleForceSkeleton,
+  toggleThemeMode,
+  updateAppBranding,
+} from './store/slices/appSlice';
+import { BOTTOM_NAV_VARIANTS } from './component';
+import {
+  APP_FONT_PRESETS,
+  AppColorPresetId,
+  AppFontPresetId,
+  getTheme,
+  ThemeContext,
+  ThemeMode,
+} from './styles/theme';
+import QRCode from 'qrcode';
+import {
+  buildAndroidApkArtifact,
+  downloadExpoProjectZip,
+  triggerBlobDownload,
+} from './utils/exportExpoZip';
+
+// Screen Variant Imports
+import SplashVarient1 from './screens/Splash/varient_1';
+import SplashVarient2 from './screens/Splash/varient_2';
+import SplashVarient3 from './screens/Splash/varient_3';
+
+import OnboardingVarient1 from './screens/Onboarding/varient_1';
+import OnboardingVarient2 from './screens/Onboarding/varient_2';
+import OnboardingVarient3 from './screens/Onboarding/varient_3';
+
+import SignUpVarient1 from './screens/SignUp/varient_1';
+import SignUpVarient2 from './screens/SignUp/varient_2';
+import SignUpVarient3 from './screens/SignUp/varient_3';
+
+import LoginVarient1 from './screens/Login/varient_1';
+import LoginVarient2 from './screens/Login/varient_2';
+import LoginVarient3 from './screens/Login/varient_3';
+
+import ForgotPasswordVarient1 from './screens/ForgotPassword/varient_1';
+import ForgotPasswordVarient2 from './screens/ForgotPassword/varient_2';
+import ForgotPasswordVarient3 from './screens/ForgotPassword/varient_3';
+
+import VerificationCodeVarient1 from './screens/VerificationCode/varient_1';
+import VerificationCodeVarient2 from './screens/VerificationCode/varient_2';
+import VerificationCodeVarient3 from './screens/VerificationCode/varient_3';
+
+import ResetPasswordVarient1 from './screens/ResetPassword/varient_1';
+import ResetPasswordVarient2 from './screens/ResetPassword/varient_2';
+import ResetPasswordVarient3 from './screens/ResetPassword/varient_3';
+
+import HomepageVarient1 from './screens/Homepage/varient_1';
+import HomepageVarient2 from './screens/Homepage/varient_2';
+import HomepageVarient3 from './screens/Homepage/varient_3';
+import HomepageVarient4 from './screens/Homepage/varient_4';
+import HomepageVarient5 from './screens/Homepage/varient_5';
+import HomepageVarient6 from './screens/Homepage/varient_6';
+
+import SearchVarient1 from './screens/Search/varient_1';
+import SearchVarient2 from './screens/Search/varient_2';
+import SearchVarient3 from './screens/Search/varient_3';
+
+import SavedItemsVarient1 from './screens/SavedItems/varient_1';
+import SavedItemsVarient2 from './screens/SavedItems/varient_2';
+import SavedItemsVarient3 from './screens/SavedItems/varient_3';
+
+import ProductDetailsVarient1 from './screens/ProductDetails/varient_1';
+import ProductDetailsVarient2 from './screens/ProductDetails/varient_2';
+import ProductDetailsVarient3 from './screens/ProductDetails/varient_3';
+import ProductDetailsVarient4 from './screens/ProductDetails/varient_4';
+import ProductDetailsVarient5 from './screens/ProductDetails/varient_5';
+import ProductDetailsVarient6 from './screens/ProductDetails/varient_6';
+
+import ReviewsVarient1 from './screens/Reviews/varient_1';
+import ReviewsVarient2 from './screens/Reviews/varient_2';
+import ReviewsVarient3 from './screens/Reviews/varient_3';
+
+import MyCartVarient1 from './screens/MyCart/varient_1';
+import MyCartVarient2 from './screens/MyCart/varient_2';
+import MyCartVarient3 from './screens/MyCart/varient_3';
+
+import CheckoutVarient1 from './screens/Checkout/varient_1';
+import CheckoutVarient2 from './screens/Checkout/varient_2';
+import CheckoutVarient3 from './screens/Checkout/varient_3';
+
+import AddressVarient1 from './screens/Address/varient_1';
+import AddressVarient2 from './screens/Address/varient_2';
+import AddressVarient3 from './screens/Address/varient_3';
+
+import NewAddressVarient1 from './screens/NewAddress/varient_1';
+import NewAddressVarient2 from './screens/NewAddress/varient_2';
+import NewAddressVarient3 from './screens/NewAddress/varient_3';
+
+import PaymentMethodVarient1 from './screens/PaymentMethod/varient_1';
+import PaymentMethodVarient2 from './screens/PaymentMethod/varient_2';
+import PaymentMethodVarient3 from './screens/PaymentMethod/varient_3';
+
+import NewCardVarient1 from './screens/NewCard/varient_1';
+import NewCardVarient2 from './screens/NewCard/varient_2';
+import NewCardVarient3 from './screens/NewCard/varient_3';
+
+import AccountVarient1 from './screens/Account/varient_1';
+import AccountVarient2 from './screens/Account/varient_2';
+import AccountVarient3 from './screens/Account/varient_3';
+import AccountVarient4 from './screens/Account/varient_4';
+import AccountVarient5 from './screens/Account/varient_5';
+import AccountVarient6 from './screens/Account/varient_6';
+
+import MyOrdersVarient1 from './screens/MyOrders/varient_1';
+import MyOrdersVarient2 from './screens/MyOrders/varient_2';
+import MyOrdersVarient3 from './screens/MyOrders/varient_3';
+import MyOrdersVarient4 from './screens/MyOrders/varient_4';
+
+import TrackOrderVarient1 from './screens/TrackOrder/varient_1';
+import TrackOrderVarient2 from './screens/TrackOrder/varient_2';
+import TrackOrderVarient3 from './screens/TrackOrder/varient_3';
+
+import MyDetailsVarient1 from './screens/MyDetails/varient_1';
+import MyDetailsVarient2 from './screens/MyDetails/varient_2';
+import MyDetailsVarient3 from './screens/MyDetails/varient_3';
+
+import NotificationsVarient1 from './screens/Notifications/varient_1';
+import NotificationsVarient2 from './screens/Notifications/varient_2';
+import NotificationsVarient3 from './screens/Notifications/varient_3';
+
+import NotificationSettingsVarient1 from './screens/NotificationSettings/varient_1';
+import NotificationSettingsVarient2 from './screens/NotificationSettings/varient_2';
+import NotificationSettingsVarient3 from './screens/NotificationSettings/varient_3';
+
+import FAQsVarient1 from './screens/FAQs/varient_1';
+import FAQsVarient2 from './screens/FAQs/varient_2';
+import FAQsVarient3 from './screens/FAQs/varient_3';
+
+import HelpCenterVarient1 from './screens/HelpCenter/varient_1';
+import HelpCenterVarient2 from './screens/HelpCenter/varient_2';
+import HelpCenterVarient3 from './screens/HelpCenter/varient_3';
+
+import CustomerServiceVarient1 from './screens/CustomerService/varient_1';
+import CustomerServiceVarient2 from './screens/CustomerService/varient_2';
+import CustomerServiceVarient3 from './screens/CustomerService/varient_3';
+
+interface ScreenGroupConfig {
+  group: string;
+  items: {
+    label: string;
+    screen: ScreenName;
+    variants: { id: ScreenVariant; name: string }[];
+  }[];
+}
+
+const makeSixVariants = (
+  names: [string, string, string, string, string, string]
+): { id: ScreenVariant; name: string }[] => [
+  { id: 'varient_1', name: `V1: ${names[0]}` },
+  { id: 'varient_2', name: `V2: ${names[1]}` },
+  { id: 'varient_3', name: `V3: ${names[2]}` },
+  { id: 'varient_4', name: `V4: ${names[3]}` },
+  { id: 'varient_5', name: `V5: ${names[4]}` },
+  { id: 'varient_6', name: `V6: ${names[5]}` },
+];
+
+const SCREEN_DIRECTORY: ScreenGroupConfig[] = [
+  {
+    group: 'Onboarding & Auth',
+    items: [
+      {
+        label: 'Splash',
+        screen: 'Splash',
+        variants: makeSixVariants([
+          'Classic Monogram',
+          'Editorial Atelier',
+          'Lookbook Glass',
+          'Minimal Crest',
+          'Runway Edition',
+          'Studio Capsule',
+        ]),
+      },
+      {
+        label: 'Onboarding',
+        screen: 'Onboarding',
+        variants: makeSixVariants([
+          'Define Yourself',
+          'Story Carousel',
+          'Bento Mosaic',
+          'Curated Tour',
+          'VIP Perks Intro',
+          'Lookbook Preview',
+        ]),
+      },
+      {
+        label: 'SignUp',
+        screen: 'SignUp',
+        variants: makeSixVariants([
+          'Classic Form',
+          'VIP Split Hero',
+          'Style Wizard',
+          'Express Member',
+          'Invite Code Access',
+          'Social First',
+        ]),
+      },
+      {
+        label: 'Login',
+        screen: 'Login',
+        variants: makeSixVariants([
+          'Standard Login',
+          'Executive Card',
+          'Biometric & Passkey',
+          'Quick PIN Access',
+          'VIP Concierge Sign-In',
+          'One-Tap Social',
+        ]),
+      },
+      {
+        label: 'ForgotPassword',
+        screen: 'ForgotPassword',
+        variants: makeSixVariants([
+          'Email Recovery',
+          'SMS / Email Channel',
+          'Security Vault',
+          'Backup Key Reset',
+          'Trusted Device',
+          'Concierge Help',
+        ]),
+      },
+      {
+        label: 'VerificationCode',
+        screen: 'VerificationCode',
+        variants: makeSixVariants([
+          '4-Digit OTP',
+          'Custom Dialpad',
+          'Security Shield',
+          'Auto-Read SMS',
+          'Hardware Key',
+          'Biometric Confirm',
+        ]),
+      },
+      {
+        label: 'ResetPassword',
+        screen: 'ResetPassword',
+        variants: makeSixVariants([
+          'Standard Reset',
+          'Strength Meter',
+          'Vault Confirmed',
+          'Passkey Upgrade',
+          '2FA Sync',
+          'Session Lock',
+        ]),
+      },
+    ],
+  },
+  {
+    group: 'Discover & Catalog',
+    items: [
+      {
+        label: 'Homepage',
+        screen: 'Homepage',
+        variants: makeSixVariants([
+          'Classic 2-Col Grid',
+          'Editorial Lookbook',
+          'Bento Flash Drops',
+          'Runway Magazine',
+          'AI Outfit Builder',
+          'Archive Matrix',
+        ]),
+      },
+      {
+        label: 'Search',
+        screen: 'Search',
+        variants: makeSixVariants([
+          'Recent & Live',
+          'Visual Categories',
+          'Filter & Sort Hub',
+          'Trending Tags',
+          'Barcode & Visual',
+          'Curated Fabrics',
+        ]),
+      },
+      {
+        label: 'SavedItems',
+        screen: 'SavedItems',
+        variants: makeSixVariants([
+          'Wishlist Grid',
+          'Editorial Bag Cards',
+          'Moodboard Folders',
+          'Price Drop Alerts',
+          'Back-in-Stock',
+          'Shareable Closet',
+        ]),
+      },
+      {
+        label: 'ProductDetails',
+        screen: 'ProductDetails',
+        variants: makeSixVariants([
+          'Classic Showcase',
+          'Full-Bleed Sheet',
+          'Atelier Dossier',
+          'Atelier Comparison',
+          'Size Predictor',
+          'Boutique Pickup',
+        ]),
+      },
+      {
+        label: 'Reviews',
+        screen: 'Reviews',
+        variants: makeSixVariants([
+          'Rating Bars',
+          'Photo & Fit Feed',
+          'Quality Scorecard',
+          'Verified Buyers',
+          'Stylist Notes',
+          'Size Fit Breakdown',
+        ]),
+      },
+    ],
+  },
+  {
+    group: 'Cart, Checkout & Payment',
+    items: [
+      {
+        label: 'MyCart',
+        screen: 'MyCart',
+        variants: makeSixVariants([
+          'Classic Cart',
+          'Free Shipping Meter',
+          'Bundle & Upsell Bag',
+          'Express Drawer',
+          'Gift Wrap Studio',
+          'Reserve & Hold',
+        ]),
+      },
+      {
+        label: 'Checkout',
+        screen: 'Checkout',
+        variants: makeSixVariants([
+          'Single-Page Summary',
+          'Stepper & Speed',
+          'Express & Klarna 4x',
+          'One-Tap Apple Pay',
+          'Split Gift Order',
+          'Boutique Pickup',
+        ]),
+      },
+      {
+        label: 'Address',
+        screen: 'Address',
+        variants: makeSixVariants([
+          'Radio List',
+          'Map Preview Cards',
+          'Courier Drop Rules',
+          'Global Boutiques',
+          'Locker Pickup',
+          'Office Concierge',
+        ]),
+      },
+      {
+        label: 'NewAddress',
+        screen: 'NewAddress',
+        variants: makeSixVariants([
+          'Map Pin Sheet',
+          'Structured Form',
+          'GPS Radar Search',
+          'Postal Code Lookup',
+          'Gate Code & Notes',
+          'Verified Pin',
+        ]),
+      },
+      {
+        label: 'PaymentMethod',
+        screen: 'PaymentMethod',
+        variants: makeSixVariants([
+          'Saved Card Rows',
+          '3D Card Stack',
+          'Digital Wallets Hub',
+          'Klarna & BNPL',
+          'Studio Gift Credit',
+          'Corporate Billing',
+        ]),
+      },
+      {
+        label: 'NewCard',
+        screen: 'NewCard',
+        variants: makeSixVariants([
+          'iOS Keypad Form',
+          'Live 3D Card Builder',
+          'NFC & Camera Scan',
+          'Virtual Card Sync',
+          'Apple Wallet Link',
+          'Instant Verify',
+        ]),
+      },
+    ],
+  },
+  {
+    group: 'Account, Orders & Support',
+    items: [
+      {
+        label: 'Account',
+        screen: 'Account',
+        variants: makeSixVariants([
+          'Classic Atelier Profile',
+          'VIP Bento Studio',
+          'Concierge & Orders',
+          'Brand Studio & Rewards',
+          'Segmented Control Hub',
+          'Digital Boutique Pass',
+        ]),
+      },
+      {
+        label: 'MyOrders',
+        screen: 'MyOrders',
+        variants: makeSixVariants([
+          'Tabbed Orders',
+          'Live Milestone Cards',
+          'Buy Again & Invoices',
+          'Review Modal',
+          'Return & Exchange',
+          'Digital Archive',
+        ]),
+      },
+      {
+        label: 'TrackOrder',
+        screen: 'TrackOrder',
+        variants: makeSixVariants([
+          'Map & Bottom Sheet',
+          'Boarding Pass QR',
+          'Split Proof Card',
+          'Live Courier Radar',
+          'SMS Timeline',
+          'Safe Drop Photo',
+        ]),
+      },
+      {
+        label: 'MyDetails',
+        screen: 'MyDetails',
+        variants: makeSixVariants([
+          'Standard Form',
+          'Avatar & Fit Matrix',
+          'Membership & Privacy',
+          'Style DNA Profile',
+          'Tailoring Specs',
+          'VIP Preferences',
+        ]),
+      },
+      {
+        label: 'Notifications',
+        screen: 'Notifications',
+        variants: makeSixVariants([
+          'Grouped Timeline',
+          'Categorized Inbox',
+          'Rich Promo Feed',
+          'Order Pings',
+          'Restock Alerts',
+          'VIP Invites',
+        ]),
+      },
+      {
+        label: 'NotificationSettings',
+        screen: 'NotificationSettings',
+        variants: makeSixVariants([
+          'Toggle List',
+          'Push/Email/SMS Matrix',
+          'Quiet Hours & Presets',
+          'Drop Alert Rules',
+          'Courier SMS Sync',
+          'Privacy Digest',
+        ]),
+      },
+      {
+        label: 'FAQs',
+        screen: 'FAQs',
+        variants: makeSixVariants([
+          'Search & Accordion',
+          'Topic Grid Cards',
+          'Instant Answers',
+          'Sizing & Care Guide',
+          'Shipping & Customs',
+          'Returns Policy',
+        ]),
+      },
+      {
+        label: 'HelpCenter',
+        screen: 'HelpCenter',
+        variants: makeSixVariants([
+          'Channel List',
+          'Concierge Desk',
+          'Self-Service Portal',
+          'Boutique Directory',
+          'Return QR Generator',
+          'VIP Callback Hub',
+        ]),
+      },
+      {
+        label: 'CustomerService',
+        screen: 'CustomerService',
+        variants: makeSixVariants([
+          'Classic Live Chat',
+          'Order Context Chat',
+          'Callback & Video',
+          'Stylist Lookbook Chat',
+          'Size Swap Bot',
+          'Priority Escalation',
+        ]),
+      },
+    ],
+  },
+];
+
+/**
+ * Consistent ThemeProvider wrapping the entire application
+ */
+const AppThemeProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const dispatch = useAppDispatch();
+  const mode = useAppSelector((state) => state.app.themeMode);
+  const colorPreset = useAppSelector((state) => state.app.colorPreset);
+  const fontPreset = useAppSelector((state) => state.app.fontPreset);
+  const forceSkeleton = useAppSelector((state) => state.app.forceSkeleton);
+
+  useEffect(() => {
+    const activeFont =
+      APP_FONT_PRESETS.find((f) => f.id === fontPreset) || APP_FONT_PRESETS[0];
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty(
+        '--app-font-family',
+        activeFont.cssStack
+      );
+    }
+  }, [fontPreset]);
+
+  const themeValue = useMemo(
+    () =>
+      getTheme(
+        mode,
+        () => dispatch(toggleThemeMode()),
+        (m: ThemeMode) => dispatch(setReduxThemeMode(m)),
+        forceSkeleton,
+        (durationMs = 1000) => {
+          dispatch(setForceSkeleton(true));
+          setTimeout(() => {
+            dispatch(setForceSkeleton(false));
+          }, durationMs);
+        },
+        () => dispatch(toggleForceSkeleton()),
+        colorPreset,
+        (preset: AppColorPresetId) => dispatch(setColorPresetAction(preset)),
+        fontPreset,
+        (font: AppFontPresetId) => dispatch(setFontPresetAction(font))
+      ),
+    [mode, colorPreset, fontPreset, forceSkeleton, dispatch]
+  );
+
+  return (
+    <ThemeContext.Provider value={themeValue}>
+      <div className="app-font-scope" style={{ width: '100%' }}>
+        {children}
+      </div>
+    </ThemeContext.Provider>
+  );
+};
+
+export const ExpoNavigator: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const {
+    currentScreen,
+    currentVariant,
+    bottomNavVariant,
+    setBottomNavVariant,
+    navigateTo,
+  } = useAppNavigation();
+  const appBranding = useAppSelector((s) => s.app.appBranding);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const {
+    colors,
+    isDark,
+    toggleTheme,
+    colorPreset,
+    presets,
+    setColorPreset,
+    fontPreset,
+    fontPresets,
+    setFontPreset,
+    isLoadingSkeleton,
+    toggleSkeletonPreview,
+  } = useTheme();
+
+  // Studio Dashboard Tabs: 'screens' | 'theme' | 'branding' | 'export'
+  const [activeStudioTab, setActiveStudioTab] = useState<
+    'screens' | 'theme' | 'branding' | 'export'
+  >('screens');
+  const [selectedFlowGroup, setSelectedFlowGroup] = useState<string>('All');
+  const [screenSearchQuery, setScreenSearchQuery] = useState<string>('');
+  const [fontSearchQuery, setFontSearchQuery] = useState<string>('');
+  const [addAppModalOpen, setAddAppModalOpen] = useState(false);
+  const [isZipping, setIsZipping] = useState(false);
+  const [apkBuildState, setApkBuildState] = useState<
+    'idle' | 'building' | 'ready'
+  >('idle');
+  const [apkProgressPct, setApkProgressPct] = useState(0);
+  const [apkStepLabel, setApkStepLabel] = useState('');
+  const [apkReadyArtifact, setApkReadyArtifact] = useState<{
+    blob: Blob;
+    filename: string;
+    sizeKb: number;
+    mobileDownloadUrl: string;
+    qrCodeDataUrl: string;
+  } | null>(null);
+  const [copiedApkLink, setCopiedApkLink] = useState(false);
+  const [livePreviewQrUrl, setLivePreviewQrUrl] = useState('');
+  const [livePreviewTargetUrl, setLivePreviewTargetUrl] = useState('');
+  const [copiedLiveUrl, setCopiedLiveUrl] = useState(false);
+
+  const [isMobileStandalone] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      Boolean((window as any).__APK_STANDALONE__) ||
+      new URLSearchParams(window.location.search).get('mobile') === '1'
+    );
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    async function initLivePreviewQr() {
+      let targetUrl =
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/?mobile=1`
+          : '';
+      try {
+        const res = await fetch('/api/network-info');
+        if (res.ok) {
+          const data = await res.json();
+          if (
+            typeof window !== 'undefined' &&
+            /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/i.test(
+              window.location.hostname
+            ) &&
+            data.lanIp &&
+            data.lanIp !== 'localhost'
+          ) {
+            const portPart = window.location.port
+              ? `:${window.location.port}`
+              : `:${data.port || 3000}`;
+            targetUrl = `${window.location.protocol}//${data.lanIp}${portPart}/?mobile=1`;
+          } else if (data.mobilePreviewUrl && !targetUrl) {
+            targetUrl = data.mobilePreviewUrl;
+          }
+        }
+      } catch {
+        // Fallback to origin
+      }
+      if (!targetUrl || cancelled) return;
+      setLivePreviewTargetUrl(targetUrl);
+      try {
+        const qrData = await QRCode.toDataURL(targetUrl, {
+          width: 240,
+          margin: 1,
+          color: { dark: '#111111', light: '#FFFFFF' },
+        });
+        if (!cancelled) {
+          setLivePreviewQrUrl(qrData);
+        }
+      } catch {
+        // Ignore QR generation error
+      }
+    }
+    initLivePreviewQr();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const [exportSelections, setExportSelections] = useState<
+    Record<ScreenName, ScreenVariant>
+  >(() => {
+    const initial = {} as Record<ScreenName, ScreenVariant>;
+    SCREEN_DIRECTORY.forEach((g) =>
+      g.items.forEach((it) => {
+        initial[it.screen] = 'varient_1';
+      })
+    );
+    return initial;
+  });
+
+  const applyVariantToAllScreens = (variant: ScreenVariant) => {
+    const updated = {} as Record<ScreenName, ScreenVariant>;
+    SCREEN_DIRECTORY.forEach((g) =>
+      g.items.forEach((it) => {
+        updated[it.screen] = variant;
+      })
+    );
+    setExportSelections(updated);
+    navigateTo(currentScreen, variant);
+  };
+
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        dispatch(updateAppBranding({ appLogoUri: reader.result }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDownloadFullExpoZip = async () => {
+    if (isZipping) return;
+    setIsZipping(true);
+    try {
+      await downloadExpoProjectZip({
+        selectedVariants: exportSelections,
+        defaultColorPreset: colorPreset,
+        defaultFontPreset: fontPreset,
+        defaultBottomNavVariant: bottomNavVariant,
+        defaultThemeMode: isDark ? 'dark' : 'light',
+        appName: appBranding.appName,
+        packageName: appBranding.packageName,
+        appLogoUri: appBranding.appLogoUri,
+      });
+    } finally {
+      setIsZipping(false);
+    }
+  };
+
+  const handleGenerateAndroidApk = async () => {
+    if (apkBuildState === 'building') return;
+    setApkBuildState('building');
+    setApkProgressPct(5);
+    setApkStepLabel('Initializing Expo SDK build runner...');
+    try {
+      const artifact = await buildAndroidApkArtifact({
+        selectedVariants: exportSelections,
+        defaultColorPreset: colorPreset,
+        defaultFontPreset: fontPreset,
+        defaultBottomNavVariant: bottomNavVariant,
+        defaultThemeMode: isDark ? 'dark' : 'light',
+        appName: appBranding.appName,
+        packageName: appBranding.packageName,
+        appLogoUri: appBranding.appLogoUri,
+        onProgress: (_stepIndex: number, stepLabel: string, percent: number) => {
+          setApkProgressPct(percent);
+          setApkStepLabel(stepLabel);
+        },
+      });
+      setApkReadyArtifact(artifact);
+      setApkBuildState('ready');
+    } catch {
+      setApkBuildState('idle');
+    }
+  };
+
+  const handleDownloadGeneratedApk = () => {
+    if (!apkReadyArtifact) return;
+    triggerBlobDownload(apkReadyArtifact.blob, apkReadyArtifact.filename);
+  };
+
+  // Screen Rendering Resolver
+  const renderScreen = () => {
+    const pickThreeVariant = (v1: React.ReactNode, v2: React.ReactNode, v3: React.ReactNode) => {
+      if (currentVariant === 'varient_2') return v2;
+      if (currentVariant === 'varient_3') return v3;
+      return v1;
+    };
+
+    switch (currentScreen) {
+      case 'Splash':
+        return pickThreeVariant(<SplashVarient1 />, <SplashVarient2 />, <SplashVarient3 />);
+      case 'Onboarding':
+        return pickThreeVariant(<OnboardingVarient1 />, <OnboardingVarient2 />, <OnboardingVarient3 />);
+      case 'SignUp':
+        return pickThreeVariant(<SignUpVarient1 />, <SignUpVarient2 />, <SignUpVarient3 />);
+      case 'Login':
+        return pickThreeVariant(<LoginVarient1 />, <LoginVarient2 />, <LoginVarient3 />);
+      case 'ForgotPassword':
+        return pickThreeVariant(<ForgotPasswordVarient1 />, <ForgotPasswordVarient2 />, <ForgotPasswordVarient3 />);
+      case 'VerificationCode':
+        return pickThreeVariant(<VerificationCodeVarient1 />, <VerificationCodeVarient2 />, <VerificationCodeVarient3 />);
+      case 'ResetPassword':
+        return pickThreeVariant(<ResetPasswordVarient1 />, <ResetPasswordVarient2 />, <ResetPasswordVarient3 />);
+      case 'Homepage':
+        if (currentVariant === 'varient_2') return <HomepageVarient2 />;
+        if (currentVariant === 'varient_3') return <HomepageVarient3 />;
+        if (currentVariant === 'varient_4') return <HomepageVarient4 />;
+        if (currentVariant === 'varient_5') return <HomepageVarient5 />;
+        if (currentVariant === 'varient_6') return <HomepageVarient6 />;
+        return <HomepageVarient1 />;
+      case 'Search':
+        return pickThreeVariant(<SearchVarient1 />, <SearchVarient2 />, <SearchVarient3 />);
+      case 'SavedItems':
+        return pickThreeVariant(<SavedItemsVarient1 />, <SavedItemsVarient2 />, <SavedItemsVarient3 />);
+      case 'ProductDetails':
+        if (currentVariant === 'varient_2') return <ProductDetailsVarient2 />;
+        if (currentVariant === 'varient_3') return <ProductDetailsVarient3 />;
+        if (currentVariant === 'varient_4') return <ProductDetailsVarient4 />;
+        if (currentVariant === 'varient_5') return <ProductDetailsVarient5 />;
+        if (currentVariant === 'varient_6') return <ProductDetailsVarient6 />;
+        return <ProductDetailsVarient1 />;
+      case 'Reviews':
+        return pickThreeVariant(<ReviewsVarient1 />, <ReviewsVarient2 />, <ReviewsVarient3 />);
+      case 'MyCart':
+        return pickThreeVariant(<MyCartVarient1 />, <MyCartVarient2 />, <MyCartVarient3 />);
+      case 'Checkout':
+        return pickThreeVariant(<CheckoutVarient1 />, <CheckoutVarient2 />, <CheckoutVarient3 />);
+      case 'Address':
+        return pickThreeVariant(<AddressVarient1 />, <AddressVarient2 />, <AddressVarient3 />);
+      case 'NewAddress':
+        return pickThreeVariant(<NewAddressVarient1 />, <NewAddressVarient2 />, <NewAddressVarient3 />);
+      case 'PaymentMethod':
+        return pickThreeVariant(<PaymentMethodVarient1 />, <PaymentMethodVarient2 />, <PaymentMethodVarient3 />);
+      case 'NewCard':
+        return pickThreeVariant(<NewCardVarient1 />, <NewCardVarient2 />, <NewCardVarient3 />);
+      case 'Account':
+        if (currentVariant === 'varient_2') return <AccountVarient2 />;
+        if (currentVariant === 'varient_3') return <AccountVarient3 />;
+        if (currentVariant === 'varient_4') return <AccountVarient4 />;
+        if (currentVariant === 'varient_5') return <AccountVarient5 />;
+        if (currentVariant === 'varient_6') return <AccountVarient6 />;
+        return <AccountVarient1 />;
+      case 'MyOrders':
+        if (currentVariant === 'varient_2' || currentVariant === 'varient_5') return <MyOrdersVarient2 />;
+        if (currentVariant === 'varient_3' || currentVariant === 'varient_6') return <MyOrdersVarient3 />;
+        if (currentVariant === 'varient_4') return <MyOrdersVarient4 />;
+        return <MyOrdersVarient1 />;
+      case 'TrackOrder':
+        return pickThreeVariant(<TrackOrderVarient1 />, <TrackOrderVarient2 />, <TrackOrderVarient3 />);
+      case 'MyDetails':
+        return pickThreeVariant(<MyDetailsVarient1 />, <MyDetailsVarient2 />, <MyDetailsVarient3 />);
+      case 'Notifications':
+        return pickThreeVariant(<NotificationsVarient1 />, <NotificationsVarient2 />, <NotificationsVarient3 />);
+      case 'NotificationSettings':
+        return pickThreeVariant(<NotificationSettingsVarient1 />, <NotificationSettingsVarient2 />, <NotificationSettingsVarient3 />);
+      case 'FAQs':
+        return pickThreeVariant(<FAQsVarient1 />, <FAQsVarient2 />, <FAQsVarient3 />);
+      case 'HelpCenter':
+        return pickThreeVariant(<HelpCenterVarient1 />, <HelpCenterVarient2 />, <HelpCenterVarient3 />);
+      case 'CustomerService':
+        return pickThreeVariant(<CustomerServiceVarient1 />, <CustomerServiceVarient2 />, <CustomerServiceVarient3 />);
+      default:
+        return <HomepageVarient1 />;
+    }
+  };
+
+  if (isMobileStandalone) {
+    return (
+      <View
+        style={{
+          position: 'fixed' as any,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          flex: 1,
+          backgroundColor: colors.background,
+          overflow: 'hidden',
+        }}
+      >
+        {renderScreen()}
+      </View>
+    );
+  }
+
+  // Filtered screens for Directory tab
+  const filteredGroups = SCREEN_DIRECTORY.map((group) => {
+    if (selectedFlowGroup !== 'All' && group.group !== selectedFlowGroup) {
+      return null;
+    }
+    const filteredItems = group.items.filter((item) =>
+      item.label.toLowerCase().includes(screenSearchQuery.toLowerCase()) ||
+      item.screen.toLowerCase().includes(screenSearchQuery.toLowerCase())
+    );
+    return filteredItems.length > 0 ? { ...group, items: filteredItems } : null;
+  }).filter(Boolean) as ScreenGroupConfig[];
+
+  const currentVariantObj = makeSixVariants([
+    'Default', 'Alternative 1', 'Alternative 2', 'Alternative 3', 'Alternative 4', 'Alternative 5'
+  ]).find((v) => v.id === currentVariant);
+
+  return (
+    <View
+      style={[
+        styles.dashboardShell,
+        { backgroundColor: colors.workspaceBg },
+      ]}
+    >
+      {/* ========================================================================= */}
+      {/* 1. LEFT SIDEBAR: ONLY LIST OF PROJECT NAMES (No screens clutter)          */}
+      {/* ========================================================================= */}
+      <View
+        style={[
+          styles.leftProjectsSidebar,
+          {
+            backgroundColor: colors.surfaceElevated,
+            borderRightColor: colors.border,
+          },
+        ]}
+      >
+        {/* Workspace Brand Header */}
+        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white shadow-sm flex-shrink-0"
+            style={{ backgroundColor: colors.primary }}
+          >
+            <Boxes size={20} color={colors.primaryText} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100 truncate">
+              AppForge Studio
+            </h1>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+              Multi-App Expo Suite
+            </p>
+          </div>
+        </div>
+
+        {/* Project List */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-4">
+          <div className="px-2 flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase">
+              Projects & Apps (1 Active)
+            </span>
+            <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
+              Ready
+            </span>
+          </div>
+
+          {/* ACTIVE PROJECT 1: Cloth Shop */}
+          <div
+            className="group relative rounded-xl border-2 p-3 transition-all cursor-pointer shadow-sm"
+            style={{
+              backgroundColor: colors.cardBackground,
+              borderColor: colors.primary,
+            }}
+            onClick={() => {
+              setActiveStudioTab('screens');
+              navigateTo('Homepage', currentVariant);
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0 text-white"
+                style={{ backgroundColor: colors.primary }}
+              >
+                <ShoppingBag size={18} color={colors.primaryText} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
+                    Cloth Shop App
+                  </h3>
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                </div>
+                <p className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+                  src/cloth_shop_frontend
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
+              <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                23 Screens · 138 Variants
+              </span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800">
+                Expo 52
+              </span>
+            </div>
+          </div>
+
+          {/* UPCOMING / MODULAR SLOTS */}
+          <div className="space-y-2 pt-1">
+            <div className="px-2 text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+              Future App Slots (Modular)
+            </div>
+
+            {[
+              {
+                title: 'Food Delivery App',
+                folder: 'src/food_delivery_frontend',
+                icon: Utensils,
+                badge: 'Next Up',
+              },
+              {
+                title: 'Fitness & Gym Pro',
+                folder: 'src/fitness_app_frontend',
+                icon: Dumbbell,
+                badge: 'Template',
+              },
+              {
+                title: 'Real Estate Hub',
+                folder: 'src/real_estate_frontend',
+                icon: Building2,
+                badge: 'Planned',
+              },
+            ].map((slot) => {
+              const IconComponent = slot.icon;
+              return (
+                <div
+                  key={slot.title}
+                  onClick={() => setAddAppModalOpen(true)}
+                  className="rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 p-2.5 flex items-center gap-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition cursor-pointer"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-500 flex items-center justify-center flex-shrink-0">
+                    <IconComponent size={14} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">
+                        {slot.title}
+                      </span>
+                      <span className="text-[9px] font-medium text-neutral-400 px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800">
+                        {slot.badge}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-neutral-400 truncate block">
+                      {slot.folder}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* + Add New App Button */}
+            <button
+              onClick={() => setAddAppModalOpen(true)}
+              className="w-full mt-2 py-2 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center gap-1.5 transition"
+            >
+              <Plus size={14} />
+              <span>Create New Project</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Workspace Footer Info */}
+        <div className="p-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/40 text-[11px] text-neutral-500 dark:text-neutral-400 space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Dev Server :3000
+            </span>
+            <span className="font-mono text-[10px]">React 19 / RN</span>
+          </div>
+        </div>
+      </View>
+
+      {/* ========================================================================= */}
+      {/* 2. CENTER SECTION: WORKSPACE DASHBOARD (Awesome Design, Spacious Controls) */}
+      {/* ========================================================================= */}
+      <div className="flex-1 h-full flex flex-col min-w-0 overflow-hidden bg-neutral-50/70 dark:bg-[#121214]">
+        {/* Top Studio Bar with Tabs & Global Actions */}
+        <div className="h-16 px-6 border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-[#18181B]/80 backdrop-blur flex items-center justify-between gap-4 flex-shrink-0 z-10">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 truncate">
+              <span>Projects</span>
+              <ChevronRight size={14} />
+              <span className="text-neutral-900 dark:text-neutral-100 font-bold">
+                Cloth Shop
+              </span>
+              <ChevronRight size={14} />
+              <span className="font-mono text-neutral-600 dark:text-neutral-300">
+                {currentScreen} ({currentVariant})
+              </span>
+            </div>
+          </div>
+
+          {/* Studio Navigation Tabs */}
+          <div className="flex items-center p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl border border-neutral-200 dark:border-neutral-700/60">
+            {[
+              { id: 'screens', label: 'Screens & Variants', icon: LayoutGrid },
+              { id: 'theme', label: 'Design System', icon: Palette },
+              { id: 'branding', label: 'App Branding', icon: AppWindow },
+              { id: 'export', label: 'Build APK & ZIP', icon: Download },
+            ].map((tab) => {
+              const IconComp = tab.icon;
+              const isActive = activeStudioTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveStudioTab(tab.id as any)}
+                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    isActive
+                      ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <IconComp size={14} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Quick Action Buttons */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition"
+              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
+            <button
+              onClick={toggleSkeletonPreview}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition ${
+                isLoadingSkeleton
+                  ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300'
+                  : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+              }`}
+            >
+              <Zap size={14} />
+              <span>{isLoadingSkeleton ? 'Skeleton ON' : 'Skeleton'}</span>
+            </button>
+
+            <button
+              onClick={handleDownloadFullExpoZip}
+              disabled={isZipping}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold shadow-sm hover:opacity-95 transition"
+            >
+              <Download size={14} />
+              <span>{isZipping ? 'Building ZIP...' : 'Export .ZIP'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Studio Content Area */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* TAB 1: SCREENS & VARIANTS DIRECTORY */}
+          {activeStudioTab === 'screens' && (
+            <div className="max-w-5xl mx-auto space-y-6">
+              {/* Category Filter & Search Bar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-neutral-200 dark:border-neutral-800">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                  {[
+                    'All',
+                    'Onboarding & Auth',
+                    'Discover & Catalog',
+                    'Cart, Checkout & Payment',
+                    'Account, Orders & Support',
+                  ].map((flow) => {
+                    const active = selectedFlowGroup === flow;
+                    return (
+                      <button
+                        key={flow}
+                        onClick={() => setSelectedFlowGroup(flow)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ${
+                          active
+                            ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm'
+                            : 'bg-white dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                        }`}
+                      >
+                        {flow === 'All' ? 'All Screens (23)' : flow}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="relative w-full sm:w-64">
+                  <Search size={14} className="absolute left-3 top-2.5 text-neutral-400" />
+                  <input
+                    type="text"
+                    value={screenSearchQuery}
+                    onChange={(e) => setScreenSearchQuery(e.target.value)}
+                    placeholder="Search screens..."
+                    className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white"
+                  />
+                  {screenSearchQuery && (
+                    <button
+                      onClick={() => setScreenSearchQuery('')}
+                      className="absolute right-2.5 top-2.5 text-neutral-400 hover:text-neutral-600"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick Batch Variant Selectors */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal size={15} className="text-neutral-500" />
+                  <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                    Batch Set All Screens for Export:
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {(
+                    [
+                      ['varient_1', 'All V1'],
+                      ['varient_2', 'All V2'],
+                      ['varient_3', 'All V3'],
+                      ['varient_4', 'All V4'],
+                      ['varient_5', 'All V5'],
+                      ['varient_6', 'All V6'],
+                    ] as const
+                  ).map(([vid, label]) => (
+                    <button
+                      key={vid}
+                      onClick={() => applyVariantToAllScreens(vid)}
+                      className="px-2.5 py-1 text-xs font-semibold rounded-md bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Screen Cards Grid */}
+              <div className="space-y-6">
+                {filteredGroups.map((group) => (
+                  <div key={group.group} className="space-y-3">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                      {group.group} ({group.items.length})
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      {group.items.map((item) => {
+                        const isCurrentActive = currentScreen === item.screen;
+                        const selectedExportVariant = exportSelections[item.screen] || 'varient_1';
+
+                        return (
+                          <div
+                            key={item.screen}
+                            className={`rounded-xl border p-4 bg-white dark:bg-neutral-900 transition-all ${
+                              isCurrentActive
+                                ? 'border-neutral-900 dark:border-white shadow-md ring-1 ring-neutral-900/10 dark:ring-white/10'
+                                : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-3">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                    {item.label}
+                                  </h4>
+                                  {isCurrentActive && (
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900">
+                                      Active on Phone
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[11px] font-mono text-neutral-400">
+                                  src/screens/{item.screen}
+                                </span>
+                              </div>
+
+                              <button
+                                onClick={() => navigateTo(item.screen, selectedExportVariant)}
+                                className="px-2.5 py-1 rounded-lg text-xs font-bold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center gap-1 transition"
+                              >
+                                <Eye size={12} />
+                                <span>Preview</span>
+                              </button>
+                            </div>
+
+                            {/* 6 Variant Selector Buttons */}
+                            <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                              {item.variants.map((v) => {
+                                const isVariantSelected =
+                                  isCurrentActive && currentVariant === v.id;
+                                const isZipSelected = selectedExportVariant === v.id;
+
+                                return (
+                                  <button
+                                    key={v.id}
+                                    onClick={() => {
+                                      setExportSelections((prev) => ({
+                                        ...prev,
+                                        [item.screen]: v.id,
+                                      }));
+                                      navigateTo(item.screen, v.id);
+                                    }}
+                                    className={`px-2.5 py-2 rounded-lg text-left text-xs font-semibold flex items-center justify-between gap-1 transition ${
+                                      isVariantSelected
+                                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm'
+                                        : isZipSelected
+                                        ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700'
+                                        : 'bg-neutral-50/60 dark:bg-neutral-950/40 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                                    }`}
+                                  >
+                                    <span className="truncate">{v.name}</span>
+                                    {isVariantSelected && <Check size={12} className="flex-shrink-0" />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: DESIGN SYSTEM (Colors, Fonts, Navbars) */}
+          {activeStudioTab === 'theme' && (
+            <div className="max-w-4xl mx-auto space-y-8">
+              {/* Color Presets */}
+              <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <div>
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                    Brand Color Palette (7 Luxury Themes)
+                  </h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">
+                    Click any palette to dynamically restyle buttons, badges, navigation, and accents across all 23 screens.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {presets.map((preset) => {
+                    const isSelected = colorPreset === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        onClick={() => setColorPreset(preset.id)}
+                        className={`p-3.5 rounded-xl border-2 text-left flex items-center justify-between gap-3 transition ${
+                          isSelected
+                            ? 'border-neutral-900 dark:border-white bg-neutral-50 dark:bg-neutral-800/80 shadow-sm'
+                            : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-white dark:bg-neutral-900'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-8 h-8 rounded-lg shadow-sm border border-black/10 flex-shrink-0"
+                            style={{ backgroundColor: preset.swatch }}
+                          />
+                          <div>
+                            <div className="text-xs font-bold text-neutral-900 dark:text-white">
+                              {preset.name}
+                            </div>
+                            <div className="text-[10px] font-mono text-neutral-400">
+                              {preset.swatch}
+                            </div>
+                          </div>
+                        </div>
+                        {isSelected && <CheckCircle2 size={16} className="text-neutral-900 dark:text-white" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Typography Studio */}
+              <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      Curated Typography ({fontPresets.length} Premium Fonts)
+                    </h3>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      Select font family to apply Google Fonts across all screens.
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-neutral-100 dark:bg-neutral-800">
+                    Active: {fontPresets.find((f) => f.id === fontPreset)?.name}
+                  </span>
+                </div>
+
+                {/* Font Search Filter */}
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-2.5 text-neutral-400" />
+                  <input
+                    type="text"
+                    value={fontSearchQuery}
+                    onChange={(e) => setFontSearchQuery(e.target.value)}
+                    placeholder="Search 22 curated fonts by name or style (Serif, Sans, Mono)..."
+                    className="w-full pl-9 pr-3 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-white focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-80 overflow-y-auto pr-1">
+                  {fontPresets
+                    .filter(
+                      (fp) =>
+                        fp.name.toLowerCase().includes(fontSearchQuery.toLowerCase()) ||
+                        fp.category.toLowerCase().includes(fontSearchQuery.toLowerCase())
+                    )
+                    .map((fp) => {
+                      const isSelected = fontPreset === fp.id;
+                      return (
+                        <button
+                          key={fp.id}
+                          onClick={() => setFontPreset(fp.id)}
+                          className={`p-3 rounded-xl border text-left flex items-start justify-between gap-2 transition ${
+                            isSelected
+                              ? 'border-neutral-900 dark:border-white bg-neutral-50 dark:bg-neutral-800 shadow-sm'
+                              : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-white dark:bg-neutral-900'
+                          }`}
+                        >
+                          <div>
+                            <div
+                              className="text-lg font-bold text-neutral-900 dark:text-white leading-tight"
+                              style={{ fontFamily: fp.fontFamily }}
+                            >
+                              Aa · {fp.name}
+                            </div>
+                            <div className="text-[10px] text-neutral-400 mt-1">
+                              {fp.category}
+                            </div>
+                          </div>
+                          {isSelected && <Check size={16} className="text-neutral-900 dark:text-white flex-shrink-0 mt-0.5" />}
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Bottom Navigation UI Studio */}
+              <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <div>
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                    Bottom Navigation Bar Designs (6 Styles)
+                  </h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">
+                    Choose any bottom tab bar variant. V1 is classic default.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {BOTTOM_NAV_VARIANTS.map((nav) => {
+                    const isSelected = bottomNavVariant === nav.id;
+                    return (
+                      <button
+                        key={nav.id}
+                        onClick={() => setBottomNavVariant(nav.id)}
+                        className={`p-3.5 rounded-xl border-2 text-left flex items-start justify-between gap-2 transition ${
+                          isSelected
+                            ? 'border-neutral-900 dark:border-white bg-neutral-50 dark:bg-neutral-800 shadow-sm'
+                            : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-white dark:bg-neutral-900'
+                        }`}
+                      >
+                        <div>
+                          <div className="text-xs font-bold text-neutral-900 dark:text-white">
+                            {nav.name}
+                          </div>
+                          <div className="text-[11px] text-neutral-500 mt-0.5">
+                            {nav.tagline}
+                          </div>
+                        </div>
+                        {isSelected && <CheckCircle2 size={16} className="text-neutral-900 dark:text-white flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: APP BRANDING & ASSETS */}
+          {activeStudioTab === 'branding' && (
+            <div className="max-w-2xl mx-auto space-y-6">
+              <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-6">
+                <div>
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                    App Branding & Launcher Config
+                  </h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">
+                    Updates your app logo, title, and package bundle ID across Android & iOS.
+                  </p>
+                </div>
+
+                {/* Logo Uploader */}
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-16 h-16 rounded-2xl border border-neutral-300 dark:border-neutral-700 bg-neutral-900 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm"
+                  >
+                    {appBranding.appLogoUri ? (
+                      <img
+                        src={appBranding.appLogoUri}
+                        alt="Logo"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-2xl font-black text-white">
+                        {(appBranding.appName.trim()[0] || 'D').toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoFileChange}
+                      className="hidden"
+                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3.5 py-1.5 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold flex items-center gap-1.5 shadow-sm hover:opacity-95"
+                      >
+                        <ImagePlus size={14} />
+                        <span>Upload Logo</span>
+                      </button>
+                      {appBranding.appLogoUri && (
+                        <button
+                          onClick={() => dispatch(updateAppBranding({ appLogoUri: '' }))}
+                          className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 text-red-500"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      value={appBranding.appLogoUri.startsWith('data:') ? '' : appBranding.appLogoUri}
+                      onChange={(e) => dispatch(updateAppBranding({ appLogoUri: e.target.value }))}
+                      placeholder="Or enter logo image URL..."
+                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                {/* App Title */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                    App Title
+                  </label>
+                  <input
+                    type="text"
+                    value={appBranding.appName}
+                    onChange={(e) => dispatch(updateAppBranding({ appName: e.target.value }))}
+                    placeholder="e.g. Define Atelier"
+                    className="w-full px-3 py-2 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                  />
+                </div>
+
+                {/* Android Package Name */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                    Android Package Name / iOS Bundle ID
+                  </label>
+                  <input
+                    type="text"
+                    value={appBranding.packageName}
+                    onChange={(e) => dispatch(updateAppBranding({ packageName: e.target.value }))}
+                    placeholder="e.g. com.defineatelier.app"
+                    className="w-full px-3 py-2 text-xs font-mono font-semibold rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: EXPORT & BUILD APK */}
+          {activeStudioTab === 'export' && (
+            <div className="max-w-3xl mx-auto space-y-6">
+              {/* 1-Click APK Generator Card */}
+              <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-sm"
+                      style={{ backgroundColor: colors.primary }}
+                    >
+                      <Smartphone size={20} color={colors.primaryText} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                        1-Click Android .APK Builder
+                      </h3>
+                      <p className="text-xs text-neutral-500">
+                        Compiles stand-alone installer APK with real-time progress.
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                    {apkBuildState === 'ready' ? 'APK Ready' : apkBuildState === 'building' ? 'Compiling' : 'Ready to Build'}
+                  </span>
+                </div>
+
+                {apkBuildState === 'idle' && (
+                  <button
+                    onClick={handleGenerateAndroidApk}
+                    className="w-full py-3 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold shadow hover:opacity-95 transition flex items-center justify-center gap-2"
+                  >
+                    <Smartphone size={16} />
+                    <span>Generate Standalone Android .APK</span>
+                  </button>
+                )}
+
+                {apkBuildState === 'building' && (
+                  <div className="space-y-2 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                    <div className="w-full h-2 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-500 transition-all duration-300"
+                        style={{ width: `${apkProgressPct}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-neutral-500 font-medium">
+                      <span>{apkStepLabel}</span>
+                      <span>{apkProgressPct}%</span>
+                    </div>
+                  </div>
+                )}
+
+                {apkBuildState === 'ready' && apkReadyArtifact && (
+                  <div className="space-y-4 p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
+                        <div>
+                          <div className="text-xs font-bold text-neutral-900 dark:text-white">
+                            {apkReadyArtifact.filename}
+                          </div>
+                          <div className="text-[11px] text-neutral-500">
+                            {apkReadyArtifact.sizeKb} KB · {appBranding.packageName}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleDownloadGeneratedApk}
+                        className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 flex items-center gap-1.5 shadow-sm"
+                      >
+                        <Download size={14} />
+                        <span>Download APK</span>
+                      </button>
+                    </div>
+
+                    {/* QR Code for Mobile */}
+                    {apkReadyArtifact.qrCodeDataUrl && (
+                      <div className="flex items-center gap-4 pt-3 border-t border-emerald-200 dark:border-emerald-800">
+                        <img
+                          src={apkReadyArtifact.qrCodeDataUrl}
+                          alt="APK QR"
+                          className="w-24 h-24 rounded-lg bg-white p-1 shadow-sm"
+                        />
+                        <div className="space-y-1.5 flex-1">
+                          <span className="text-xs font-bold text-neutral-900 dark:text-white block">
+                            Direct Phone Download QR
+                          </span>
+                          <p className="text-[11px] text-neutral-500 leading-tight">
+                            Scan with your phone camera to download {apkReadyArtifact.filename} straight to your device.
+                          </p>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard?.writeText(apkReadyArtifact.mobileDownloadUrl);
+                              setCopiedApkLink(true);
+                              setTimeout(() => setCopiedApkLink(false), 2000);
+                            }}
+                            className="text-xs font-bold text-emerald-700 dark:text-emerald-300 underline"
+                          >
+                            {copiedApkLink ? 'Copied Download URL!' : 'Copy Download Link'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Full Expo Source Code ZIP Download Card */}
+              <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-sm"
+                    style={{ backgroundColor: colors.primary }}
+                  >
+                    <FolderGit2 size={20} color={colors.primaryText} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      Full Expo Project Source Code (.ZIP)
+                    </h3>
+                    <p className="text-xs text-neutral-500">
+                      Export clean production React Native Expo repository with your selected screen variants.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleDownloadFullExpoZip}
+                  disabled={isZipping}
+                  className="w-full py-3 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold shadow hover:opacity-95 transition flex items-center justify-center gap-2"
+                >
+                  <Download size={16} />
+                  <span>{isZipping ? 'Creating Project ZIP...' : 'Download Full Expo Project .ZIP'}</span>
+                </button>
+              </div>
+
+              {/* Live Preview QR Code */}
+              {livePreviewQrUrl && (
+                <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm flex items-center gap-6">
+                  <img
+                    src={livePreviewQrUrl}
+                    alt="Live QR"
+                    className="w-28 h-28 rounded-xl bg-white p-1.5 shadow-sm flex-shrink-0"
+                  />
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      Scan for Instant Live Mobile Preview
+                    </h4>
+                    <p className="text-xs text-neutral-500 leading-relaxed">
+                      Scan with your phone's native camera on the same Wi-Fi network to test the app live in your mobile browser without installing anything.
+                    </p>
+                    <div className="text-[11px] font-mono text-neutral-400">
+                      {livePreviewTargetUrl}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 3. FAR RIGHT SIDEBAR: MOBILE PREVIEW (Authentic Device Frame + Controls)  */}
+      {/* ========================================================================= */}
+      <View
+        style={[
+          styles.rightPreviewSidebar,
+          {
+            backgroundColor: colors.surfaceElevated,
+            borderLeftColor: colors.border,
+          },
+        ]}
+      >
+        {/* Device Top Control Bar */}
+        <div className="p-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2 flex-shrink-0 bg-white dark:bg-neutral-900">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <Smartphone size={14} className="text-neutral-500" />
+              <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                {currentScreen}
+              </span>
+            </div>
+          </div>
+
+          {/* Quick Variant Dropdown */}
+          <select
+            value={currentVariant}
+            onChange={(e) => navigateTo(currentScreen, e.target.value as ScreenVariant)}
+            className="px-2 py-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md text-[11px] font-bold text-neutral-800 dark:text-neutral-200 focus:outline-none cursor-pointer"
+          >
+            <option value="varient_1">V1 (Default)</option>
+            <option value="varient_2">V2 (Alt 2)</option>
+            <option value="varient_3">V3 (Alt 3)</option>
+            <option value="varient_4">V4 (Alt 4)</option>
+            <option value="varient_5">V5 (Alt 5)</option>
+            <option value="varient_6">V6 (Alt 6)</option>
+          </select>
+
+          <button
+            onClick={() => navigateTo(currentScreen, currentVariant)}
+            className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300"
+            title="Reload Screen"
+          >
+            <RotateCcw size={13} />
+          </button>
+        </div>
+
+        {/* Mobile Viewport Stage */}
+        <div className="flex-1 flex items-center justify-center p-3 overflow-hidden">
+          {/* Realistic iPhone 16 Pro Device Frame */}
+          <div className="relative w-[378px] h-[785px] rounded-[50px] p-[6px] bg-[#1a1a1e] shadow-2xl ring-1 ring-white/10 flex flex-col items-center justify-center">
+            {/* Inner Screen Viewport */}
+            <div className="w-[366px] h-[773px] rounded-[44px] overflow-hidden bg-white dark:bg-black relative flex flex-col">
+              {renderScreen()}
+            </div>
+          </div>
+        </div>
+
+        {/* Device Bottom Quick Swatches */}
+        <div className="p-3 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-white dark:bg-neutral-900 flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            {presets.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setColorPreset(p.id)}
+                className={`w-5 h-5 rounded-full transition-transform ${
+                  colorPreset === p.id ? 'scale-125 ring-2 ring-neutral-900 dark:ring-white' : 'opacity-80 hover:opacity-100'
+                }`}
+                style={{ backgroundColor: p.swatch }}
+                title={p.name}
+              />
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-neutral-400 truncate max-w-[120px]">
+              {fontPresets.find((f) => f.id === fontPreset)?.name}
+            </span>
+          </div>
+        </div>
+      </View>
+
+      {/* Modal: Create New Project */}
+      {addAppModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setAddAppModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Boxes size={20} className="text-neutral-900 dark:text-white" />
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                  Add New Modular Application
+                </h3>
+              </div>
+              <button
+                onClick={() => setAddAppModalOpen(false)}
+                className="text-neutral-400 hover:text-neutral-600"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              Our architecture is 100% modular. To add your next application (such as Food Delivery, Fitness, or Real Estate), create a new subfolder in <code className="font-mono text-neutral-900 dark:text-white px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800">src/your_app_frontend</code> and link it to this dashboard.
+            </p>
+
+            <div className="space-y-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 text-xs">
+              <div className="font-semibold text-neutral-800 dark:text-neutral-200">
+                Current App Status:
+              </div>
+              <div className="text-neutral-500">
+                • Active App: <span className="font-mono font-bold text-neutral-900 dark:text-white">src/cloth_shop_frontend</span>
+              </div>
+              <div className="text-neutral-500">
+                • 23 Complete Screens with 6 Variants each (138 Total Screens)
+              </div>
+              <div className="text-neutral-500">
+                • Redux RTK Query Store & Clean Sub-App Structure
+              </div>
+            </div>
+
+            <button
+              onClick={() => setAddAppModalOpen(false)}
+              className="w-full py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold shadow hover:opacity-95"
+            >
+              Got it, continue in Cloth Shop
+            </button>
+          </div>
+        </div>
+      )}
+    </View>
+  );
+};
+
+export default function ClothShopApp() {
+  return (
+    <Provider store={store}>
+      <AppThemeProvider>
+        <ExpoNavigator />
+      </AppThemeProvider>
+    </Provider>
+  );
+}
+
+const styles = StyleSheet.create({
+  dashboardShell: {
+    height: '100vh' as any,
+    width: '100%',
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  leftProjectsSidebar: {
+    width: 250,
+    height: '100%',
+    borderRightWidth: 1,
+    flexDirection: 'column',
+    zIndex: 20,
+  },
+  rightPreviewSidebar: {
+    width: 440,
+    height: '100%',
+    borderLeftWidth: 1,
+    flexDirection: 'column',
+    zIndex: 20,
+  },
+});
