@@ -28,6 +28,7 @@ async function getCompiledStandaloneAppAssets(options: {
   appLogoUri: string;
   defaultColorPreset: string;
   defaultFontPreset: string;
+  defaultBottomNavVariant: string;
   defaultThemeMode: string;
   selectedVariants: Record<string, string>;
   fallbackServerOrigin: string;
@@ -90,6 +91,7 @@ window.__INITIAL_APK_CONFIG__ = ${JSON.stringify({
         appLogoUri: options.appLogoUri,
         defaultColorPreset: options.defaultColorPreset,
         defaultFontPreset: options.defaultFontPreset,
+        defaultBottomNavVariant: options.defaultBottomNavVariant,
         defaultThemeMode: options.defaultThemeMode,
         selectedVariants: options.selectedVariants,
       })};
@@ -197,6 +199,7 @@ async function startServer() {
         appLogoUri = '',
         defaultColorPreset = 'obsidian',
         defaultFontPreset = 'jakarta',
+        defaultBottomNavVariant = 'varient_1',
         defaultThemeMode = 'light',
         selectedVariants = {},
         bundleJs,
@@ -250,6 +253,7 @@ async function startServer() {
         appLogoUri: appLogoUri || iconPngBase64 || '',
         defaultColorPreset,
         defaultFontPreset,
+        defaultBottomNavVariant,
         defaultThemeMode,
         selectedVariants,
         fallbackServerOrigin: fallbackOrigin,

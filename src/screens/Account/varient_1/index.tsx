@@ -97,9 +97,6 @@ export const AccountView: React.FC<{ showLogoutModal?: boolean }> = ({
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* App Color Theme Selector */}
-          <AppColorSelectorCard />
-
           {/* Group 1: My Orders */}
           <View style={styles.sectionBlock}>
             {group1.map((item) => {
@@ -174,7 +171,7 @@ export const AccountView: React.FC<{ showLogoutModal?: boolean }> = ({
             ]}
           />
 
-          {/* Appearance & Skeleton Row */}
+          {/* Appearance Row */}
           <View style={styles.sectionBlock}>
             <TouchableOpacity onPress={toggleTheme} style={styles.menuRow}>
               <View style={styles.menuLeft}>
@@ -185,26 +182,6 @@ export const AccountView: React.FC<{ showLogoutModal?: boolean }> = ({
                 )}
                 <Text style={[styles.menuLabel, { color: colors.textPrimary }]}>
                   Appearance ({isDark ? 'Dark' : 'Light'} Mode)
-                </Text>
-              </View>
-              <ChevronRight size={20} color={colors.textMuted} />
-            </TouchableOpacity>
-
-            <View
-              style={[
-                styles.insetDivider,
-                { backgroundColor: colors.divider },
-              ]}
-            />
-
-            <TouchableOpacity
-              onPress={() => triggerSkeleton(1200)}
-              style={styles.menuRow}
-            >
-              <View style={styles.menuLeft}>
-                <Sparkles size={22} color={colors.textPrimary} />
-                <Text style={[styles.menuLabel, { color: colors.textPrimary }]}>
-                  Preview Loading Skeleton
                 </Text>
               </View>
               <ChevronRight size={20} color={colors.textMuted} />

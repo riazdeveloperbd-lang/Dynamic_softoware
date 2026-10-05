@@ -6,6 +6,7 @@ import {
   navigate,
   ScreenName,
   ScreenVariant,
+  setBottomNavVariantAction,
   setVariant,
 } from '../store/slices/appSlice';
 import { useTheme } from '../styles/theme';
@@ -19,16 +20,22 @@ export function useAppNavigation() {
   const dispatch = useAppDispatch();
   const currentScreen = useAppSelector((state) => state.app.currentScreen);
   const currentVariant = useAppSelector((state) => state.app.currentVariant);
+  const bottomNavVariant = useAppSelector(
+    (state) => state.app.bottomNavVariant || 'varient_1'
+  );
 
   return {
     currentScreen,
     currentVariant,
+    bottomNavVariant,
     navigateTo: (
       screen: ScreenName,
       variant: ScreenVariant = 'varient_1',
       productId?: string
     ) => dispatch(navigate({ screen, variant, productId })),
     switchVariant: (variant: ScreenVariant) => dispatch(setVariant(variant)),
+    setBottomNavVariant: (variant: ScreenVariant) =>
+      dispatch(setBottomNavVariantAction(variant)),
     goBack: () => dispatch(goBack()),
   };
 }

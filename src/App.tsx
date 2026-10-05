@@ -39,6 +39,7 @@ import {
 import {
   ScreenName,
   ScreenVariant,
+  setBottomNavVariantAction,
   setColorPresetAction,
   setFontPresetAction,
   setForceSkeleton,
@@ -47,6 +48,7 @@ import {
   toggleThemeMode,
   updateAppBranding,
 } from './store/slices/appSlice';
+import { BOTTOM_NAV_VARIANTS } from './component';
 import {
   APP_FONT_PRESETS,
   AppColorPresetId,
@@ -605,7 +607,13 @@ const AppThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 
 const ExpoNavigator: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { currentScreen, currentVariant, navigateTo } = useAppNavigation();
+  const {
+    currentScreen,
+    currentVariant,
+    bottomNavVariant,
+    setBottomNavVariant,
+    navigateTo,
+  } = useAppNavigation();
   const appBranding = useAppSelector((s) => s.app.appBranding);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const {
@@ -719,6 +727,9 @@ const ExpoNavigator: React.FC = () => {
     if (cfg.defaultFontPreset) {
       dispatch(setFontPresetAction(cfg.defaultFontPreset));
     }
+    if (cfg.defaultBottomNavVariant) {
+      dispatch(setBottomNavVariantAction(cfg.defaultBottomNavVariant));
+    }
     if (cfg.defaultThemeMode) {
       dispatch(setReduxThemeMode(cfg.defaultThemeMode));
     }
@@ -769,6 +780,7 @@ const ExpoNavigator: React.FC = () => {
         selectedVariants: exportSelections,
         defaultColorPreset: colorPreset,
         defaultFontPreset: fontPreset,
+        defaultBottomNavVariant: bottomNavVariant,
         defaultThemeMode: isDark ? 'dark' : 'light',
         appName: appBranding.appName,
         packageName: appBranding.packageName,
@@ -789,6 +801,7 @@ const ExpoNavigator: React.FC = () => {
         selectedVariants: exportSelections,
         defaultColorPreset: colorPreset,
         defaultFontPreset: fontPreset,
+        defaultBottomNavVariant: bottomNavVariant,
         defaultThemeMode: isDark ? 'dark' : 'light',
         appName: appBranding.appName,
         packageName: appBranding.packageName,
@@ -1071,6 +1084,50 @@ const ExpoNavigator: React.FC = () => {
                   ]}
                 >
                   {v.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Quick 6 Bottom Navigation UI Switcher Pills */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 5,
+            paddingLeft: 8,
+            borderLeftWidth: 1,
+            borderLeftColor: colors.border,
+          }}
+        >
+          <Text style={[styles.topScreenLabel, { color: colors.textSecondary }]}>
+            Bottom Nav:
+          </Text>
+          {BOTTOM_NAV_VARIANTS.map((navV, idx) => {
+            const isNavActive = bottomNavVariant === navV.id;
+            return (
+              <TouchableOpacity
+                key={navV.id}
+                onPress={() => setBottomNavVariant(navV.id)}
+                style={[
+                  styles.topVariantPill,
+                  isNavActive
+                    ? { backgroundColor: colors.primary }
+                    : { backgroundColor: colors.surface },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.topVariantPillText,
+                    {
+                      color: isNavActive
+                        ? colors.primaryText
+                        : colors.textPrimary,
+                    },
+                  ]}
+                >
+                  Nav V{idx + 1}
                 </Text>
               </TouchableOpacity>
             );
@@ -2342,6 +2399,120 @@ const ExpoNavigator: React.FC = () => {
                     </ScrollView>
                   </View>
                 )}
+              </View>
+
+              {/* 6 Bottom Navigation Premium UI Designs Studio Card */}
+              <View
+                style={[
+                  styles.brandingCard,
+                  {
+                    backgroundColor: colors.cardBackground,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <View style={styles.brandingHeaderRow}>
+                  <View style={styles.apkTitleWrap}>
+                    <Layers size={16} color={colors.primary} />
+                    <View>
+                      <Text
+                        style={[
+                          styles.brandingCardTitle,
+                          { color: colors.textPrimary },
+                        ]}
+                      >
+                        Bottom Navigation UI (6 Premium Variants)
+                      </Text>
+                      <Text
+                        style={[
+                          styles.brandingCardSub,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        V1 is default • Choose any bottom navigation design for all screens
+                      </Text>
+                    </View>
+                  </View>
+                  {bottomNavVariant !== 'varient_1' && (
+                    <TouchableOpacity
+                      onPress={() => setBottomNavVariant('varient_1')}
+                      style={[
+                        styles.previewSplashPill,
+                        { backgroundColor: colors.surface },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.previewSplashText,
+                          { color: colors.primary },
+                        ]}
+                      >
+                        Default V1
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <View style={{ gap: 7, marginTop: 4 }}>
+                  {BOTTOM_NAV_VARIANTS.map((navItem) => {
+                    const isSelected = bottomNavVariant === navItem.id;
+                    return (
+                      <TouchableOpacity
+                        key={navItem.id}
+                        onPress={() => setBottomNavVariant(navItem.id)}
+                        activeOpacity={0.85}
+                        style={{
+                          borderRadius: 10,
+                          borderWidth: 1.5,
+                          borderColor: isSelected
+                            ? colors.primary
+                            : colors.border,
+                          backgroundColor: isSelected
+                            ? colors.primary
+                            : colors.surface,
+                          paddingHorizontal: 12,
+                          paddingVertical: 9,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 8,
+                        }}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={{
+                              fontSize: 12.5,
+                              fontWeight: '700',
+                              color: isSelected
+                                ? colors.primaryText
+                                : colors.textPrimary,
+                            }}
+                          >
+                            {navItem.name}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 10.5,
+                              color: isSelected
+                                ? colors.primaryText
+                                : colors.textSecondary,
+                              opacity: isSelected ? 0.85 : 1,
+                              marginTop: 2,
+                            }}
+                          >
+                            {navItem.tagline}
+                          </Text>
+                        </View>
+                        {isSelected && (
+                          <CheckCircle2
+                            size={16}
+                            color={colors.primaryText}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
 
               {SCREEN_DIRECTORY.map((section) => (

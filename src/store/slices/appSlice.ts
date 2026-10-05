@@ -94,6 +94,7 @@ interface AppState {
   themeMode: 'light' | 'dark';
   colorPreset: AppColorPresetId;
   fontPreset: AppFontPresetId;
+  bottomNavVariant: ScreenVariant;
   forceSkeleton: boolean;
   appBranding: {
     appName: string;
@@ -212,6 +213,7 @@ const initialState: AppState = {
   themeMode: 'light',
   colorPreset: 'obsidian',
   fontPreset: 'jakarta',
+  bottomNavVariant: 'varient_1',
   forceSkeleton: false,
   appBranding: {
     appName: 'Define Atelier',
@@ -381,6 +383,12 @@ export const appSlice = createSlice({
     setFontPresetAction: (state, action: PayloadAction<AppFontPresetId>) => {
       state.fontPreset = action.payload;
     },
+    setBottomNavVariantAction: (
+      state,
+      action: PayloadAction<ScreenVariant>
+    ) => {
+      state.bottomNavVariant = action.payload;
+    },
     toggleForceSkeleton: (state) => {
       state.forceSkeleton = !state.forceSkeleton;
     },
@@ -429,6 +437,7 @@ export const {
   setThemeModeAction,
   setColorPresetAction,
   setFontPresetAction,
+  setBottomNavVariantAction,
   toggleForceSkeleton,
   setForceSkeleton,
   updateAppBranding,

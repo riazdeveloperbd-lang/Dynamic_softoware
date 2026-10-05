@@ -10,8 +10,8 @@ import {
 import { ArrowUpRight, Search, XCircle } from 'lucide-react';
 import {
   AppHeader,
+  BottomTabBar,
   EmptyState,
-  IOSKeyboard,
   ScreenWrapper,
   SearchBar,
   StatusBar,
@@ -61,7 +61,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
   const isTyping = query.trim().length > 0;
 
   return (
-    <ScreenWrapper preset="list">
+    <ScreenWrapper preset="list" showBottomTab activeTab="Search">
       <View
         style={[styles.container, { backgroundColor: colors.background }]}
       >
@@ -198,15 +198,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
           )}
         </ScrollView>
 
-        <IOSKeyboard
-          onKeyPress={(k) => {
-            if (k === 'BACKSPACE') {
-              setQuery((prev) => prev.slice(0, -1));
-            } else {
-              setQuery((prev) => prev + k.toLowerCase());
-            }
-          }}
-        />
+        <BottomTabBar activeTab="Search" />
       </View>
     </ScreenWrapper>
   );

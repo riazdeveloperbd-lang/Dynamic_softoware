@@ -179,6 +179,7 @@ export async function downloadExpoProjectZip(options: {
   selectedVariants: Record<ScreenName, ScreenVariant>;
   defaultColorPreset: AppColorPresetId;
   defaultFontPreset?: AppFontPresetId;
+  defaultBottomNavVariant?: ScreenVariant;
   defaultThemeMode: ThemeMode;
   appName?: string;
   packageName?: string;
@@ -188,6 +189,7 @@ export async function downloadExpoProjectZip(options: {
     selectedVariants,
     defaultColorPreset,
     defaultFontPreset = 'jakarta',
+    defaultBottomNavVariant = 'varient_1',
     defaultThemeMode,
     appName = 'Define Atelier',
     packageName = 'com.defineatelier.app',
@@ -269,6 +271,10 @@ export async function downloadExpoProjectZip(options: {
         .replace(
           /fontPreset:\s*['"][a-z_]+['"]/,
           `fontPreset: '${defaultFontPreset}'`
+        )
+        .replace(
+          /bottomNavVariant:\s*['"][a-z_0-9]+['"]/,
+          `bottomNavVariant: '${defaultBottomNavVariant}'`
         )
         .replace(
           /appName:\s*['"][^'"]*['"]/,
@@ -848,6 +854,7 @@ export async function buildAndroidApkArtifact(options: {
   selectedVariants: Record<ScreenName, ScreenVariant>;
   defaultColorPreset: AppColorPresetId;
   defaultFontPreset?: AppFontPresetId;
+  defaultBottomNavVariant?: ScreenVariant;
   defaultThemeMode: ThemeMode;
   appName?: string;
   packageName?: string;
@@ -864,6 +871,7 @@ export async function buildAndroidApkArtifact(options: {
     selectedVariants,
     defaultColorPreset,
     defaultFontPreset = 'jakarta',
+    defaultBottomNavVariant = 'varient_1',
     defaultThemeMode,
     appName = 'Define Atelier',
     packageName = 'com.defineatelier.app',
@@ -965,6 +973,7 @@ window.__APP_BRANDING__ = ${JSON.stringify({
         iconPngBase64,
         defaultColorPreset,
         defaultFontPreset,
+        defaultBottomNavVariant,
         defaultThemeMode,
         selectedVariants,
         bundleJs: androidJsBundle,

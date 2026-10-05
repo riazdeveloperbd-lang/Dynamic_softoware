@@ -38,7 +38,62 @@ import {
   useScreenSkeleton,
   useTheme,
 } from '../hooks';
-import { ScreenName, toggleSavedProduct } from '../store/slices/appSlice';
+import {
+  ScreenName,
+  ScreenVariant,
+  setBottomNavVariantAction,
+  toggleSavedProduct,
+} from '../store/slices/appSlice';
+
+export const BOTTOM_NAV_VARIANTS: {
+  id: ScreenVariant;
+  name: string;
+  tagline: string;
+}[] = [
+  {
+    id: 'varient_1',
+    name: 'V1 • Classic Atelier Bar',
+    tagline: 'Default Clean Icon + Label Bar',
+  },
+  {
+    id: 'varient_2',
+    name: 'V2 • Floating Capsule Dock',
+    tagline: 'Elevated Rounded Island with Active Pill',
+  },
+  {
+    id: 'varient_3',
+    name: 'V3 • Expanding Smart Pill',
+    tagline: 'Horizontal Expanding Pill for Active Tab',
+  },
+  {
+    id: 'varient_4',
+    name: 'V4 • Center Cart FAB Notch',
+    tagline: 'Curved Bar with Elevated Center Cart Action',
+  },
+  {
+    id: 'varient_5',
+    name: 'V5 • Top Neon Indicator',
+    tagline: 'Minimalist Luxe Bar with Top Accent Line & Glow',
+  },
+  {
+    id: 'varient_6',
+    name: 'V6 • Glassmorphic Obsidian',
+    tagline: 'High-Contrast Luxury Dark Dock with Active Circle',
+  },
+];
+
+function isRunningOnRealMobileDevice(): boolean {
+  if (typeof window === 'undefined') return true;
+  if ((window as any).__APK_STANDALONE__) return true;
+  try {
+    if (new URLSearchParams(window.location.search).get('mobile') === '1') {
+      return true;
+    }
+  } catch {
+    // Ignore URL parse error
+  }
+  return false;
+}
 
 /**
  * Animated Shimmer Block for React Native Skeleton Loading
@@ -352,37 +407,11 @@ export const ScreenWrapper: React.FC<{
 
 /**
  * Reusable React Native / Expo StatusBar Component (9:41 + Signal + Wi-Fi + Battery)
+ * Automatically hidden when running inside the installed Android/iOS APK or mobile browser (?mobile=1)
+ * because the real phone already displays its own native system status bar at the top.
  */
-export const StatusBar: React.FC<{ dark?: boolean }> = ({ dark }) => {
-  const { isDark, colors } = useTheme();
-  const useLightText = dark !== undefined ? dark : isDark;
-  const textColor = useLightText ? '#FFFFFF' : colors.textPrimary;
-  const borderColor = useLightText
-    ? 'rgba(255,255,255,0.4)'
-    : 'rgba(26,26,26,0.4)';
-
-  return (
-    <View style={styles.statusBarContainer}>
-      <Text style={[styles.statusBarTime, { color: textColor }]}>9:41</Text>
-      <View style={styles.statusBarRight}>
-        <View style={styles.signalBars}>
-          <View style={[styles.bar, { height: 5, backgroundColor: textColor }]} />
-          <View style={[styles.bar, { height: 7, backgroundColor: textColor }]} />
-          <View style={[styles.bar, { height: 9, backgroundColor: textColor }]} />
-          <View style={[styles.bar, { height: 11, backgroundColor: textColor }]} />
-        </View>
-        <svg width={16} height={12} viewBox="0 0 16 12" fill={textColor}>
-          <path d="M8 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-3.6-1.8a5.2 5.2 0 017.2 0l1.1-1.1a6.8 6.8 0 00-9.4 0l1.1 1.1zm-2.5-2.5a8.8 8.8 0 0112.2 0l1.1-1.1a10.4 10.4 0 00-14.4 0l1.1 1.1z" />
-        </svg>
-        <View style={styles.batteryWrap}>
-          <View style={[styles.batteryBody, { borderColor }]}>
-            <View style={[styles.batteryFill, { backgroundColor: textColor }]} />
-          </View>
-          <View style={[styles.batteryTip, { backgroundColor: textColor }]} />
-        </View>
-      </View>
-    </View>
-  );
+export const StatusBar: React.FC<{ dark?: boolean }> = () => {
+  return null;
 };
 
 /**
@@ -780,29 +809,448 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 };
 
 /**
- * Reusable React Native BottomTabBar Component (Theme-aware)
+ * Reusable React Native BottomTabBar Component with 6 Selectable Premium UI Designs
+ * - varient_1 (Default): Classic Atelier Bar (Current clean icon + label bar)
+ * - varient_2: Floating Capsule Island Dock
+ * - varient_3: Expanding Smart Pill Bar (Icon + inline label inside active pill)
+ * - varient_4: Center Cart FAB Notch Dock
+ * - varient_5: Top Neon Indicator & Soft Glow Bar
+ * - varient_6: Glassmorphic Obsidian Luxury Dock
  */
 interface BottomTabBarProps {
   activeTab: 'Home' | 'Search' | 'Saved' | 'Cart' | 'Account';
+  variantOverride?: ScreenVariant;
 }
 
-export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
+export const BottomTabBar: React.FC<BottomTabBarProps> = ({
+  activeTab,
+  variantOverride,
+}) => {
   const { navigateTo } = useAppNavigation();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const reduxNavVariant = useAppSelector(
+    (state) => state.app.bottomNavVariant || 'varient_1'
+  );
+  const cartItems = useAppSelector((state) => state.app.cart);
+  const savedIds = useAppSelector((state) => state.app.savedProductIds);
+
+  const navVariant: ScreenVariant = variantOverride || reduxNavVariant || 'varient_1';
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const savedCount = savedIds.length;
 
   const tabs: {
     id: 'Home' | 'Search' | 'Saved' | 'Cart' | 'Account';
     label: string;
     screen: ScreenName;
     icon: React.FC<{ size?: number; color?: string; strokeWidth?: number }>;
+    badge?: number;
   }[] = [
     { id: 'Home', label: 'Home', screen: 'Homepage', icon: Home },
     { id: 'Search', label: 'Search', screen: 'Search', icon: Search },
-    { id: 'Saved', label: 'Saved', screen: 'SavedItems', icon: Heart },
-    { id: 'Cart', label: 'Cart', screen: 'MyCart', icon: ShoppingCart },
+    {
+      id: 'Saved',
+      label: 'Saved',
+      screen: 'SavedItems',
+      icon: Heart,
+      badge: savedCount > 0 ? savedCount : undefined,
+    },
+    {
+      id: 'Cart',
+      label: 'Cart',
+      screen: 'MyCart',
+      icon: ShoppingCart,
+      badge: cartCount > 0 ? cartCount : undefined,
+    },
     { id: 'Account', label: 'Account', screen: 'Account', icon: User },
   ];
 
+  // VARIANT 2: Floating Capsule Island Dock
+  if (navVariant === 'varient_2') {
+    return (
+      <View
+        style={[
+          styles.navV2OuterWrap,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <View
+          style={[
+            styles.navV2Capsule,
+            {
+              backgroundColor: isDark ? '#18181B' : colors.surfaceElevated,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                onPress={() => navigateTo(tab.screen, 'varient_1')}
+                activeOpacity={0.8}
+                style={[
+                  styles.navV2TabItem,
+                  isActive && {
+                    backgroundColor: colors.primary,
+                  },
+                ]}
+              >
+                <View style={styles.navIconBadgeWrap}>
+                  <Icon
+                    size={20}
+                    color={isActive ? colors.primaryText : colors.textMuted}
+                    strokeWidth={isActive ? 2.4 : 1.9}
+                  />
+                  {tab.id === 'Cart' && tab.badge ? (
+                    <View
+                      style={[
+                        styles.navMiniBadge,
+                        {
+                          backgroundColor: isActive
+                            ? colors.primaryText
+                            : colors.primary,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.navMiniBadgeText,
+                          {
+                            color: isActive
+                              ? colors.primary
+                              : colors.primaryText,
+                          },
+                        ]}
+                      >
+                        {tab.badge}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+                <Text
+                  style={[
+                    styles.navV2Label,
+                    {
+                      color: isActive ? colors.primaryText : colors.textMuted,
+                      fontWeight: isActive ? '700' : '500',
+                    },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  // VARIANT 3: Expanding Smart Pill Navigation (Active tab expands horizontally with icon + label)
+  if (navVariant === 'varient_3') {
+    return (
+      <View
+        style={[
+          styles.navV3Container,
+          {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+          },
+        ]}
+      >
+        <View style={styles.navV3Row}>
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                onPress={() => navigateTo(tab.screen, 'varient_1')}
+                activeOpacity={0.8}
+                style={[
+                  styles.navV3Item,
+                  isActive
+                    ? {
+                        backgroundColor: colors.primary,
+                        paddingHorizontal: 14,
+                        flex: 1.55,
+                      }
+                    : {
+                        backgroundColor: 'transparent',
+                        flex: 0.85,
+                      },
+                ]}
+              >
+                <View style={styles.navIconBadgeWrap}>
+                  <Icon
+                    size={20}
+                    color={isActive ? colors.primaryText : colors.textSecondary}
+                    strokeWidth={isActive ? 2.4 : 1.9}
+                  />
+                  {!isActive && tab.id === 'Cart' && tab.badge ? (
+                    <View
+                      style={[
+                        styles.navDotBadge,
+                        { backgroundColor: colors.danger },
+                      ]}
+                    />
+                  ) : null}
+                </View>
+                {isActive && (
+                  <Text
+                    style={[
+                      styles.navV3ActiveLabel,
+                      { color: colors.primaryText },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {tab.label}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  // VARIANT 4: Center Cart FAB Notch Dock (Home, Search | Elevated Cart FAB | Saved, Account)
+  if (navVariant === 'varient_4') {
+    const orderedV4Tabs: typeof tabs = [
+      tabs[0], // Home
+      tabs[1], // Search
+      tabs[3], // Cart (Center FAB)
+      tabs[2], // Saved
+      tabs[4], // Account
+    ];
+    return (
+      <View
+        style={[
+          styles.navV4Container,
+          {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+          },
+        ]}
+      >
+        <View style={styles.navV4Row}>
+          {orderedV4Tabs.map((tab, idx) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            const isCenterFab = idx === 2;
+
+            if (isCenterFab) {
+              return (
+                <View key={tab.id} style={styles.navV4CenterCol}>
+                  <TouchableOpacity
+                    onPress={() => navigateTo(tab.screen, 'varient_1')}
+                    activeOpacity={0.85}
+                    style={[
+                      styles.navV4FabButton,
+                      {
+                        backgroundColor: colors.primary,
+                        borderColor: colors.background,
+                      },
+                    ]}
+                  >
+                    <Icon
+                      size={22}
+                      color={colors.primaryText}
+                      strokeWidth={2.3}
+                    />
+                    {tab.badge ? (
+                      <View
+                        style={[
+                          styles.navV4FabBadge,
+                          { backgroundColor: colors.danger },
+                        ]}
+                      >
+                        <Text style={styles.navV4FabBadgeText}>
+                          {tab.badge}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.tabLabel,
+                      {
+                        color: isActive ? colors.primary : colors.textSecondary,
+                        fontWeight: isActive ? '800' : '600',
+                        marginTop: 3,
+                      },
+                    ]}
+                  >
+                    {tab.label}
+                  </Text>
+                </View>
+              );
+            }
+
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                onPress={() => navigateTo(tab.screen, 'varient_1')}
+                activeOpacity={0.75}
+                style={styles.tabItem}
+              >
+                <Icon
+                  size={21}
+                  color={isActive ? colors.primary : colors.textMuted}
+                  strokeWidth={isActive ? 2.4 : 1.8}
+                />
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    {
+                      color: isActive ? colors.primary : colors.textMuted,
+                      fontWeight: isActive ? '700' : '500',
+                    },
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  // VARIANT 5: Top Neon Indicator & Soft Glow Bar
+  if (navVariant === 'varient_5') {
+    return (
+      <View
+        style={[
+          styles.navV5Container,
+          {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+          },
+        ]}
+      >
+        <View style={styles.bottomTabRow}>
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                onPress={() => navigateTo(tab.screen, 'varient_1')}
+                activeOpacity={0.75}
+                style={styles.navV5TabItem}
+              >
+                <View
+                  style={[
+                    styles.navV5TopBarIndicator,
+                    {
+                      backgroundColor: isActive
+                        ? colors.primary
+                        : 'transparent',
+                    },
+                  ]}
+                />
+                <View
+                  style={[
+                    styles.navV5IconBox,
+                    isActive && {
+                      backgroundColor: colors.surface,
+                    },
+                  ]}
+                >
+                  <Icon
+                    size={20}
+                    color={isActive ? colors.primary : colors.textMuted}
+                    strokeWidth={isActive ? 2.4 : 1.8}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    {
+                      color: isActive ? colors.primary : colors.textMuted,
+                      fontWeight: isActive ? '700' : '500',
+                    },
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  // VARIANT 6: Glassmorphic Obsidian Luxury Dock
+  if (navVariant === 'varient_6') {
+    return (
+      <View
+        style={[
+          styles.navV6OuterWrap,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <View
+          style={[
+            styles.navV6Dock,
+            {
+              backgroundColor: '#121214',
+              borderColor: '#27272A',
+            },
+          ]}
+        >
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                onPress={() => navigateTo(tab.screen, 'varient_1')}
+                activeOpacity={0.8}
+                style={styles.navV6TabItem}
+              >
+                <View
+                  style={[
+                    styles.navV6IconCircle,
+                    isActive && {
+                      backgroundColor: '#FFFFFF',
+                    },
+                  ]}
+                >
+                  <Icon
+                    size={19}
+                    color={isActive ? '#121214' : '#A1A1AA'}
+                    strokeWidth={isActive ? 2.5 : 1.9}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.navV6Label,
+                    {
+                      color: isActive ? '#FFFFFF' : '#71717A',
+                      fontWeight: isActive ? '700' : '500',
+                    },
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+                {isActive && <View style={styles.navV6ActiveDot} />}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  // VARIANT 1 (DEFAULT): Current Classic Bottom Navigation Bar
   return (
     <View
       style={[
@@ -844,27 +1292,15 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
           );
         })}
       </View>
-      <HomeIndicator />
     </View>
   );
 };
 
 /**
- * Reusable iOS HomeIndicator Bar (Theme-aware)
+ * Reusable iOS HomeIndicator Bar (Removed so real mobile devices never show a duplicate bottom home bar)
  */
-export const HomeIndicator: React.FC<{ light?: boolean }> = ({ light }) => {
-  const { isDark, colors } = useTheme();
-  const useLight = light !== undefined ? light : isDark;
-  return (
-    <View style={styles.homeIndicatorWrap}>
-      <View
-        style={[
-          styles.homeIndicatorPill,
-          { backgroundColor: useLight ? '#FFFFFF' : colors.textPrimary },
-        ]}
-      />
-    </View>
-  );
+export const HomeIndicator: React.FC<{ light?: boolean }> = () => {
+  return null;
 };
 
 /**
@@ -956,140 +1392,10 @@ export const StatusModal: React.FC<StatusModalProps> = ({
 };
 
 /**
- * Reusable React Native Simulated iOS Keyboard (Theme-aware)
+ * Reusable React Native Simulated iOS Keyboard (Disabled so mobile uses native keyboard)
  */
-export const IOSKeyboard: React.FC<{ onKeyPress?: (key: string) => void }> = ({
-  onKeyPress,
-}) => {
-  const { colors } = useTheme();
-  const row1 = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'];
-  const row2 = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'];
-  const row3 = ['Z', 'X', 'C', 'V', 'B', 'N', 'M'];
-
-  return (
-    <View
-      style={[
-        styles.keyboardContainer,
-        { backgroundColor: colors.keyboardBg },
-      ]}
-    >
-      <View style={styles.kbRow}>
-        {row1.map((k) => (
-          <TouchableOpacity
-            key={k}
-            onPress={() => onKeyPress?.(k)}
-            style={[styles.kbKey, { backgroundColor: colors.keyboardKey }]}
-            activeOpacity={0.6}
-          >
-            <Text style={[styles.kbKeyText, { color: colors.textPrimary }]}>
-              {k}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <View style={[styles.kbRow, { paddingHorizontal: 16 }]}>
-        {row2.map((k) => (
-          <TouchableOpacity
-            key={k}
-            onPress={() => onKeyPress?.(k)}
-            style={[styles.kbKey, { backgroundColor: colors.keyboardKey }]}
-            activeOpacity={0.6}
-          >
-            <Text style={[styles.kbKeyText, { color: colors.textPrimary }]}>
-              {k}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <View style={styles.kbRow}>
-        <TouchableOpacity
-          style={[styles.kbSpecialKey, { backgroundColor: colors.keyboardKey }]}
-          activeOpacity={0.6}
-        >
-          <svg
-            width={18}
-            height={18}
-            viewBox="0 0 24 24"
-            fill={colors.textPrimary}
-          >
-            <path d="M12 3l8 8h-5v8H9v-8H4l8-8z" />
-          </svg>
-        </TouchableOpacity>
-        <View style={styles.kbRowInner}>
-          {row3.map((k) => (
-            <TouchableOpacity
-              key={k}
-              onPress={() => onKeyPress?.(k)}
-              style={[styles.kbKey, { backgroundColor: colors.keyboardKey }]}
-              activeOpacity={0.6}
-            >
-              <Text style={[styles.kbKeyText, { color: colors.textPrimary }]}>
-                {k}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        <TouchableOpacity
-          onPress={() => onKeyPress?.('BACKSPACE')}
-          style={[
-            styles.kbSpecialKey,
-            { backgroundColor: colors.keyboardSpecialKey },
-          ]}
-          activeOpacity={0.6}
-        >
-          <X size={16} color={colors.textPrimary} />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.kbRow}>
-        <TouchableOpacity
-          style={[
-            styles.kbActionKey,
-            { backgroundColor: colors.keyboardSpecialKey },
-          ]}
-          activeOpacity={0.6}
-        >
-          <Text style={[styles.kbActionText, { color: colors.textPrimary }]}>
-            123
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => onKeyPress?.(' ')}
-          style={[styles.kbSpaceKey, { backgroundColor: colors.keyboardKey }]}
-          activeOpacity={0.6}
-        >
-          <Text style={[styles.kbSpaceText, { color: colors.textPrimary }]}>
-            space
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.kbActionKey,
-            { backgroundColor: colors.keyboardSpecialKey },
-          ]}
-          activeOpacity={0.6}
-        >
-          <Text style={[styles.kbActionText, { color: colors.textPrimary }]}>
-            return
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.kbFooter}>
-        <svg
-          width={24}
-          height={24}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={colors.textSecondary}
-          strokeWidth="1.8"
-        >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M8.5 15a5 5 0 007 0M9 10h.01M15 10h.01" strokeLinecap="round" />
-        </svg>
-        <Mic size={22} color={colors.textSecondary} />
-      </View>
-      <HomeIndicator />
-    </View>
-  );
+export const IOSKeyboard: React.FC<{ onKeyPress?: (key: string) => void }> = () => {
+  return null;
 };
 
 /**
@@ -1158,343 +1464,10 @@ export const SocialAuthButtons: React.FC<{
 
 /**
  * Reusable Full-Application Color Palette Selector Card for Account Screens
+ * (Controlled from the website studio; hidden inside mobile Account screens)
  */
-export const AppColorSelectorCard: React.FC<{ compact?: boolean }> = ({
-  compact = false,
-}) => {
-  const {
-    colors,
-    colorPreset,
-    presets,
-    setColorPreset,
-    fontPreset,
-    fontPresets,
-    setFontPreset,
-    isDark,
-    toggleTheme,
-  } = useTheme();
-
-  const activePresetObj =
-    presets.find((p) => p.id === colorPreset) || presets[0];
-  const activeFontObj =
-    fontPresets.find((f) => f.id === fontPreset) || fontPresets[0];
-  const [fontMenuOpen, setFontMenuOpen] = useState(false);
-
-  return (
-    <View
-      style={[
-        styles.colorSelectorCard,
-        {
-          backgroundColor: colors.cardBackground,
-          borderColor: colors.border,
-          marginHorizontal: compact ? 0 : 24,
-        },
-      ]}
-    >
-      <View style={styles.colorSelectorHeader}>
-        <View style={{ flex: 1 }}>
-          <Text
-            style={[styles.colorSelectorTitle, { color: colors.textPrimary }]}
-          >
-            App Color Theme
-          </Text>
-          <Text
-            style={[
-              styles.colorSelectorSubtitle,
-              { color: colors.textSecondary },
-            ]}
-          >
-            {activePresetObj.name} • {activePresetObj.tagline}
-          </Text>
-        </View>
-        {colorPreset !== 'obsidian' && (
-          <TouchableOpacity
-            onPress={() => setColorPreset('obsidian')}
-            style={[
-              styles.resetColorBtn,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-              },
-            ]}
-          >
-            <Text
-              style={[styles.resetColorText, { color: colors.textPrimary }]}
-            >
-              Reset Default
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Swatches Row */}
-      <View style={styles.swatchesWrap}>
-        {presets.map((preset) => {
-          const isSelected = preset.id === colorPreset;
-          return (
-            <TouchableOpacity
-              key={preset.id}
-              onPress={() => setColorPreset(preset.id)}
-              activeOpacity={0.8}
-              style={[
-                styles.swatchItem,
-                {
-                  borderColor: isSelected ? colors.primary : colors.border,
-                  backgroundColor: isSelected
-                    ? colors.surface
-                    : colors.cardBackground,
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.swatchCircle,
-                  { backgroundColor: preset.swatch },
-                ]}
-              >
-                {isSelected && <Check size={13} color="#FFFFFF" strokeWidth={3} />}
-              </View>
-              <Text
-                style={[
-                  styles.swatchName,
-                  {
-                    color: isSelected ? colors.primary : colors.textPrimary,
-                    fontWeight: isSelected ? '700' : '500',
-                  },
-                ]}
-                numberOfLines={1}
-              >
-                {preset.name.split(' ')[0]}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      {/* Live Preview Pill Bar */}
-      <View
-        style={[
-          styles.colorPreviewBar,
-          { backgroundColor: colors.surface, borderColor: colors.border },
-        ]}
-      >
-        <View style={styles.colorPreviewLeft}>
-          <View
-            style={[styles.liveDot, { backgroundColor: colors.primary }]}
-          />
-          <Text
-            style={[styles.colorPreviewText, { color: colors.textPrimary }]}
-          >
-            Applied across all 23 screens ({isDark ? 'Dark' : 'Light'})
-          </Text>
-        </View>
-        <TouchableOpacity
-          onPress={toggleTheme}
-          style={[styles.modeMiniBtn, { backgroundColor: colors.primary }]}
-        >
-          <Text style={[styles.modeMiniBtnText, { color: colors.primaryText }]}>
-            {isDark ? 'Switch Light' : 'Switch Dark'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Full-App Font Family Dropdown Selector */}
-      <View
-        style={[
-          styles.fontSectionDivider,
-          { borderTopColor: colors.divider },
-        ]}
-      >
-        <View style={styles.colorSelectorHeader}>
-          <View style={{ flex: 1 }}>
-            <Text
-              style={[styles.colorSelectorTitle, { color: colors.textPrimary }]}
-            >
-              App Font Family ({fontPresets.length} Premium Fonts)
-            </Text>
-            <Text
-              style={[
-                styles.colorSelectorSubtitle,
-                { color: colors.textSecondary },
-              ]}
-            >
-              {activeFontObj.name} • {activeFontObj.category}
-            </Text>
-          </View>
-          {fontPreset !== 'jakarta' && (
-            <TouchableOpacity
-              onPress={() => setFontPreset('jakarta')}
-              style={[
-                styles.resetColorBtn,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                },
-              ]}
-            >
-              <Text
-                style={[styles.resetColorText, { color: colors.textPrimary }]}
-              >
-                Reset
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Cross-Platform Expandable Font Dropdown Trigger */}
-        <TouchableOpacity
-          onPress={() => setFontMenuOpen((prev) => !prev)}
-          activeOpacity={0.85}
-          style={[
-            styles.fontDropdownSelectBox,
-            {
-              backgroundColor: colors.surface,
-              borderColor: fontMenuOpen ? colors.primary : colors.border,
-            },
-          ]}
-        >
-          <View style={styles.fontDropdownLeftRow}>
-            <View
-              style={[
-                styles.fontSampleBadge,
-                { backgroundColor: colors.primary },
-              ]}
-            >
-              <Text
-                style={{
-                  color: colors.primaryText,
-                  fontSize: 13,
-                  fontWeight: '800',
-                  fontFamily: activeFontObj.fontFamily,
-                }}
-              >
-                Aa
-              </Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  fontSize: 13.5,
-                  fontWeight: '700',
-                  color: colors.textPrimary,
-                  fontFamily: activeFontObj.fontFamily,
-                }}
-                numberOfLines={1}
-              >
-                {activeFontObj.name}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 11,
-                  color: colors.textSecondary,
-                }}
-                numberOfLines={1}
-              >
-                {activeFontObj.category}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.fontDropdownRightRow}>
-            <Text
-              style={{
-                fontSize: 11,
-                fontWeight: '700',
-                color: colors.primary,
-              }}
-            >
-              {fontMenuOpen ? 'Close' : 'Change Font'}
-            </Text>
-            <ChevronDown size={16} color={colors.textPrimary} />
-          </View>
-        </TouchableOpacity>
-
-        {fontMenuOpen && (
-          <View
-            style={[
-              styles.fontDropdownMenuWrap,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-              },
-            ]}
-          >
-            <ScrollView
-              style={{ maxHeight: 220 }}
-              nestedScrollEnabled
-              showsVerticalScrollIndicator={true}
-            >
-              {fontPresets.map((fp, idx) => {
-                const isSelected = fp.id === fontPreset;
-                return (
-                  <TouchableOpacity
-                    key={fp.id}
-                    onPress={() => {
-                      setFontPreset(fp.id);
-                      setFontMenuOpen(false);
-                    }}
-                    activeOpacity={0.8}
-                    style={[
-                      styles.fontDropdownOptionRow,
-                      {
-                        backgroundColor: isSelected
-                          ? colors.primary
-                          : 'transparent',
-                        borderBottomColor: colors.divider,
-                      },
-                    ]}
-                  >
-                    <View style={styles.fontDropdownLeftRow}>
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          fontWeight: '800',
-                          width: 24,
-                          color: isSelected
-                            ? colors.primaryText
-                            : colors.textPrimary,
-                          fontFamily: fp.fontFamily,
-                        }}
-                      >
-                        Aa
-                      </Text>
-                      <View style={{ flex: 1 }}>
-                        <Text
-                          style={{
-                            fontSize: 13,
-                            fontWeight: '700',
-                            color: isSelected
-                              ? colors.primaryText
-                              : colors.textPrimary,
-                            fontFamily: fp.fontFamily,
-                          }}
-                        >
-                          {idx + 1}. {fp.name}
-                        </Text>
-                        <Text
-                          style={{
-                            fontSize: 10.5,
-                            color: isSelected
-                              ? colors.primaryText
-                              : colors.textSecondary,
-                            opacity: isSelected ? 0.85 : 1,
-                          }}
-                        >
-                          {fp.category}
-                        </Text>
-                      </View>
-                    </View>
-                    {isSelected && (
-                      <Check size={15} color={colors.primaryText} />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-        )}
-      </View>
-    </View>
-  );
+export const AppColorSelectorCard: React.FC<{ compact?: boolean }> = () => {
+  return null;
 };
 
 const styles = StyleSheet.create({
@@ -1765,6 +1738,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderTopWidth: 1,
     paddingTop: 10,
+    paddingBottom: 10,
     paddingHorizontal: 12,
   },
   bottomTabRow: {
@@ -1781,6 +1755,223 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontSize: 11,
     marginTop: 4,
+  },
+  navIconBadgeWrap: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navMiniBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -9,
+    minWidth: 15,
+    height: 15,
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navMiniBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  navDotBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -4,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+  },
+  // Variant 2: Floating Capsule Island Dock
+  navV2OuterWrap: {
+    width: '100%',
+    paddingHorizontal: 14,
+    paddingTop: 6,
+    paddingBottom: 10,
+  },
+  navV2Capsule: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+  },
+  navV2TabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 7,
+    borderRadius: 999,
+    gap: 2,
+  },
+  navV2Label: {
+    fontSize: 10,
+  },
+  // Variant 3: Expanding Smart Pill Bar
+  navV3Container: {
+    width: '100%',
+    borderTopWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  navV3Row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  navV3Item: {
+    height: 42,
+    borderRadius: 999,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+  },
+  navV3ActiveLabel: {
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  // Variant 4: Center Cart FAB Notch Dock
+  navV4Container: {
+    width: '100%',
+    borderTopWidth: 1,
+    paddingTop: 8,
+    paddingBottom: 10,
+    paddingHorizontal: 10,
+  },
+  navV4Row: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-around',
+  },
+  navV4CenterCol: {
+    flex: 1.15,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: -22,
+  },
+  navV4FabButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 3.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
+    position: 'relative',
+  },
+  navV4FabBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navV4FabBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9.5,
+    fontWeight: '800',
+  },
+  // Variant 5: Top Neon Indicator & Soft Glow Bar
+  navV5Container: {
+    width: '100%',
+    borderTopWidth: 1,
+    paddingBottom: 10,
+    paddingHorizontal: 12,
+  },
+  navV5TabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 8,
+    position: 'relative',
+  },
+  navV5TopBarIndicator: {
+    position: 'absolute',
+    top: 0,
+    width: 30,
+    height: 3,
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+  },
+  navV5IconBox: {
+    width: 36,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Variant 6: Glassmorphic Obsidian Luxury Dock
+  navV6OuterWrap: {
+    width: '100%',
+    paddingHorizontal: 14,
+    paddingTop: 6,
+    paddingBottom: 10,
+  },
+  navV6Dock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    borderRadius: 24,
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 18,
+  },
+  navV6TabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  navV6IconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navV6Label: {
+    fontSize: 10,
+    marginTop: 3,
+  },
+  navV6ActiveDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#FFFFFF',
+    marginTop: 2,
+  },
+  bottomNavGridWrap: {
+    gap: 8,
+  },
+  bottomNavChoiceCard: {
+    borderRadius: 11,
+    borderWidth: 1.5,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  bottomNavChoiceTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
   },
   homeIndicatorWrap: {
     width: '100%',
