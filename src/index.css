@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+:root {
+  --app-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--app-font-family);
+  }
+}
+
+.app-font-scope,
+.app-font-scope * {
+  font-family: var(--app-font-family) !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

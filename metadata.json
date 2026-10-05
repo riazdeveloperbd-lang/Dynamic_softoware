@@ -1,0 +1,6 @@
+{
+  "name": "Define Apparel Mobile App",
+  "description": "Senior-architected React Native mobile e-commerce application with Redux Toolkit, RTK Query, reusable component library, and scalable multi-variant screen architecture.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
