@@ -23,6 +23,7 @@ import {
   ExternalLink,
   Eye,
   FolderGit2,
+  FolderTree,
   ImagePlus,
   Info,
   Layers,
@@ -44,12 +45,16 @@ import {
   Sun,
   Trash2,
   Type,
+  Undo2,
+  Redo2,
+  History,
   Utensils,
   Dumbbell,
   Building2,
   X,
   Zap,
 } from 'lucide-react';
+import ScreenHierarchyTree from './component/ScreenHierarchyTree';
 import { store } from './store';
 import {
   useAppDispatch,
@@ -654,6 +659,7 @@ export const ExpoNavigator: React.FC = () => {
   const [activeStudioTab, setActiveStudioTab] = useState<
     'screens' | 'theme' | 'branding' | 'export'
   >('screens');
+  const [screensViewMode, setScreensViewMode] = useState<'grid' | 'hierarchy'>('grid');
   const [selectedFlowGroup, setSelectedFlowGroup] = useState<string>('All');
   const [screenSearchQuery, setScreenSearchQuery] = useState<string>('');
   const [fontSearchQuery, setFontSearchQuery] = useState<string>('');
@@ -735,9 +741,15 @@ export const ExpoNavigator: React.FC = () => {
     };
   }, []);
 
-  const [exportSelections, setExportSelections] = useState<
-    Record<ScreenName, ScreenVariant>
-  >(() => {
+  interface VariantHistorySnapshot {
+    screen: ScreenName;
+    variant: ScreenVariant;
+    exportSelections: Record<ScreenName, ScreenVariant>;
+    actionLabel: string;
+    timestamp: number;
+  }
+
+  const initialExportSelections = useMemo(() => {
     const initial = {} as Record<ScreenName, ScreenVariant>;
     SCREEN_DIRECTORY.forEach((g) =>
       g.items.forEach((it) => {
@@ -745,7 +757,105 @@ export const ExpoNavigator: React.FC = () => {
       })
     );
     return initial;
-  });
+  }, []);
+
+  const [exportSelections, setExportSelections] = useState<
+    Record<ScreenName, ScreenVariant>
+  >(initialExportSelections);
+
+  // Undo / Redo History Stack
+  const [historyStack, setHistoryStack] = useState<VariantHistorySnapshot[]>(() => [
+    {
+      screen: 'Homepage',
+      variant: 'varient_1',
+      exportSelections: { ...initialExportSelections },
+      actionLabel: 'Initial Setup (Homepage V1)',
+      timestamp: Date.now(),
+    },
+  ]);
+  const [historyIndex, setHistoryIndex] = useState<number>(0);
+
+  const pushHistorySnapshot = (
+    newScreen: ScreenName,
+    newVariant: ScreenVariant,
+    newExportSelections: Record<ScreenName, ScreenVariant>,
+    actionLabel: string
+  ) => {
+    setHistoryStack((prev) => {
+      const current = prev[historyIndex];
+      if (
+        current &&
+        current.screen === newScreen &&
+        current.variant === newVariant &&
+        JSON.stringify(current.exportSelections) === JSON.stringify(newExportSelections)
+      ) {
+        return prev;
+      }
+      const sliced = prev.slice(0, historyIndex + 1);
+      const newSnapshot: VariantHistorySnapshot = {
+        screen: newScreen,
+        variant: newVariant,
+        exportSelections: { ...newExportSelections },
+        actionLabel,
+        timestamp: Date.now(),
+      };
+      return [...sliced, newSnapshot];
+    });
+    setHistoryIndex((prev) => prev + 1);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const prevSnapshot = historyStack[historyIndex - 1];
+      setHistoryIndex(historyIndex - 1);
+      setExportSelections(prevSnapshot.exportSelections);
+      navigateTo(prevSnapshot.screen, prevSnapshot.variant);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < historyStack.length - 1) {
+      const nextSnapshot = historyStack[historyIndex + 1];
+      setHistoryIndex(historyIndex + 1);
+      setExportSelections(nextSnapshot.exportSelections);
+      navigateTo(nextSnapshot.screen, nextSnapshot.variant);
+    }
+  };
+
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < historyStack.length - 1;
+  const prevActionLabel = canUndo ? historyStack[historyIndex]?.actionLabel : '';
+  const nextActionLabel = canRedo ? historyStack[historyIndex + 1]?.actionLabel : '';
+
+  // Global Keyboard Shortcuts for Undo/Redo (Ctrl+Z / Cmd+Z, Ctrl+Y / Cmd+Shift+Z)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        handleUndo();
+      } else if (
+        ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'z') ||
+        ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y')
+      ) {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyIndex, historyStack]);
 
   const applyVariantToAllScreens = (variant: ScreenVariant) => {
     const updated = {} as Record<ScreenName, ScreenVariant>;
@@ -756,6 +866,12 @@ export const ExpoNavigator: React.FC = () => {
     );
     setExportSelections(updated);
     navigateTo(currentScreen, variant);
+    pushHistorySnapshot(
+      currentScreen,
+      variant,
+      updated,
+      `Batch set all screens to ${variant.replace('varient_', 'V')}`
+    );
   };
 
   const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1004,7 +1120,7 @@ export const ExpoNavigator: React.FC = () => {
               navigateTo('Homepage', currentVariant);
             }}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-3">
               <div
                 className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0 text-white"
                 style={{ backgroundColor: colors.primary }}
@@ -1021,18 +1137,15 @@ export const ExpoNavigator: React.FC = () => {
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                   </span>
                 </div>
-                <p className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
-                  src/cloth_shop_frontend
-                </p>
               </div>
             </div>
 
-            <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
+            <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
               <span className="font-semibold text-neutral-700 dark:text-neutral-300">
                 23 Screens · 138 Variants
               </span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800">
-                Expo 52
+              <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                Active
               </span>
             </div>
           </div>
@@ -1046,19 +1159,16 @@ export const ExpoNavigator: React.FC = () => {
             {[
               {
                 title: 'Food Delivery App',
-                folder: 'src/food_delivery_frontend',
                 icon: Utensils,
                 badge: 'Next Up',
               },
               {
                 title: 'Fitness & Gym Pro',
-                folder: 'src/fitness_app_frontend',
                 icon: Dumbbell,
                 badge: 'Template',
               },
               {
                 title: 'Real Estate Hub',
-                folder: 'src/real_estate_frontend',
                 icon: Building2,
                 badge: 'Planned',
               },
@@ -1082,9 +1192,6 @@ export const ExpoNavigator: React.FC = () => {
                         {slot.badge}
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-neutral-400 truncate block">
-                      {slot.folder}
-                    </span>
                   </div>
                 </div>
               );
@@ -1149,9 +1256,17 @@ export const ExpoNavigator: React.FC = () => {
                   onClick={() => setActiveStudioTab(tab.id as any)}
                   className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     isActive
-                      ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                      ? 'shadow-sm'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
+                  style={
+                    isActive
+                      ? {
+                          backgroundColor: colors.primary,
+                          color: colors.primaryText,
+                        }
+                      : undefined
+                  }
                 >
                   <IconComp size={14} />
                   <span>{tab.label}</span>
@@ -1185,7 +1300,11 @@ export const ExpoNavigator: React.FC = () => {
             <button
               onClick={handleDownloadFullExpoZip}
               disabled={isZipping}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold shadow-sm hover:opacity-95 transition"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold shadow-sm hover:opacity-95 transition"
+              style={{
+                backgroundColor: colors.primary,
+                color: colors.primaryText,
+              }}
             >
               <Download size={14} />
               <span>{isZipping ? 'Building ZIP...' : 'Export .ZIP'}</span>
@@ -1198,31 +1317,49 @@ export const ExpoNavigator: React.FC = () => {
           {/* TAB 1: SCREENS & VARIANTS DIRECTORY */}
           {activeStudioTab === 'screens' && (
             <div className="max-w-5xl mx-auto space-y-6">
-              {/* Category Filter & Search Bar */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-                  {[
-                    'All',
-                    'Onboarding & Auth',
-                    'Discover & Catalog',
-                    'Cart, Checkout & Payment',
-                    'Account, Orders & Support',
-                  ].map((flow) => {
-                    const active = selectedFlowGroup === flow;
-                    return (
-                      <button
-                        key={flow}
-                        onClick={() => setSelectedFlowGroup(flow)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ${
-                          active
-                            ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm'
-                            : 'bg-white dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                        }`}
-                      >
-                        {flow === 'All' ? 'All Screens (23)' : flow}
-                      </button>
-                    );
-                  })}
+              {/* View Switcher Bar: Grid Cards vs Screen Hierarchy Tree */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <button
+                      onClick={() => setScreensViewMode('grid')}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                        screensViewMode === 'grid'
+                          ? 'shadow-sm'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                      }`}
+                      style={
+                        screensViewMode === 'grid'
+                          ? {
+                              backgroundColor: colors.primary,
+                              color: colors.primaryText,
+                            }
+                          : undefined
+                      }
+                    >
+                      <LayoutGrid size={13} />
+                      <span>Grid Directory (23)</span>
+                    </button>
+                    <button
+                      onClick={() => setScreensViewMode('hierarchy')}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                        screensViewMode === 'hierarchy'
+                          ? 'shadow-sm'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                      }`}
+                      style={
+                        screensViewMode === 'hierarchy'
+                          ? {
+                              backgroundColor: colors.primary,
+                              color: colors.primaryText,
+                            }
+                          : undefined
+                      }
+                    >
+                      <FolderTree size={13} />
+                      <span>Screen Hierarchy</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="relative w-full sm:w-64">
@@ -1231,8 +1368,11 @@ export const ExpoNavigator: React.FC = () => {
                     type="text"
                     value={screenSearchQuery}
                     onChange={(e) => setScreenSearchQuery(e.target.value)}
-                    placeholder="Search screens..."
-                    className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white"
+                    placeholder="Filter screens or flows..."
+                    className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-white focus:outline-none"
+                    style={{
+                      borderColor: screenSearchQuery ? colors.primary : undefined,
+                    }}
                   />
                   {screenSearchQuery && (
                     <button
@@ -1245,122 +1385,203 @@ export const ExpoNavigator: React.FC = () => {
                 </div>
               </div>
 
-              {/* Quick Batch Variant Selectors */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <SlidersHorizontal size={15} className="text-neutral-500" />
-                  <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                    Batch Set All Screens for Export:
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {(
-                    [
-                      ['varient_1', 'All V1'],
-                      ['varient_2', 'All V2'],
-                      ['varient_3', 'All V3'],
-                      ['varient_4', 'All V4'],
-                      ['varient_5', 'All V5'],
-                      ['varient_6', 'All V6'],
-                    ] as const
-                  ).map(([vid, label]) => (
-                    <button
-                      key={vid}
-                      onClick={() => applyVariantToAllScreens(vid)}
-                      className="px-2.5 py-1 text-xs font-semibold rounded-md bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition"
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* HIERARCHY TREE VIEW */}
+              {screensViewMode === 'hierarchy' ? (
+                <ScreenHierarchyTree
+                  currentScreen={currentScreen}
+                  currentVariant={currentVariant}
+                  exportSelections={exportSelections}
+                  onSelectScreen={(s, v) => {
+                    if (v) {
+                      setExportSelections((prev) => ({ ...prev, [s]: v }));
+                    }
+                    navigateTo(s, v || exportSelections[s] || 'varient_1');
+                  }}
+                  onSetExportVariant={(s, v) => {
+                    setExportSelections((prev) => ({ ...prev, [s]: v }));
+                  }}
+                  searchQuery={screenSearchQuery}
+                />
+              ) : (
+                /* GRID CARDS VIEW */
+                <div className="space-y-6">
+                  {/* Category Filter */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                    {[
+                      'All',
+                      'Onboarding & Auth',
+                      'Discover & Catalog',
+                      'Cart, Checkout & Payment',
+                      'Account, Orders & Support',
+                    ].map((flow) => {
+                      const active = selectedFlowGroup === flow;
+                      return (
+                        <button
+                          key={flow}
+                          onClick={() => setSelectedFlowGroup(flow)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ${
+                            active
+                              ? 'shadow-sm'
+                              : 'bg-white dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                          }`}
+                          style={
+                            active
+                              ? {
+                                  backgroundColor: colors.primary,
+                                  color: colors.primaryText,
+                                }
+                              : undefined
+                          }
+                        >
+                          {flow === 'All' ? 'All Screens (23)' : flow}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-              {/* Screen Cards Grid */}
-              <div className="space-y-6">
-                {filteredGroups.map((group) => (
-                  <div key={group.group} className="space-y-3">
-                    <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                      {group.group} ({group.items.length})
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                      {group.items.map((item) => {
-                        const isCurrentActive = currentScreen === item.screen;
-                        const selectedExportVariant = exportSelections[item.screen] || 'varient_1';
-
-                        return (
-                          <div
-                            key={item.screen}
-                            className={`rounded-xl border p-4 bg-white dark:bg-neutral-900 transition-all ${
-                              isCurrentActive
-                                ? 'border-neutral-900 dark:border-white shadow-md ring-1 ring-neutral-900/10 dark:ring-white/10'
-                                : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm'
-                            }`}
-                          >
-                            <div className="flex items-start justify-between gap-2 mb-3">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
-                                    {item.label}
-                                  </h4>
-                                  {isCurrentActive && (
-                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900">
-                                      Active on Phone
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-[11px] font-mono text-neutral-400">
-                                  src/screens/{item.screen}
-                                </span>
-                              </div>
-
-                              <button
-                                onClick={() => navigateTo(item.screen, selectedExportVariant)}
-                                className="px-2.5 py-1 rounded-lg text-xs font-bold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center gap-1 transition"
-                              >
-                                <Eye size={12} />
-                                <span>Preview</span>
-                              </button>
-                            </div>
-
-                            {/* 6 Variant Selector Buttons */}
-                            <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                              {item.variants.map((v) => {
-                                const isVariantSelected =
-                                  isCurrentActive && currentVariant === v.id;
-                                const isZipSelected = selectedExportVariant === v.id;
-
-                                return (
-                                  <button
-                                    key={v.id}
-                                    onClick={() => {
-                                      setExportSelections((prev) => ({
-                                        ...prev,
-                                        [item.screen]: v.id,
-                                      }));
-                                      navigateTo(item.screen, v.id);
-                                    }}
-                                    className={`px-2.5 py-2 rounded-lg text-left text-xs font-semibold flex items-center justify-between gap-1 transition ${
-                                      isVariantSelected
-                                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm'
-                                        : isZipSelected
-                                        ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700'
-                                        : 'bg-neutral-50/60 dark:bg-neutral-950/40 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                                    }`}
-                                  >
-                                    <span className="truncate">{v.name}</span>
-                                    {isVariantSelected && <Check size={12} className="flex-shrink-0" />}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
+                  {/* Quick Batch Variant Selectors */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <SlidersHorizontal size={15} className="text-neutral-500" />
+                      <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                        Batch Set All Screens for Export:
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {(
+                        [
+                          ['varient_1', 'All V1'],
+                          ['varient_2', 'All V2'],
+                          ['varient_3', 'All V3'],
+                          ['varient_4', 'All V4'],
+                          ['varient_5', 'All V5'],
+                          ['varient_6', 'All V6'],
+                        ] as const
+                      ).map(([vid, label]) => (
+                        <button
+                          key={vid}
+                          onClick={() => applyVariantToAllScreens(vid)}
+                          className="px-2.5 py-1 text-xs font-semibold rounded-md bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition"
+                        >
+                          {label}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  {/* Screen Cards Grid */}
+                  <div className="space-y-6">
+                    {filteredGroups.map((group) => (
+                      <div key={group.group} className="space-y-3">
+                        <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                          {group.group} ({group.items.length})
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                          {group.items.map((item) => {
+                            const isCurrentActive = currentScreen === item.screen;
+                            const selectedExportVariant = exportSelections[item.screen] || 'varient_1';
+
+                            return (
+                              <div
+                                key={item.screen}
+                                className={`rounded-xl border p-4 bg-white dark:bg-neutral-900 transition-all ${
+                                  isCurrentActive
+                                    ? 'shadow-md ring-2 ring-black/5 dark:ring-white/5'
+                                    : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm'
+                                }`}
+                                style={
+                                  isCurrentActive
+                                    ? {
+                                        borderColor: colors.primary,
+                                      }
+                                    : undefined
+                                }
+                              >
+                                <div className="flex items-start justify-between gap-2 mb-3">
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
+                                        {item.label}
+                                      </h4>
+                                      {isCurrentActive && (
+                                        <span
+                                          className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                          style={{
+                                            backgroundColor: colors.primary,
+                                            color: colors.primaryText,
+                                          }}
+                                        >
+                                          Active on Phone
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[11px] font-mono text-neutral-400">
+                                      src/screens/{item.screen}
+                                    </span>
+                                  </div>
+
+                                  <button
+                                    onClick={() => navigateTo(item.screen, selectedExportVariant)}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-bold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center gap-1 transition"
+                                  >
+                                    <Eye size={12} />
+                                    <span>Preview</span>
+                                  </button>
+                                </div>
+
+                                {/* 6 Variant Selector Buttons */}
+                                <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                                  {item.variants.map((v) => {
+                                    const isVariantSelected =
+                                      isCurrentActive && currentVariant === v.id;
+                                    const isZipSelected = selectedExportVariant === v.id;
+
+                                    return (
+                                      <button
+                                        key={v.id}
+                                        onClick={() => {
+                                          setExportSelections((prev) => ({
+                                            ...prev,
+                                            [item.screen]: v.id,
+                                          }));
+                                          navigateTo(item.screen, v.id);
+                                        }}
+                                        className={`px-2.5 py-2 rounded-lg text-left text-xs font-semibold flex items-center justify-between gap-1 transition ${
+                                          isVariantSelected
+                                            ? 'shadow-sm'
+                                            : isZipSelected
+                                            ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border'
+                                            : 'bg-neutral-50/60 dark:bg-neutral-950/40 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                                        }`}
+                                        style={
+                                          isVariantSelected
+                                            ? {
+                                                backgroundColor: colors.primary,
+                                                color: colors.primaryText,
+                                              }
+                                            : isZipSelected
+                                            ? {
+                                                borderColor: colors.primary,
+                                              }
+                                            : undefined
+                                        }
+                                      >
+                                        <span className="truncate">{v.name}</span>
+                                        {isVariantSelected && <Check size={12} className="flex-shrink-0" />}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1387,9 +1608,16 @@ export const ExpoNavigator: React.FC = () => {
                         onClick={() => setColorPreset(preset.id)}
                         className={`p-3.5 rounded-xl border-2 text-left flex items-center justify-between gap-3 transition ${
                           isSelected
-                            ? 'border-neutral-900 dark:border-white bg-neutral-50 dark:bg-neutral-800/80 shadow-sm'
+                            ? 'bg-neutral-50 dark:bg-neutral-800/80 shadow-sm'
                             : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-white dark:bg-neutral-900'
                         }`}
+                        style={
+                          isSelected
+                            ? {
+                                borderColor: colors.primary,
+                              }
+                            : undefined
+                        }
                       >
                         <div className="flex items-center gap-3">
                           <div
@@ -1405,7 +1633,7 @@ export const ExpoNavigator: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                        {isSelected && <CheckCircle2 size={16} className="text-neutral-900 dark:text-white" />}
+                        {isSelected && <CheckCircle2 size={16} style={{ color: colors.primary }} />}
                       </button>
                     );
                   })}
@@ -1423,7 +1651,13 @@ export const ExpoNavigator: React.FC = () => {
                       Select font family to apply Google Fonts across all screens.
                     </p>
                   </div>
-                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-neutral-100 dark:bg-neutral-800">
+                  <span
+                    className="text-xs font-mono font-bold px-2.5 py-1 rounded"
+                    style={{
+                      backgroundColor: colors.primary,
+                      color: colors.primaryText,
+                    }}
+                  >
                     Active: {fontPresets.find((f) => f.id === fontPreset)?.name}
                   </span>
                 </div>
@@ -1437,6 +1671,9 @@ export const ExpoNavigator: React.FC = () => {
                     onChange={(e) => setFontSearchQuery(e.target.value)}
                     placeholder="Search 22 curated fonts by name or style (Serif, Sans, Mono)..."
                     className="w-full pl-9 pr-3 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-white focus:outline-none"
+                    style={{
+                      borderColor: fontSearchQuery ? colors.primary : undefined,
+                    }}
                   />
                 </div>
 
@@ -1455,9 +1692,16 @@ export const ExpoNavigator: React.FC = () => {
                           onClick={() => setFontPreset(fp.id)}
                           className={`p-3 rounded-xl border text-left flex items-start justify-between gap-2 transition ${
                             isSelected
-                              ? 'border-neutral-900 dark:border-white bg-neutral-50 dark:bg-neutral-800 shadow-sm'
+                              ? 'bg-neutral-50 dark:bg-neutral-800 shadow-sm'
                               : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-white dark:bg-neutral-900'
                           }`}
+                          style={
+                            isSelected
+                              ? {
+                                  borderColor: colors.primary,
+                                }
+                              : undefined
+                          }
                         >
                           <div>
                             <div
@@ -1470,7 +1714,7 @@ export const ExpoNavigator: React.FC = () => {
                               {fp.category}
                             </div>
                           </div>
-                          {isSelected && <Check size={16} className="text-neutral-900 dark:text-white flex-shrink-0 mt-0.5" />}
+                          {isSelected && <Check size={16} style={{ color: colors.primary }} className="flex-shrink-0 mt-0.5" />}
                         </button>
                       );
                     })}
@@ -1497,9 +1741,16 @@ export const ExpoNavigator: React.FC = () => {
                         onClick={() => setBottomNavVariant(nav.id)}
                         className={`p-3.5 rounded-xl border-2 text-left flex items-start justify-between gap-2 transition ${
                           isSelected
-                            ? 'border-neutral-900 dark:border-white bg-neutral-50 dark:bg-neutral-800 shadow-sm'
+                            ? 'bg-neutral-50 dark:bg-neutral-800 shadow-sm'
                             : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-white dark:bg-neutral-900'
                         }`}
+                        style={
+                          isSelected
+                            ? {
+                                borderColor: colors.primary,
+                              }
+                            : undefined
+                        }
                       >
                         <div>
                           <div className="text-xs font-bold text-neutral-900 dark:text-white">
@@ -1509,7 +1760,7 @@ export const ExpoNavigator: React.FC = () => {
                             {nav.tagline}
                           </div>
                         </div>
-                        {isSelected && <CheckCircle2 size={16} className="text-neutral-900 dark:text-white flex-shrink-0" />}
+                        {isSelected && <CheckCircle2 size={16} style={{ color: colors.primary }} className="flex-shrink-0" />}
                       </button>
                     );
                   })}
@@ -1534,7 +1785,8 @@ export const ExpoNavigator: React.FC = () => {
                 {/* Logo Uploader */}
                 <div className="flex items-center gap-4">
                   <div
-                    className="w-16 h-16 rounded-2xl border border-neutral-300 dark:border-neutral-700 bg-neutral-900 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm"
+                    className="w-16 h-16 rounded-2xl border border-neutral-300 dark:border-neutral-700 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm"
+                    style={{ backgroundColor: colors.primary }}
                   >
                     {appBranding.appLogoUri ? (
                       <img
@@ -1543,7 +1795,7 @@ export const ExpoNavigator: React.FC = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-2xl font-black text-white">
+                      <span className="text-2xl font-black" style={{ color: colors.primaryText }}>
                         {(appBranding.appName.trim()[0] || 'D').toUpperCase()}
                       </span>
                     )}
@@ -1560,7 +1812,11 @@ export const ExpoNavigator: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-3.5 py-1.5 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold flex items-center gap-1.5 shadow-sm hover:opacity-95"
+                        className="px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm hover:opacity-95"
+                        style={{
+                          backgroundColor: colors.primary,
+                          color: colors.primaryText,
+                        }}
                       >
                         <ImagePlus size={14} />
                         <span>Upload Logo</span>
@@ -1646,7 +1902,11 @@ export const ExpoNavigator: React.FC = () => {
                 {apkBuildState === 'idle' && (
                   <button
                     onClick={handleGenerateAndroidApk}
-                    className="w-full py-3 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold shadow hover:opacity-95 transition flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-xl text-xs font-bold shadow hover:opacity-95 transition flex items-center justify-center gap-2"
+                    style={{
+                      backgroundColor: colors.primary,
+                      color: colors.primaryText,
+                    }}
                   >
                     <Smartphone size={16} />
                     <span>Generate Standalone Android .APK</span>
@@ -1657,8 +1917,11 @@ export const ExpoNavigator: React.FC = () => {
                   <div className="space-y-2 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                     <div className="w-full h-2 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
                       <div
-                        className="h-full bg-emerald-500 transition-all duration-300"
-                        style={{ width: `${apkProgressPct}%` }}
+                        className="h-full transition-all duration-300"
+                        style={{
+                          width: `${apkProgressPct}%`,
+                          backgroundColor: colors.primary,
+                        }}
                       />
                     </div>
                     <div className="flex items-center justify-between text-xs text-neutral-500 font-medium">
@@ -1669,10 +1932,10 @@ export const ExpoNavigator: React.FC = () => {
                 )}
 
                 {apkBuildState === 'ready' && apkReadyArtifact && (
-                  <div className="space-y-4 p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
+                  <div className="space-y-4 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
+                        <CheckCircle2 size={18} style={{ color: colors.primary }} />
                         <div>
                           <div className="text-xs font-bold text-neutral-900 dark:text-white">
                             {apkReadyArtifact.filename}
@@ -1685,7 +1948,11 @@ export const ExpoNavigator: React.FC = () => {
 
                       <button
                         onClick={handleDownloadGeneratedApk}
-                        className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 flex items-center gap-1.5 shadow-sm"
+                        className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm hover:opacity-95"
+                        style={{
+                          backgroundColor: colors.primary,
+                          color: colors.primaryText,
+                        }}
                       >
                         <Download size={14} />
                         <span>Download APK</span>
@@ -1694,7 +1961,7 @@ export const ExpoNavigator: React.FC = () => {
 
                     {/* QR Code for Mobile */}
                     {apkReadyArtifact.qrCodeDataUrl && (
-                      <div className="flex items-center gap-4 pt-3 border-t border-emerald-200 dark:border-emerald-800">
+                      <div className="flex items-center gap-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
                         <img
                           src={apkReadyArtifact.qrCodeDataUrl}
                           alt="APK QR"
@@ -1713,7 +1980,8 @@ export const ExpoNavigator: React.FC = () => {
                               setCopiedApkLink(true);
                               setTimeout(() => setCopiedApkLink(false), 2000);
                             }}
-                            className="text-xs font-bold text-emerald-700 dark:text-emerald-300 underline"
+                            className="text-xs font-bold underline"
+                            style={{ color: colors.primary }}
                           >
                             {copiedApkLink ? 'Copied Download URL!' : 'Copy Download Link'}
                           </button>
@@ -1746,7 +2014,11 @@ export const ExpoNavigator: React.FC = () => {
                 <button
                   onClick={handleDownloadFullExpoZip}
                   disabled={isZipping}
-                  className="w-full py-3 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold shadow hover:opacity-95 transition flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl text-xs font-bold shadow hover:opacity-95 transition flex items-center justify-center gap-2"
+                  style={{
+                    backgroundColor: colors.primary,
+                    color: colors.primaryText,
+                  }}
                 >
                   <Download size={16} />
                   <span>{isZipping ? 'Creating Project ZIP...' : 'Download Full Expo Project .ZIP'}</span>
@@ -1886,7 +2158,7 @@ export const ExpoNavigator: React.FC = () => {
             </div>
 
             <p className="text-xs text-neutral-500 leading-relaxed">
-              Our architecture is 100% modular. To add your next application (such as Food Delivery, Fitness, or Real Estate), create a new subfolder in <code className="font-mono text-neutral-900 dark:text-white px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800">src/your_app_frontend</code> and link it to this dashboard.
+              Our architecture is 100% modular. You can easily plug in additional applications (such as Food Delivery, Fitness, or Real Estate) alongside Cloth Shop.
             </p>
 
             <div className="space-y-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 text-xs">
@@ -1894,13 +2166,13 @@ export const ExpoNavigator: React.FC = () => {
                 Current App Status:
               </div>
               <div className="text-neutral-500">
-                • Active App: <span className="font-mono font-bold text-neutral-900 dark:text-white">src/cloth_shop_frontend</span>
+                • Active App: <span className="font-bold text-neutral-900 dark:text-white">Cloth Shop App</span>
               </div>
               <div className="text-neutral-500">
                 • 23 Complete Screens with 6 Variants each (138 Total Screens)
               </div>
               <div className="text-neutral-500">
-                • Redux RTK Query Store & Clean Sub-App Structure
+                • Full Redux State Management & Theme System
               </div>
             </div>
 
