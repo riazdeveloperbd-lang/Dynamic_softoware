@@ -107,11 +107,14 @@ window.__INITIAL_APK_CONFIG__ = ${JSON.stringify({
 
       if (indexEntry && jsChunk) {
         let html = indexEntry.data.toString('utf8');
-        const cssCode = cssAsset ? cssAsset.data.toString('utf8') : '';
-        // Escape '</script>' inside JS bundle so inline <script> tag is never prematurely closed
+        const cssCode = cssAsset
+          ? cssAsset.data.toString('utf8').replace(/<\/style/gi, '<\\/style')
+          : '';
+        // Escape any '</script' sequence inside JS literals and use a function replacer `() => ...`
+        // so JavaScript's String.prototype.replace NEVER interprets `$&`, `$'`, or `` $` `` in the minified bundle!
         const safeJsCode = jsChunk.data
           .toString('utf8')
-          .replace(/<\/script>/gi, '<\\/script>');
+          .replace(/<\/script/gi, '<\\/script');
 
         // Remove external <script type="module" crossorigin src="/assets/..."> and <link rel="stylesheet" crossorigin href="/assets/...">
         html = html
@@ -119,11 +122,12 @@ window.__INITIAL_APK_CONFIG__ = ${JSON.stringify({
           .replace(/<link[^>]*href="\/assets\/[^"]+"[^>]*>/gi, '')
           .replace(
             '<head>',
-            `<head>\n${bootConfigScript}\n<style>html,body,#root{width:100%;height:100%;margin:0;padding:0;overflow:hidden;display:flex;flex-direction:column;}\n${cssCode}</style>`
+            () =>
+              `<head>\n${bootConfigScript}\n<style>html,body,#root{width:100%;height:100%;margin:0;padding:0;overflow:hidden;display:flex;flex-direction:column;}\n${cssCode}</style>`
           )
           .replace(
             '</body>',
-            `<script type="module">\n${safeJsCode}\n</script>\n</body>`
+            () => `<script type="module">\n${safeJsCode}\n</script>\n</body>`
           );
 
         return [
