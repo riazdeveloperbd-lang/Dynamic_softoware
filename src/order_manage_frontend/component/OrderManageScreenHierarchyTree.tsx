@@ -20,6 +20,11 @@ import {
 } from 'lucide-react';
 import { AppTab } from '../components/BottomNav';
 import { SubViewType } from '../components/OrderManageMobileApp';
+import VisualNavigationLinkBuilder, {
+  LinkableScreenItem,
+  buildDefaultNavigationConnections,
+} from '../../components/VisualNavigationLinkBuilder';
+import { ScreenNavigationConnection } from '../../utils/customProjectsStore';
 
 export type OrderManageVariant = 'v1' | 'v2' | 'v3';
 
@@ -229,6 +234,37 @@ export const OrderManageScreenHierarchyTree: React.FC<OrderManageScreenHierarchy
   });
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [hierarchyMode, setHierarchyMode] = useState<'link_builder' | 'tree'>('link_builder');
+
+  const flattenedNodes: OrderManageScreenNode[] = [];
+  const collectNodes = (nodes: OrderManageScreenNode[]) => {
+    nodes.forEach((n) => {
+      flattenedNodes.push(n);
+      if (n.children) collectNodes(n.children);
+    });
+  };
+  collectNodes(ORDER_MANAGE_HIERARCHY);
+
+  const linkableScreens: LinkableScreenItem[] = flattenedNodes.map((n) => {
+    const activeVar = variantsMap[n.id] || 'v1';
+    return {
+      id: n.id,
+      label: n.name,
+      moduleGroup: n.type === 'tab' ? 'Primary Bottom Tabs' : 'Sub-Views & Security Flows',
+      roleBadge: n.type.toUpperCase(),
+      filePath: `src/screens/${n.id}/${activeVar}/index.tsx`,
+      activeVariant: activeVar,
+      variants: [
+        { id: 'v1', label: 'V1 Classic', shortLabel: 'V1' },
+        { id: 'v2', label: 'V2 Bento', shortLabel: 'V2' },
+        { id: 'v3', label: 'V3 Glass', shortLabel: 'V3' },
+      ],
+    };
+  });
+
+  const [orderNavConnections, setOrderNavConnections] = useState<ScreenNavigationConnection[]>(
+    () => buildDefaultNavigationConnections(linkableScreens, false)
+  );
 
   const toggleExpand = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -360,15 +396,62 @@ export const OrderManageScreenHierarchyTree: React.FC<OrderManageScreenHierarchy
           />
         </div>
         <div className="flex items-center gap-2 text-[11px] text-neutral-400">
-          <FolderTree size={14} className="text-neutral-400" />
-          <span>Tree Hierarchy</span>
+          <button
+            type="button"
+            onClick={() => setHierarchyMode('link_builder')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+              hierarchyMode === 'link_builder'
+                ? 'text-white'
+                : 'bg-[#1a1d26] text-neutral-400 hover:text-white'
+            }`}
+            style={
+              hierarchyMode === 'link_builder' ? { backgroundColor: accentColor } : undefined
+            }
+          >
+            Visual Link Builder
+          </button>
+          <button
+            type="button"
+            onClick={() => setHierarchyMode('tree')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+              hierarchyMode === 'tree'
+                ? 'text-white'
+                : 'bg-[#1a1d26] text-neutral-400 hover:text-white'
+            }`}
+            style={hierarchyMode === 'tree' ? { backgroundColor: accentColor } : undefined}
+          >
+            Tree Hierarchy
+          </button>
         </div>
       </div>
 
-      {/* Tree Nodes List */}
-      <div className="p-3 bg-[#0d0f14] rounded-2xl border border-neutral-800 space-y-1">
-        {ORDER_MANAGE_HIERARCHY.map((rootNode) => renderNode(rootNode, 0))}
-      </div>
+      {/* Visual Link Builder or Tree Nodes List */}
+      {hierarchyMode === 'link_builder' ? (
+        <VisualNavigationLinkBuilder
+          projectName="TR Connect Order Manage"
+          screens={linkableScreens}
+          currentScreenId={
+            flattenedNodes.find(
+              (n) => n.tab === currentTab && n.subView === currentSubView
+            )?.id || 'home_tab'
+          }
+          primaryColor={accentColor}
+          isSingleVariantMode={false}
+          connections={orderNavConnections}
+          onConnectionsChange={setOrderNavConnections}
+          onSelectScreenVariant={(screenId, variantId) => {
+            onSetVariant(screenId, (variantId as OrderManageVariant) || 'v1');
+            const matched = flattenedNodes.find((n) => n.id === screenId);
+            if (matched) {
+              onSelectNode(matched.tab, matched.subView, matched.id);
+            }
+          }}
+        />
+      ) : (
+        <div className="p-3 bg-[#0d0f14] rounded-2xl border border-neutral-800 space-y-1">
+          {ORDER_MANAGE_HIERARCHY.map((rootNode) => renderNode(rootNode, 0))}
+        </div>
+      )}
     </div>
   );
 };

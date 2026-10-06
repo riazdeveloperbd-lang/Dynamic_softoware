@@ -19,6 +19,11 @@ import {
   FolderGit2,
 } from 'lucide-react';
 import StudioDashboardShell, { StudioTab } from '../components/StudioDashboardShell';
+import VisualNavigationLinkBuilder, {
+  LinkableScreenItem,
+  buildDefaultNavigationConnections,
+} from '../components/VisualNavigationLinkBuilder';
+import { ScreenNavigationConnection } from '../utils/customProjectsStore';
 
 // Screen Variants Imports (Matching Cloth Shop folder structure: screens/<ScreenName>/varient_1..4/index.tsx)
 import AdminDashboardVarient1 from './screens/AdminDashboard/varient_1';
@@ -470,6 +475,28 @@ export function ClothShopAdminApp({ onSwitchProject }: ClothShopAdminAppProps) {
     return matchesCat && matchesQuery;
   });
 
+  const adminLinkableScreens: LinkableScreenItem[] = ADMIN_SCREENS.map((s) => {
+    const activeVar = variantsMap[s.id] || 'v1';
+    return {
+      id: s.id,
+      label: s.label,
+      moduleGroup: s.category,
+      roleBadge: s.badge,
+      filePath: `screens/${s.id}/varient_${activeVar.replace('v', '')}/index.tsx`,
+      activeVariant: activeVar,
+      variants: [
+        { id: 'v1', label: s.v1Name, shortLabel: 'V1 Classic' },
+        { id: 'v2', label: s.v2Name, shortLabel: 'V2 Bento' },
+        { id: 'v3', label: s.v3Name, shortLabel: 'V3 Split' },
+        { id: 'v4', label: s.v4Name, shortLabel: 'V4 Glass' },
+      ],
+    };
+  });
+
+  const [adminNavConnections, setAdminNavConnections] = useState<ScreenNavigationConnection[]>(() =>
+    buildDefaultNavigationConnections(adminLinkableScreens, false)
+  );
+
   // =========================================================================
   // MIDDLE CONTENT (Changes per activeStudioTab: screens, theme, branding, export)
   // =========================================================================
@@ -578,52 +605,23 @@ export function ClothShopAdminApp({ onSwitchProject }: ClothShopAdminAppProps) {
 
           {/* Grid or Hierarchy View */}
           {screensViewMode === 'hierarchy' ? (
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                Cloth Shop Admin Navigation Tree (screens/&lt;Screen&gt;/varient_1..4/index.tsx)
-              </h3>
-              <div className="space-y-2">
-                {filteredScreens.map((screen) => (
-                  <div
-                    key={screen.id}
-                    onClick={() => setCurrentScreen(screen.id)}
-                    className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
-                  >
-                    <div>
-                      <span className="text-xs font-bold text-neutral-900 dark:text-white">
-                        {screen.label}
-                      </span>
-                      <span className="ml-2 text-[10px] font-mono text-neutral-400">
-                        screens/{screen.id}/varient_{variantsMap[screen.id].replace('v', '')}/index.tsx
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {(['v1', 'v2', 'v3', 'v4'] as AdminVariant[]).map((v) => (
-                        <button
-                          key={v}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSingleVariant(screen.id, v);
-                          }}
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            variantsMap[screen.id] === v
-                              ? 'text-white'
-                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
-                          }`}
-                          style={
-                            variantsMap[screen.id] === v
-                              ? { backgroundColor: activeColor.primary }
-                              : undefined
-                          }
-                        >
-                          {v.toUpperCase()}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <VisualNavigationLinkBuilder
+              projectName={appBranding.appName}
+              screens={adminLinkableScreens.filter((ls) =>
+                filteredScreens.some((fs) => fs.id === ls.id)
+              )}
+              currentScreenId={currentScreen}
+              primaryColor={activeColor.primary}
+              isSingleVariantMode={false}
+              connections={adminNavConnections}
+              onConnectionsChange={setAdminNavConnections}
+              onSelectScreenVariant={(screenId, variantId) => {
+                setSingleVariant(
+                  screenId as AdminScreenName,
+                  (variantId as AdminVariant) || 'v1'
+                );
+              }}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
               {filteredScreens.map((item) => {

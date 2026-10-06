@@ -30,6 +30,11 @@ import {
 } from 'lucide-react';
 import { ScreenName, ScreenVariant } from '../store/slices/appSlice';
 import { useTheme } from '../hooks';
+import VisualNavigationLinkBuilder, {
+  LinkableScreenItem,
+  buildDefaultNavigationConnections,
+} from '../../components/VisualNavigationLinkBuilder';
+import { ScreenNavigationConnection } from '../../utils/customProjectsStore';
 
 export interface HierarchyTreeNode {
   id: string;
@@ -513,6 +518,49 @@ export const ScreenHierarchyTree: React.FC<ScreenHierarchyTreeProps> = ({
   const expandAll = () => setExpandedIds(new Set(allIds));
   const collapseAll = () => setExpandedIds(new Set(['root-app']));
 
+  const [hierarchyMode, setHierarchyMode] = useState<'link_builder' | 'tree'>('link_builder');
+
+  const linkableScreens: LinkableScreenItem[] = useMemo(() => {
+    const seen = new Set<string>();
+    const list: LinkableScreenItem[] = [];
+    function walk(node: HierarchyTreeNode, groupName: string) {
+      if (!seen.has(node.screen)) {
+        seen.add(node.screen);
+        const activeVar = exportSelections[node.screen] || 'varient_1';
+        list.push({
+          id: node.screen,
+          label: node.label,
+          moduleGroup: groupName,
+          roleBadge: node.flowRole,
+          filePath: `src/screens/${node.screen}/${activeVar}/index.tsx`,
+          activeVariant: activeVar,
+          variants: [
+            { id: 'varient_1', label: 'V1 Default', shortLabel: 'V1' },
+            { id: 'varient_2', label: 'V2 Editorial', shortLabel: 'V2' },
+            { id: 'varient_3', label: 'V3 Minimal', shortLabel: 'V3' },
+            { id: 'varient_4', label: 'V4 Luxe', shortLabel: 'V4' },
+            { id: 'varient_5', label: 'V5 Studio', shortLabel: 'V5' },
+            { id: 'varient_6', label: 'V6 Atelier', shortLabel: 'V6' },
+          ],
+        });
+      }
+      if (node.children) {
+        node.children.forEach((child) =>
+          walk(
+            child,
+            node.id === 'root-app' ? child.label : groupName
+          )
+        );
+      }
+    }
+    walk(APP_NAVIGATION_HIERARCHY, 'Core Store Flow');
+    return list;
+  }, [exportSelections]);
+
+  const [clothNavConnections, setClothNavConnections] = useState<ScreenNavigationConnection[]>(
+    () => buildDefaultNavigationConnections(linkableScreens, false)
+  );
+
   const renderNode = (
     node: HierarchyTreeNode,
     depth = 0,
@@ -735,24 +783,74 @@ export const ScreenHierarchyTree: React.FC<ScreenHierarchyTreeProps> = ({
 
         <div className="flex items-center gap-2">
           <button
-            onClick={expandAll}
-            className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-200 transition"
+            onClick={() => setHierarchyMode('link_builder')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              hierarchyMode === 'link_builder'
+                ? 'text-white shadow-xs'
+                : 'border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-700 dark:text-neutral-200'
+            }`}
+            style={
+              hierarchyMode === 'link_builder'
+                ? { backgroundColor: colors.primary }
+                : undefined
+            }
           >
-            Expand All
+            Visual Link Builder
           </button>
           <button
-            onClick={collapseAll}
-            className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-200 transition"
+            onClick={() => setHierarchyMode('tree')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              hierarchyMode === 'tree'
+                ? 'text-white shadow-xs'
+                : 'border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-700 dark:text-neutral-200'
+            }`}
+            style={
+              hierarchyMode === 'tree'
+                ? { backgroundColor: colors.primary }
+                : undefined
+            }
           >
-            Collapse All
+            Branch Tree
           </button>
+          {hierarchyMode === 'tree' && (
+            <>
+              <button
+                onClick={expandAll}
+                className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-200 transition"
+              >
+                Expand All
+              </button>
+              <button
+                onClick={collapseAll}
+                className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-200 transition"
+              >
+                Collapse All
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Navigation Tree Graph */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-3">
-        {renderNode(APP_NAVIGATION_HIERARCHY, 0, false)}
-      </div>
+      {/* Navigation Tree Graph or Visual Link Builder */}
+      {hierarchyMode === 'link_builder' ? (
+        <VisualNavigationLinkBuilder
+          projectName="Define Atelier"
+          screens={linkableScreens}
+          currentScreenId={currentScreen}
+          primaryColor={colors.primary}
+          isSingleVariantMode={false}
+          connections={clothNavConnections}
+          onConnectionsChange={setClothNavConnections}
+          onSelectScreenVariant={(screenId, variantId) => {
+            onSetExportVariant(screenId as ScreenName, variantId as ScreenVariant);
+            onSelectScreen(screenId as ScreenName, variantId as ScreenVariant);
+          }}
+        />
+      ) : (
+        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-3">
+          {renderNode(APP_NAVIGATION_HIERARCHY, 0, false)}
+        </div>
+      )}
     </div>
   );
 };
