@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TouchableOpacity,
   Platform,
 } from 'react-native';
@@ -14,6 +13,7 @@ import * as Clipboard from 'expo-clipboard';
 import { Radius, Spacing } from '@/constants/theme';
 import { useLedger } from '@/context/LedgerContext';
 import { useAppTheme } from '@/context/ThemeContext';
+import { AppModal } from './AppModal';
 
 interface ExportModalProps {
   visible: boolean;
@@ -141,7 +141,7 @@ export function ExportModal({ visible, onClose }: ExportModalProps) {
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <AppModal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.cardElevated }]}>
           <View
@@ -204,7 +204,7 @@ export function ExportModal({ visible, onClose }: ExportModalProps) {
           </View>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

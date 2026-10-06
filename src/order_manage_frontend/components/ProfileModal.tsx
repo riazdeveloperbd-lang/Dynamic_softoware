@@ -4,7 +4,6 @@ import { useAppTheme } from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { AppModal } from "./AppModal";
 
 interface ProfileModalProps {
   visible: boolean;
@@ -47,7 +47,7 @@ export function ProfileModal({ visible, onClose }: ProfileModalProps) {
   };
 
   return (
-    <Modal
+    <AppModal
       visible={visible}
       animationType="slide"
       transparent
@@ -193,7 +193,7 @@ export function ProfileModal({ visible, onClose }: ProfileModalProps) {
           </ScrollView>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

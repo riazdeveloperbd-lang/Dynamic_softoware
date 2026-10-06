@@ -35,12 +35,12 @@ export function SlideToConfirm({
     PanResponder.create({
       onStartShouldSetPanResponder: () => !disabled && !isConfirmed,
       onMoveShouldSetPanResponder: () => !disabled && !isConfirmed,
-      onPanResponderMove: (_, gestureState) => {
+      onPanResponderMove: (_: any, gestureState: any) => {
         if (disabled || isConfirmed) return;
         const newX = Math.max(0, Math.min(maxSlide, gestureState.dx));
         pan.setValue(newX);
       },
-      onPanResponderRelease: (_, gestureState) => {
+      onPanResponderRelease: (_: any, gestureState: any) => {
         if (disabled || isConfirmed) return;
         if (gestureState.dx >= maxSlide - 8) {
           // Trigger confirmation

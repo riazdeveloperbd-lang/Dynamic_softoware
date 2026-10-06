@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TextInput,
   TouchableOpacity,
   FlatList,
@@ -15,6 +14,7 @@ import { Customer } from '@/types/ledger';
 import { Radius, Spacing } from '@/constants/theme';
 import { useLedger } from '@/context/LedgerContext';
 import { useAppTheme } from '@/context/ThemeContext';
+import { AppModal } from './AppModal';
 
 interface CustomerPickerModalProps {
   visible: boolean;
@@ -56,7 +56,7 @@ export function CustomerPickerModal({ visible, onClose, onSelect }: CustomerPick
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <AppModal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.overlay}>
@@ -180,8 +180,8 @@ export function CustomerPickerModal({ visible, onClose, onSelect }: CustomerPick
 
               <FlatList
                 data={filtered}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
+                keyExtractor={(item: any) => item.id}
+                renderItem={({ item }: { item: any }) => (
                   <TouchableOpacity
                     style={[styles.customerRow, { borderBottomColor: colors.border }]}
                     onPress={() => {
@@ -214,7 +214,7 @@ export function CustomerPickerModal({ visible, onClose, onSelect }: CustomerPick
           )}
         </View>
       </KeyboardAvoidingView>
-    </Modal>
+    </AppModal>
   );
 }
 

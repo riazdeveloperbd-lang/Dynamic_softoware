@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
@@ -11,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Radius, Spacing } from '@/constants/theme';
 import { useLedger } from '@/context/LedgerContext';
 import { useAppTheme } from '@/context/ThemeContext';
+import { AppModal } from './AppModal';
 
 interface MenuModalProps {
   visible: boolean;
@@ -47,7 +47,7 @@ export function MenuModal({ visible, onClose, onNavigate }: MenuModalProps) {
   ];
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <AppModal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.cardElevated }]}>
           <View
@@ -117,7 +117,7 @@ export function MenuModal({ visible, onClose, onNavigate }: MenuModalProps) {
           </ScrollView>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

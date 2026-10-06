@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TextInput,
   TouchableOpacity,
   ScrollView,
@@ -17,6 +16,7 @@ import { useLedger } from '@/context/LedgerContext';
 import { useAppTheme } from '@/context/ThemeContext';
 import { CustomerPickerModal } from './CustomerPickerModal';
 import { SlideToConfirm } from './SlideToConfirm';
+import { AppModal } from './AppModal';
 
 interface AddOrderModalProps {
   visible: boolean;
@@ -122,7 +122,7 @@ export function AddOrderModal({ visible, onClose }: AddOrderModalProps) {
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <AppModal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.overlay}>
@@ -486,7 +486,7 @@ export function AddOrderModal({ visible, onClose }: AddOrderModalProps) {
           />
         </View>
       </KeyboardAvoidingView>
-    </Modal>
+    </AppModal>
   );
 }
 

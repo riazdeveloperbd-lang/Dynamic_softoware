@@ -18,6 +18,8 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": [
+        "./src/order_manage_frontend/*",
+        "./src/*",
         "./*"
       ]
     },

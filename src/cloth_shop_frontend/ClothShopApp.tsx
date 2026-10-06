@@ -38,6 +38,7 @@ import {
   RotateCcw,
   Search,
   Shield,
+  ShieldCheck,
   ShoppingBag,
   SlidersHorizontal,
   Smartphone,
@@ -51,10 +52,12 @@ import {
   Utensils,
   Dumbbell,
   Building2,
+  Coins,
   X,
   Zap,
 } from 'lucide-react';
 import ScreenHierarchyTree from './component/ScreenHierarchyTree';
+import StudioDashboardShell from '../components/StudioDashboardShell';
 import { store } from './store';
 import {
   useAppDispatch,
@@ -630,7 +633,9 @@ const AppThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const ExpoNavigator: React.FC = () => {
+export const ExpoNavigator: React.FC<{ onSwitchProject?: (projectId: string) => void }> = ({
+  onSwitchProject,
+}) => {
   const dispatch = useAppDispatch();
   const {
     currentScreen,
@@ -1060,260 +1065,8 @@ export const ExpoNavigator: React.FC = () => {
     'Default', 'Alternative 1', 'Alternative 2', 'Alternative 3', 'Alternative 4', 'Alternative 5'
   ]).find((v) => v.id === currentVariant);
 
-  return (
-    <View
-      style={[
-        styles.dashboardShell,
-        { backgroundColor: colors.workspaceBg },
-      ]}
-    >
-      {/* ========================================================================= */}
-      {/* 1. LEFT SIDEBAR: ONLY LIST OF PROJECT NAMES (No screens clutter)          */}
-      {/* ========================================================================= */}
-      <View
-        style={[
-          styles.leftProjectsSidebar,
-          {
-            backgroundColor: colors.surfaceElevated,
-            borderRightColor: colors.border,
-          },
-        ]}
-      >
-        {/* Workspace Brand Header */}
-        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white shadow-sm flex-shrink-0"
-            style={{ backgroundColor: colors.primary }}
-          >
-            <Boxes size={20} color={colors.primaryText} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100 truncate">
-              AppForge Studio
-            </h1>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-              Multi-App Expo Suite
-            </p>
-          </div>
-        </div>
-
-        {/* Project List */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-4">
-          <div className="px-2 flex items-center justify-between">
-            <span className="text-[11px] font-bold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase">
-              Projects & Apps (1 Active)
-            </span>
-            <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
-              Ready
-            </span>
-          </div>
-
-          {/* ACTIVE PROJECT 1: Cloth Shop */}
-          <div
-            className="group relative rounded-xl border-2 p-3 transition-all cursor-pointer shadow-sm"
-            style={{
-              backgroundColor: colors.cardBackground,
-              borderColor: colors.primary,
-            }}
-            onClick={() => {
-              setActiveStudioTab('screens');
-              navigateTo('Homepage', currentVariant);
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0 text-white"
-                style={{ backgroundColor: colors.primary }}
-              >
-                <ShoppingBag size={18} color={colors.primaryText} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
-                    Cloth Shop App
-                  </h3>
-                  <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
-              <span className="font-semibold text-neutral-700 dark:text-neutral-300">
-                23 Screens · 138 Variants
-              </span>
-              <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                Active
-              </span>
-            </div>
-          </div>
-
-          {/* UPCOMING / MODULAR SLOTS */}
-          <div className="space-y-2 pt-1">
-            <div className="px-2 text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
-              Future App Slots (Modular)
-            </div>
-
-            {[
-              {
-                title: 'Food Delivery App',
-                icon: Utensils,
-                badge: 'Next Up',
-              },
-              {
-                title: 'Fitness & Gym Pro',
-                icon: Dumbbell,
-                badge: 'Template',
-              },
-              {
-                title: 'Real Estate Hub',
-                icon: Building2,
-                badge: 'Planned',
-              },
-            ].map((slot) => {
-              const IconComponent = slot.icon;
-              return (
-                <div
-                  key={slot.title}
-                  onClick={() => setAddAppModalOpen(true)}
-                  className="rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 p-2.5 flex items-center gap-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition cursor-pointer"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-500 flex items-center justify-center flex-shrink-0">
-                    <IconComponent size={14} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">
-                        {slot.title}
-                      </span>
-                      <span className="text-[9px] font-medium text-neutral-400 px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800">
-                        {slot.badge}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* + Add New App Button */}
-            <button
-              onClick={() => setAddAppModalOpen(true)}
-              className="w-full mt-2 py-2 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center gap-1.5 transition"
-            >
-              <Plus size={14} />
-              <span>Create New Project</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Workspace Footer Info */}
-        <div className="p-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/40 text-[11px] text-neutral-500 dark:text-neutral-400 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              Dev Server :3000
-            </span>
-            <span className="font-mono text-[10px]">React 19 / RN</span>
-          </div>
-        </div>
-      </View>
-
-      {/* ========================================================================= */}
-      {/* 2. CENTER SECTION: WORKSPACE DASHBOARD (Awesome Design, Spacious Controls) */}
-      {/* ========================================================================= */}
-      <div className="flex-1 h-full flex flex-col min-w-0 overflow-hidden bg-neutral-50/70 dark:bg-[#121214]">
-        {/* Top Studio Bar with Tabs & Global Actions */}
-        <div className="h-16 px-6 border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-[#18181B]/80 backdrop-blur flex items-center justify-between gap-4 flex-shrink-0 z-10">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 truncate">
-              <span>Projects</span>
-              <ChevronRight size={14} />
-              <span className="text-neutral-900 dark:text-neutral-100 font-bold">
-                Cloth Shop
-              </span>
-              <ChevronRight size={14} />
-              <span className="font-mono text-neutral-600 dark:text-neutral-300">
-                {currentScreen} ({currentVariant})
-              </span>
-            </div>
-          </div>
-
-          {/* Studio Navigation Tabs */}
-          <div className="flex items-center p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl border border-neutral-200 dark:border-neutral-700/60">
-            {[
-              { id: 'screens', label: 'Screens & Variants', icon: LayoutGrid },
-              { id: 'theme', label: 'Design System', icon: Palette },
-              { id: 'branding', label: 'App Branding', icon: AppWindow },
-              { id: 'export', label: 'Build APK & ZIP', icon: Download },
-            ].map((tab) => {
-              const IconComp = tab.icon;
-              const isActive = activeStudioTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveStudioTab(tab.id as any)}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    isActive
-                      ? 'shadow-sm'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                  style={
-                    isActive
-                      ? {
-                          backgroundColor: colors.primary,
-                          color: colors.primaryText,
-                        }
-                      : undefined
-                  }
-                >
-                  <IconComp size={14} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Quick Action Buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition"
-              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-
-            <button
-              onClick={toggleSkeletonPreview}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition ${
-                isLoadingSkeleton
-                  ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300'
-                  : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700'
-              }`}
-            >
-              <Zap size={14} />
-              <span>{isLoadingSkeleton ? 'Skeleton ON' : 'Skeleton'}</span>
-            </button>
-
-            <button
-              onClick={handleDownloadFullExpoZip}
-              disabled={isZipping}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold shadow-sm hover:opacity-95 transition"
-              style={{
-                backgroundColor: colors.primary,
-                color: colors.primaryText,
-              }}
-            >
-              <Download size={14} />
-              <span>{isZipping ? 'Building ZIP...' : 'Export .ZIP'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Studio Content Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+  const middleContent = (
+    <>
           {/* TAB 1: SCREENS & VARIANTS DIRECTORY */}
           {activeStudioTab === 'screens' && (
             <div className="max-w-5xl mx-auto space-y-6">
@@ -2048,152 +1801,52 @@ export const ExpoNavigator: React.FC = () => {
               )}
             </div>
           )}
-        </div>
-      </div>
+    </>
+  );
 
-      {/* ========================================================================= */}
-      {/* 3. FAR RIGHT SIDEBAR: MOBILE PREVIEW (Authentic Device Frame + Controls)  */}
-      {/* ========================================================================= */}
-      <View
-        style={[
-          styles.rightPreviewSidebar,
-          {
-            backgroundColor: colors.surfaceElevated,
-            borderLeftColor: colors.border,
-          },
-        ]}
-      >
-        {/* Device Top Control Bar */}
-        <div className="p-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2 flex-shrink-0 bg-white dark:bg-neutral-900">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <Smartphone size={14} className="text-neutral-500" />
-              <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                {currentScreen}
-              </span>
-            </div>
-          </div>
-
-          {/* Quick Variant Dropdown */}
-          <select
-            value={currentVariant}
-            onChange={(e) => navigateTo(currentScreen, e.target.value as ScreenVariant)}
-            className="px-2 py-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md text-[11px] font-bold text-neutral-800 dark:text-neutral-200 focus:outline-none cursor-pointer"
-          >
-            <option value="varient_1">V1 (Default)</option>
-            <option value="varient_2">V2 (Alt 2)</option>
-            <option value="varient_3">V3 (Alt 3)</option>
-            <option value="varient_4">V4 (Alt 4)</option>
-            <option value="varient_5">V5 (Alt 5)</option>
-            <option value="varient_6">V6 (Alt 6)</option>
-          </select>
-
-          <button
-            onClick={() => navigateTo(currentScreen, currentVariant)}
-            className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300"
-            title="Reload Screen"
-          >
-            <RotateCcw size={13} />
-          </button>
-        </div>
-
-        {/* Mobile Viewport Stage */}
-        <div className="flex-1 flex items-center justify-center p-3 overflow-hidden">
-          {/* Realistic iPhone 16 Pro Device Frame */}
-          <div className="relative w-[378px] h-[785px] rounded-[50px] p-[6px] bg-[#1a1a1e] shadow-2xl ring-1 ring-white/10 flex flex-col items-center justify-center">
-            {/* Inner Screen Viewport */}
-            <div className="w-[366px] h-[773px] rounded-[44px] overflow-hidden bg-white dark:bg-black relative flex flex-col">
-              {renderScreen()}
-            </div>
-          </div>
-        </div>
-
-        {/* Device Bottom Quick Swatches */}
-        <div className="p-3 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-white dark:bg-neutral-900 flex-shrink-0">
-          <div className="flex items-center gap-1.5">
-            {presets.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setColorPreset(p.id)}
-                className={`w-5 h-5 rounded-full transition-transform ${
-                  colorPreset === p.id ? 'scale-125 ring-2 ring-neutral-900 dark:ring-white' : 'opacity-80 hover:opacity-100'
-                }`}
-                style={{ backgroundColor: p.swatch }}
-                title={p.name}
-              />
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-neutral-400 truncate max-w-[120px]">
-              {fontPresets.find((f) => f.id === fontPreset)?.name}
-            </span>
-          </div>
-        </div>
-      </View>
-
-      {/* Modal: Create New Project */}
-      {addAppModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          onClick={() => setAddAppModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-md rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-2xl space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <Boxes size={20} className="text-neutral-900 dark:text-white" />
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                  Add New Modular Application
-                </h3>
-              </div>
-              <button
-                onClick={() => setAddAppModalOpen(false)}
-                className="text-neutral-400 hover:text-neutral-600"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              Our architecture is 100% modular. You can easily plug in additional applications (such as Food Delivery, Fitness, or Real Estate) alongside Cloth Shop.
-            </p>
-
-            <div className="space-y-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 text-xs">
-              <div className="font-semibold text-neutral-800 dark:text-neutral-200">
-                Current App Status:
-              </div>
-              <div className="text-neutral-500">
-                • Active App: <span className="font-bold text-neutral-900 dark:text-white">Cloth Shop App</span>
-              </div>
-              <div className="text-neutral-500">
-                • 23 Complete Screens with 6 Variants each (138 Total Screens)
-              </div>
-              <div className="text-neutral-500">
-                • Full Redux State Management & Theme System
-              </div>
-            </div>
-
-            <button
-              onClick={() => setAddAppModalOpen(false)}
-              className="w-full py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold shadow hover:opacity-95"
-            >
-              Got it, continue in Cloth Shop
-            </button>
-          </div>
-        </div>
-      )}
-    </View>
+  return (
+    <StudioDashboardShell
+      activeProjectId="cloth_shop"
+      projectName="Cloth Shop"
+      activeScreenLabel={currentScreen}
+      activeVariantLabel={currentVariant}
+      activeStudioTab={activeStudioTab as any}
+      onSelectStudioTab={(tab) => setActiveStudioTab(tab as any)}
+      onSwitchProject={onSwitchProject}
+      isDark={isDark}
+      onToggleTheme={toggleTheme}
+      primaryColor={colors.primary}
+      primaryTextColor={colors.primaryText}
+      isSkeletonActive={isLoadingSkeleton}
+      onToggleSkeleton={toggleSkeletonPreview}
+      onExportZip={handleDownloadFullExpoZip}
+      isZipping={isZipping}
+      variantOptions={[
+        { id: 'varient_1', label: 'V1 (Default)' },
+        { id: 'varient_2', label: 'V2 (Alt 2)' },
+        { id: 'varient_3', label: 'V3 (Alt 3)' },
+        { id: 'varient_4', label: 'V4 (Alt 4)' },
+        { id: 'varient_5', label: 'V5 (Alt 5)' },
+        { id: 'varient_6', label: 'V6 (Alt 6)' },
+      ]}
+      currentVariantId={currentVariant}
+      onChangeVariant={(v) => navigateTo(currentScreen, v as ScreenVariant)}
+      onReloadSimulator={() => navigateTo(currentScreen, currentVariant)}
+      colorSwatches={presets.map((p) => ({ id: p.id, name: p.name, swatch: p.swatch }))}
+      activeColorId={colorPreset}
+      onSelectColorSwatch={(id) => setColorPreset(id as AppColorPresetId)}
+      activeFontName={fontPresets.find((f) => f.id === fontPreset)?.name || 'Plus Jakarta Sans'}
+      middleContent={middleContent}
+      mobileContent={renderScreen()}
+    />
   );
 };
 
-export default function ClothShopApp() {
+export default function ClothShopApp({ onSwitchProject }: { onSwitchProject?: (projectId: string) => void }) {
   return (
     <Provider store={store}>
       <AppThemeProvider>
-        <ExpoNavigator />
+        <ExpoNavigator onSwitchProject={onSwitchProject} />
       </AppThemeProvider>
     </Provider>
   );

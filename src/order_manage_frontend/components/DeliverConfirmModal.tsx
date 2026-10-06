@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TextInput,
   TouchableOpacity,
   ScrollView,
@@ -16,6 +15,7 @@ import { Order } from '@/types/ledger';
 import { Radius, Spacing } from '@/constants/theme';
 import { useLedger } from '@/context/LedgerContext';
 import { useAppTheme } from '@/context/ThemeContext';
+import { AppModal } from './AppModal';
 
 interface DeliverConfirmModalProps {
   order: Order | null;
@@ -73,7 +73,7 @@ export function DeliverConfirmModal({ order, visible, onClose }: DeliverConfirmM
   const orderNo = `TR-${String(order.serial).padStart(4, '0')}`;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <AppModal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.cardElevated }]}>
           <View
@@ -144,7 +144,7 @@ export function DeliverConfirmModal({ order, visible, onClose }: DeliverConfirmM
                 keyboardType="numeric"
                 maxLength={4}
                 value={last4}
-                onChangeText={(val) => setLast4(val.replace(/\D/g, '').slice(0, 4))}
+                onChangeText={(val: string) => setLast4(val.replace(/\D/g, '').slice(0, 4))}
               />
             </View>
 
@@ -231,7 +231,7 @@ export function DeliverConfirmModal({ order, visible, onClose }: DeliverConfirmM
           </ScrollView>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

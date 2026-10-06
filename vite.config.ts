@@ -7,10 +7,52 @@ export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
-      alias: {
-        '@': path.resolve(import.meta.dirname, '.'),
-        'react-native': 'react-native-web',
-      },
+      alias: [
+        {
+          find: 'expo-haptics',
+          replacement: path.resolve(import.meta.dirname, 'src/order_manage_frontend/components/expo-shims.ts'),
+        },
+        {
+          find: 'expo-clipboard',
+          replacement: path.resolve(import.meta.dirname, 'src/order_manage_frontend/components/expo-shims.ts'),
+        },
+        {
+          find: 'expo-image-picker',
+          replacement: path.resolve(import.meta.dirname, 'src/order_manage_frontend/components/expo-shims.ts'),
+        },
+        {
+          find: 'expo-web-browser',
+          replacement: path.resolve(import.meta.dirname, 'src/order_manage_frontend/components/expo-shims.ts'),
+        },
+        {
+          find: 'expo-print',
+          replacement: path.resolve(import.meta.dirname, 'src/order_manage_frontend/components/expo-shims.ts'),
+        },
+        {
+          find: 'expo-sharing',
+          replacement: path.resolve(import.meta.dirname, 'src/order_manage_frontend/components/expo-shims.ts'),
+        },
+        {
+          find: 'expo-symbols',
+          replacement: path.resolve(import.meta.dirname, 'src/order_manage_frontend/components/expo-shims.ts'),
+        },
+        {
+          find: 'react-native-safe-area-context',
+          replacement: path.resolve(import.meta.dirname, 'src/order_manage_frontend/components/safe-area-shim.tsx'),
+        },
+        {
+          find: '@expo/vector-icons',
+          replacement: path.resolve(import.meta.dirname, 'src/order_manage_frontend/components/expo-vector-icons-shim.tsx'),
+        },
+        {
+          find: /^@\/(.*)/,
+          replacement: path.resolve(import.meta.dirname, 'src/order_manage_frontend/$1'),
+        },
+        {
+          find: 'react-native',
+          replacement: 'react-native-web',
+        },
+      ],
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

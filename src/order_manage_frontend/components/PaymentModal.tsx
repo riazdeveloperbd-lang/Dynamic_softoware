@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TextInput,
   TouchableOpacity,
   ScrollView,
@@ -14,6 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Radius, Spacing } from '@/constants/theme';
 import { useLedger } from '@/context/LedgerContext';
 import { useAppTheme } from '@/context/ThemeContext';
+import { AppModal } from './AppModal';
 
 interface PaymentModalProps {
   visible: boolean;
@@ -73,7 +73,7 @@ export function PaymentModal({ visible, onClose }: PaymentModalProps) {
   const quickMethods = ['bKash Pool', 'Nagad Pool', 'City Bank Ltd', 'Dutch-Bangla Bank', 'Brac Bank'];
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <AppModal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.cardElevated }]}>
           <View
@@ -236,7 +236,7 @@ export function PaymentModal({ visible, onClose }: PaymentModalProps) {
           </ScrollView>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

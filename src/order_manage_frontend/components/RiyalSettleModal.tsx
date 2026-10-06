@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TextInput,
   TouchableOpacity,
 } from 'react-native';
@@ -12,6 +11,7 @@ import { CustomerLedgerEntry } from '@/types/ledger';
 import { Radius, Spacing } from '@/constants/theme';
 import { useLedger } from '@/context/LedgerContext';
 import { useAppTheme } from '@/context/ThemeContext';
+import { AppModal } from './AppModal';
 
 interface RiyalSettleModalProps {
   entry: CustomerLedgerEntry | null;
@@ -56,7 +56,7 @@ export function RiyalSettleModal({ entry, visible, onClose }: RiyalSettleModalPr
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <AppModal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.cardElevated }]}>
           <View
@@ -143,7 +143,7 @@ export function RiyalSettleModal({ entry, visible, onClose }: RiyalSettleModalPr
           </View>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 
