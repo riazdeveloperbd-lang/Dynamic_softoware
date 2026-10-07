@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --app-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -15,6 +16,77 @@
   font-family: var(--app-font-family) !important;
 }
 
+.admin-theme-scope,
+.admin-theme-scope * {
+  font-family: var(--admin-font, var(--app-font-family)) !important;
+}
+
+.vpn-theme-scope,
+.vpn-theme-scope * {
+  font-family: var(--vpn-font, var(--app-font-family)) !important;
+}
+
+/* Dynamic Primary Brand Color mapping across all 11 Admin App V1 screens */
+.admin-theme-scope .bg-black,
+.admin-theme-scope .bg-\[\#1A1A1A\],
+.admin-theme-scope .bg-neutral-950,
+.admin-theme-scope .bg-neutral-900 {
+  background-color: var(--admin-primary, #1A1A1A) !important;
+  color: var(--admin-primary-text, #FFFFFF) !important;
+}
+
+.admin-theme-scope .border-black,
+.admin-theme-scope .border-\[\#1A1A1A\],
+.admin-theme-scope .border-neutral-950,
+.admin-theme-scope .border-neutral-900 {
+  border-color: var(--admin-primary, #1A1A1A) !important;
+}
+
+.admin-theme-scope .bg-\[\#FAFAFA\],
+.admin-theme-scope .bg-\[\#F8F9FA\] {
+  background-color: var(--admin-bg, #FFFFFF) !important;
+  color: var(--admin-text, #1A1A1A) !important;
+}
+
+/* Light & Dark Mode Tinted Surface & Palette adaptation inside Admin App simulator */
+.admin-theme-scope .bg-white {
+  background-color: var(--admin-card, #FFFFFF) !important;
+  color: var(--admin-text, #1A1A1A) !important;
+}
+
+.admin-theme-scope .bg-\[\#F7F7F7\],
+.admin-theme-scope .bg-\[\#F2F2F2\],
+.admin-theme-scope .bg-neutral-50,
+.admin-theme-scope .bg-neutral-50\/70,
+.admin-theme-scope .bg-neutral-50\/60,
+.admin-theme-scope .bg-neutral-100 {
+  background-color: var(--admin-surface, #F7F7F7) !important;
+  color: var(--admin-text, #1A1A1A) !important;
+}
+
+.admin-theme-scope .border-\[\#E6E6E6\],
+.admin-theme-scope .border-neutral-100,
+.admin-theme-scope .border-neutral-200,
+.admin-theme-scope .border-neutral-200\/80,
+.admin-theme-scope .border-neutral-300 {
+  border-color: var(--admin-border, #E6E6E6) !important;
+}
+
+.admin-theme-scope .text-\[\#1A1A1A\],
+.admin-theme-scope .text-neutral-950,
+.admin-theme-scope .text-neutral-900,
+.admin-theme-scope .text-neutral-800 {
+  color: var(--admin-text, #1A1A1A) !important;
+}
+
+.admin-theme-scope .text-\[\#808080\],
+.admin-theme-scope .text-\[\#999999\],
+.admin-theme-scope .text-neutral-700,
+.admin-theme-scope .text-neutral-600,
+.admin-theme-scope .text-neutral-500 {
+  color: var(--admin-text-secondary, #808080) !important;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -22,3 +94,38 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.bookstore-theme-scope,
+.bookstore-theme-scope * {
+  font-family: var(--bookstore-font, var(--app-font-family)) !important;
+}
+
+/* Book Store 6-Variant Layout & Card Design System */
+[data-bookstore-variant="varient_2"] .rounded-2xl,
+[data-bookstore-variant="varient_2"] .rounded-xl {
+  border-radius: 20px !important;
+}
+
+[data-bookstore-variant="varient_3"] .rounded-2xl,
+[data-bookstore-variant="varient_3"] .rounded-xl {
+  border-radius: 10px !important;
+  border-width: 2px !important;
+  box-shadow: 3px 3px 0px var(--bookstore-primary, #54408C);
+}
+
+[data-bookstore-variant="varient_4"] .rounded-2xl {
+  border-radius: 24px !important;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.14);
+}
+
+[data-bookstore-variant="varient_5"] .rounded-2xl,
+[data-bookstore-variant="varient_5"] .rounded-xl {
+  border-left-width: 4px !important;
+  border-left-color: var(--bookstore-primary, #54408C) !important;
+}
+
+[data-bookstore-variant="varient_6"] .rounded-2xl {
+  border-style: dashed !important;
+  border-width: 1.5px !important;
+}
+

@@ -30,6 +30,7 @@ import {
   Globe,
   Edit3,
   Crop,
+  BookOpen,
 } from 'lucide-react';
 import {
   CustomProjectDefinition,
@@ -237,6 +238,14 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
       setIsFetchingAiArchitecture(false);
     }
   };
+
+  // Automatically sync root document dark class with isDark state
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', isDark);
+      document.body.classList.toggle('dark', isDark);
+    }
+  }, [isDark]);
 
   // Automatically fetch bespoke AI screen architecture when Project Name, Category, or Details change
   useEffect(() => {
@@ -472,10 +481,28 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
 
   const builtInProjectsList = [
     {
+      id: 'book_store',
+      title: 'Book Store',
+      subtitle: '24 Screens · 144 Variants',
+      icon: BookOpen,
+    },
+    {
+      id: 'super_vpn',
+      title: 'Super VPN',
+      subtitle: '8 Screens · 40 Variants',
+      icon: Shield,
+    },
+    {
       id: 'cloth_shop',
       title: 'Cloth Shop App',
       subtitle: '23 Screens · 138 Variants',
       icon: ShoppingBag,
+    },
+    {
+      id: 'admin_app',
+      title: 'Admin App',
+      subtitle: '11 Screens · 88 Variants',
+      icon: AppWindow,
     },
     {
       id: 'order_manage',
@@ -921,7 +948,10 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
         <div className="flex-1 flex items-center justify-center p-3 overflow-hidden bg-neutral-100/50 dark:bg-[#0d0f14]">
           {/* Realistic iPhone 16 Pro Device Frame */}
           <div className="relative w-[378px] h-[760px] rounded-[50px] p-[6px] bg-[#1a1a1e] shadow-2xl ring-1 ring-white/10 flex flex-col items-center justify-center">
-            <div className="w-[366px] h-[748px] rounded-[44px] overflow-hidden bg-white dark:bg-[#090D16] relative flex flex-col">
+            <div
+              className="w-[366px] h-[748px] rounded-[44px] overflow-hidden bg-white dark:bg-[#090D16] relative flex flex-col transform-gpu"
+              style={{ transform: 'translateZ(0)' }}
+            >
               {mobileContent}
             </div>
           </div>

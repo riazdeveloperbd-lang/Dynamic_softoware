@@ -1,0 +1,8 @@
+import React from "react";
+import OffersVarient1, { OffersVarient1Props } from "../varient_1";
+
+export const OffersVarient2: React.FC<OffersVarient1Props> = (props) => (
+  <OffersVarient1 {...props} variant="varient_2" />
+);
+
+export default OffersVarient2;

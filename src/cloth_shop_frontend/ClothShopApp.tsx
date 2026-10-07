@@ -1476,13 +1476,49 @@ export const ExpoNavigator: React.FC<{ onSwitchProject?: (projectId: string) => 
 
               {/* Bottom Navigation UI Studio */}
               <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
-                <div>
-                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                    Bottom Navigation Bar Designs (6 Styles)
-                  </h3>
-                  <p className="text-xs text-neutral-500 mt-0.5">
-                    Choose any bottom tab bar variant. V1 is classic default.
-                  </p>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      Bottom Navigation Bar Designs (6 Styles)
+                    </h3>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      Choose any bottom tab bar variant. V1 is classic default.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div
+                      role="radiogroup"
+                      aria-label="Bottom Navigate Screen Swappable"
+                      className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/70"
+                    >
+                      <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-300">
+                        Screen Swappable:
+                      </span>
+                      <label className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-900 dark:text-neutral-100 cursor-pointer select-none">
+                        <input
+                          type="radio"
+                          name="clothBottomNavSwipeable"
+                          defaultChecked
+                          className="w-3.5 h-3.5 cursor-pointer"
+                          style={{ accentColor: colors.primary }}
+                        />
+                        <span>Swappable</span>
+                      </label>
+                      <label className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-900 dark:text-neutral-100 cursor-pointer select-none">
+                        <input
+                          type="radio"
+                          name="clothBottomNavSwipeable"
+                          className="w-3.5 h-3.5 cursor-pointer"
+                          style={{ accentColor: colors.primary }}
+                        />
+                        <span>Not Swappable</span>
+                      </label>
+                    </div>
+                    <span className="text-xs font-bold" style={{ color: colors.primary }}>
+                      Active: {bottomNavVariant}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">

@@ -24,6 +24,27 @@ interface StoredApkBuild {
 
 const apkStore = new Map<string, StoredApkBuild>();
 
+// Cooldown timestamp when Gemini free-tier quota (429 RESOURCE_EXHAUSTED) is reached so subsequent calls immediately use the deterministic domain analyzer without throwing errors
+let geminiQuotaCooldownUntil = 0;
+
+function isGeminiAvailable(): boolean {
+  return Boolean(
+    process.env.GEMINI_API_KEY && Date.now() > geminiQuotaCooldownUntil
+  );
+}
+
+function handleGeminiQuotaOrError(err: unknown): void {
+  const msg = err instanceof Error ? err.message : String(err || '');
+  if (
+    msg.includes('429') ||
+    msg.includes('RESOURCE_EXHAUSTED') ||
+    msg.includes('quota')
+  ) {
+    // Pause remote Gemini calls for 15 minutes and use instant local domain analyzer
+    geminiQuotaCooldownUntil = Date.now() + 15 * 60 * 1000;
+  }
+}
+
 // Cached compiled standalone mobile HTML/JS/CSS bundle so the installed APK works 100% offline
 let cachedStandaloneAssets: ApkEntryFile[] | null = null;
 
@@ -201,7 +222,7 @@ async function startServer() {
       designImages = [],
     } = req.body || {};
     try {
-      if (process.env.GEMINI_API_KEY) {
+      if (isGeminiAvailable()) {
         const ai = new GoogleGenAI({
           apiKey: process.env.GEMINI_API_KEY,
           httpOptions: {
@@ -236,7 +257,7 @@ async function startServer() {
         });
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
+          model: 'gemini-2.5-flash',
           contents: parts,
         });
         if (response.text) {
@@ -244,8 +265,8 @@ async function startServer() {
           return;
         }
       }
-    } catch {
-      // Fallback below
+    } catch (err) {
+      handleGeminiQuotaOrError(err);
     }
 
     const isVpn =
@@ -269,7 +290,7 @@ async function startServer() {
     } = req.body || {};
 
     try {
-      if (process.env.GEMINI_API_KEY && projectName.trim()) {
+      if (isGeminiAvailable() && projectName.trim()) {
         const ai = new GoogleGenAI({
           apiKey: process.env.GEMINI_API_KEY,
           httpOptions: {
@@ -302,7 +323,7 @@ Return JSON with:
      - "description": 1-sentence description of what the user does on this screen in "${projectName}"`;
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
+          model: 'gemini-2.5-flash',
           contents: [{ text: prompt }],
           config: {
             responseMimeType: 'application/json',
@@ -369,7 +390,7 @@ Return JSON with:
         }
       }
     } catch (err) {
-      console.error('AI architecture analysis fallback:', err);
+      handleGeminiQuotaOrError(err);
     }
 
     const fallbackAnalysis = analyzeProjectScreenRequirements(
@@ -405,7 +426,7 @@ Return JSON with:
     );
 
     try {
-      if (process.env.GEMINI_API_KEY) {
+      if (isGeminiAvailable()) {
         const ai = new GoogleGenAI({
           apiKey: process.env.GEMINI_API_KEY,
           httpOptions: {
@@ -480,7 +501,7 @@ For each screen, provide:
         parts.push({ text: promptText });
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
+          model: 'gemini-2.5-flash',
           contents: parts,
           config: {
             responseMimeType: 'application/json',
@@ -594,7 +615,7 @@ For each screen, provide:
         }
       }
     } catch (err) {
-      console.error('Gemini project generation fallback:', err);
+      handleGeminiQuotaOrError(err);
     }
 
     res.json({
@@ -629,7 +650,7 @@ For each screen, provide:
     ];
 
     try {
-      if (process.env.GEMINI_API_KEY && focusScreens.length > 0) {
+      if (isGeminiAvailable() && focusScreens.length > 0) {
         const ai = new GoogleGenAI({
           apiKey: process.env.GEMINI_API_KEY,
           httpOptions: {
@@ -691,7 +712,7 @@ Provide a deep, category-specific UX & layout optimization report in JSON with:
    - "heroMetricDelta": KPI delta`;
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
+          model: 'gemini-2.5-flash',
           contents: [{ text: prompt }],
           config: {
             responseMimeType: 'application/json',
@@ -809,7 +830,7 @@ Provide a deep, category-specific UX & layout optimization report in JSON with:
         }
       }
     } catch (err) {
-      console.error('AI layout optimization fallback:', err);
+      handleGeminiQuotaOrError(err);
     }
 
     // Domain-aware deterministic fallback based on category and screenType
