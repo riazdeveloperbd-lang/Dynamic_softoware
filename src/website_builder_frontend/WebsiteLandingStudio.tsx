@@ -43,6 +43,9 @@ import {
   Move,
   HeartPulse,
   GraduationCap,
+  Coffee,
+  Trees,
+  Briefcase,
 } from 'lucide-react';
 import JSZip from 'jszip';
 import {
@@ -88,8 +91,50 @@ import {
   TeacherBookingContactSection,
   TeacherFooter,
 } from '../website/teacher_profile';
+import {
+  CoffeeShopProvider,
+  CoffeeNavbar,
+  CoffeeHeroSection,
+  CoffeeSubscriptionSection,
+  CoffeeSeasonalMenuSection,
+  CoffeeLocationsWholesaleStorySection,
+  CoffeeFooter,
+} from '../website/coffee_shop';
+import {
+  NexusNavbar,
+  NexusHeroSection,
+  NexusRoiCaseStudiesSection,
+  NexusSolutionsBookingSection,
+  NexusTestimonialsFooterSection,
+} from '../website/nexus_growth_lab';
+import {
+  VerdantNavbar,
+  VerdantHeroSection,
+  VerdantEstimatorPortfolioSection,
+  VerdantPackagesCoverageBookingSection,
+  VerdantFaqFooterSection,
+} from '../website/verdant_spaces';
+import {
+  AuditPulseNavbar,
+  AuditPulseHeroSection,
+  AuditPulseEstimatorBreakdownSection,
+  AuditPulseSecurityProcessBookingSection,
+  AuditPulsePricingFooterSection,
+} from '../website/audit_pulse';
+import {
+  FractionalCoreNavbar,
+  FractionalCoreHeroSection,
+  FractionalCoreCalculatorDirectorySection,
+  FractionalCoreAdvisoryMatchFormSection,
+  FractionalCoreProofSitemapFooterSection,
+} from '../website/fractional_core';
 
 export type WebsiteTemplateId =
+  | 'fractional_core'
+  | 'audit_pulse'
+  | 'verdant_spaces'
+  | 'nexus_growth_lab'
+  | 'coffee_shop'
   | 'teacher_profile'
   | 'doctor_profile'
   | 'doctor_profile_2'
@@ -871,9 +916,448 @@ export const INITIAL_WEBSITE_PROJECTS: WebsiteProjectPreset[] = [
       },
     ],
   },
+  {
+    id: 'coffee_shop',
+    name: 'Coffee Shop',
+    folderSlug: 'coffee_shop',
+    tagline:
+      'Velvet Bean Roasters — Artisanal Specialty Coffee Shop & Roastery',
+    domain: 'velvetbeanroasters.com',
+    primaryColor: '#C86D51',
+    icon: Coffee,
+    files: [
+      { path: 'src/website/coffee_shop/index.ts', kind: 'index' },
+      {
+        path: 'src/website/coffee_shop/pages/CoffeeShopLandingPage.tsx',
+        kind: 'page',
+      },
+      {
+        path: 'src/website/coffee_shop/component/CoffeeShopContext.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/coffee_shop/component/CoffeeNavbar.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/coffee_shop/component/CoffeeHeroSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/coffee_shop/component/CoffeeSubscriptionSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/coffee_shop/component/CoffeeSeasonalMenuSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/coffee_shop/component/CoffeeLocationsWholesaleStorySection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/coffee_shop/component/CoffeeFooter.tsx',
+        kind: 'component',
+      },
+    ],
+    sections: [
+      {
+        id: 'coffee_nav_1',
+        type: 'navbar',
+        title: 'Velvet Bean Roasters',
+        subtitle: 'Specialty Coffee Shop & Small-Batch Roastery',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'coffee_hero_1',
+        type: 'hero',
+        title: 'Crafted with Care. Roasted to Perfection.',
+        subtitle:
+          'Ethically sourced, small-batch micro-lot coffee beans delivered straight from our roastery to your cup.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'coffee_sub_1',
+        type: 'pricing',
+        title: 'Freshly Roasted Coffee, Delivered on Your Schedule.',
+        subtitle:
+          'Customize your small-batch roast, grind precision, and delivery cadence. Save 15% on every subscription shipment.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'coffee_menu_1',
+        type: 'catalog',
+        title: 'Seasonal Cafe Menu & House Bakery',
+        subtitle:
+          'Crafted daily with organic local dairy, house-made botanical syrups, and stone-milled pastries.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'coffee_locations_1',
+        type: 'doctor_appointment',
+        title: 'Visit Our Cafes & Roastery Tasting Rooms',
+        subtitle:
+          'Explore our 3 Portland cafes with real-time seating availability, B2B wholesale inquiries, and our 100% direct trade story.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'coffee_footer_1',
+        type: 'footer',
+        title: 'Velvet Bean Roasters',
+        subtitle:
+          'Ethically sourced, small-batch micro-lot coffee beans roasted weekly in Portland, Oregon.',
+        variant: 'varient_1',
+        visible: true,
+      },
+    ],
+  },
+  {
+    id: 'nexus_growth_lab',
+    name: 'Nexus Growth Lab',
+    folderSlug: 'nexus_growth_lab',
+    tagline:
+      'B2B Digital Marketing & Revenue Engineering Agency Landing Page',
+    domain: 'nexusgrowthlab.io',
+    primaryColor: '#2563EB',
+    icon: BarChart3,
+    files: [
+      { path: 'src/website/nexus_growth_lab/index.ts', kind: 'index' },
+      {
+        path: 'src/website/nexus_growth_lab/pages/NexusGrowthLabLandingPage.tsx',
+        kind: 'page',
+      },
+      {
+        path: 'src/website/nexus_growth_lab/component/NexusNavbar.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/nexus_growth_lab/component/NexusHeroSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/nexus_growth_lab/component/NexusRoiCaseStudiesSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/nexus_growth_lab/component/NexusSolutionsBookingSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/nexus_growth_lab/component/NexusTestimonialsFooterSection.tsx',
+        kind: 'component',
+      },
+    ],
+    sections: [
+      {
+        id: 'nexus_nav_1',
+        type: 'navbar',
+        title: 'Nexus Growth Lab',
+        subtitle: 'Accepting Q4 Enterprise Clients · B2B Revenue Engineering',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'nexus_hero_1',
+        type: 'hero',
+        title: 'Predictable B2B Pipeline Growth. Powered by Data Science.',
+        subtitle:
+          'We engineer full-funnel demand generation engines that turn ad spend into qualified sales pipeline for B2B tech companies.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'nexus_roi_1',
+        type: 'metrics',
+        title: 'Calculate Your Revenue Growth Potential',
+        subtitle:
+          'Interactive B2B ROI Calculator & Verified Enterprise Case Studies with 6-month performance charts.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'nexus_solutions_1',
+        type: 'pricing',
+        title: 'Service Packages & Revenue Solutions Engine',
+        subtitle:
+          'Demand Generation Accelerator, ABM Enterprise, and Revenue Operations Infrastructure + 30-Minute Growth Audit Booking.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'nexus_footer_1',
+        type: 'footer',
+        title: 'Executive Proof from High-Growth B2B Revenue Leaders',
+        subtitle:
+          'Playable CMO/CRO video case studies, verified LinkedIn endorsements, and The Revenue Engine weekly newsletter.',
+        variant: 'varient_1',
+        visible: true,
+      },
+    ],
+  },
+  {
+    id: 'verdant_spaces',
+    name: 'Verdant Spaces',
+    folderSlug: 'verdant_spaces',
+    tagline:
+      'Biophilic Urban Architecture, Rooftop Sanctuaries & Sustainable Landscaping',
+    domain: 'verdantspaces.arch',
+    primaryColor: '#2C4A3E',
+    icon: Trees,
+    files: [
+      { path: 'src/website/verdant_spaces/index.ts', kind: 'index' },
+      {
+        path: 'src/website/verdant_spaces/pages/VerdantSpacesLandingPage.tsx',
+        kind: 'page',
+      },
+      {
+        path: 'src/website/verdant_spaces/component/VerdantNavbar.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/verdant_spaces/component/VerdantHeroSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/verdant_spaces/component/VerdantEstimatorPortfolioSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/verdant_spaces/component/VerdantPackagesCoverageBookingSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/verdant_spaces/component/VerdantFaqFooterSection.tsx',
+        kind: 'component',
+      },
+    ],
+    sections: [
+      {
+        id: 'verdant_nav_1',
+        type: 'navbar',
+        title: 'Verdant Spaces',
+        subtitle:
+          'Biophilic Urban Architecture & Sustainable Landscape Engineering',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'verdant_hero_1',
+        type: 'hero',
+        title: 'Transform Urban Concrete into Living Sanctuaries.',
+        subtitle:
+          'Architectural landscape design engineered with 100% native plants, smart water management, and zero-emissions maintenance.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'verdant_estimator_1',
+        type: 'metrics',
+        title: 'Calculate Your Urban Transformation',
+        subtitle:
+          'Interactive Project Estimator Widget, Before/After Drag Comparison Gallery, and 4-Step Biophilic Engineering Timeline.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'verdant_packages_1',
+        type: 'pricing',
+        title: 'Service Packages & Seasonal Maintenance Plans',
+        subtitle:
+          'One-Time Design & Build vs. Seasonal Care Plans, Interactive Zip Code Coverage Map, and On-Site Architectural Audit Booking.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'verdant_footer_1',
+        type: 'footer',
+        title: 'Verdant Spaces',
+        subtitle:
+          'Architectural FAQ Accordion, Seasonal Urban Garden Care Guide Download, and LEED / NWF / 1% for the Planet Pledge.',
+        variant: 'varient_1',
+        visible: true,
+      },
+    ],
+  },
+  {
+    id: 'audit_pulse',
+    name: 'AuditPulse',
+    folderSlug: 'audit_pulse',
+    tagline:
+      'B2B SaaS License & Tool Waste Optimization Platform (Performance-Based FinTech)',
+    domain: 'auditpulse.io',
+    primaryColor: '#10B981',
+    icon: Shield,
+    files: [
+      { path: 'src/website/audit_pulse/index.ts', kind: 'index' },
+      {
+        path: 'src/website/audit_pulse/pages/AuditPulseLandingPage.tsx',
+        kind: 'page',
+      },
+      {
+        path: 'src/website/audit_pulse/component/AuditPulseNavbar.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/audit_pulse/component/AuditPulseHeroSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/audit_pulse/component/AuditPulseEstimatorBreakdownSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/audit_pulse/component/AuditPulseSecurityProcessBookingSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/audit_pulse/component/AuditPulsePricingFooterSection.tsx',
+        kind: 'component',
+      },
+    ],
+    sections: [
+      {
+        id: 'auditpulse_nav_1',
+        type: 'navbar',
+        title: 'AuditPulse',
+        subtitle:
+          'SOC-2 Type II & GDPR Compliant Read-Only SaaS Spend Optimization',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'auditpulse_hero_1',
+        type: 'hero',
+        title: 'Stop Paying for Ghost SaaS Licenses & Unused Seats.',
+        subtitle:
+          'AuditPulse scans your Google Workspace, Microsoft 365, Slack, and Zoom stacks to uncover inactive seats and duplicate subscriptions in under 24 hours.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'auditpulse_estimator_1',
+        type: 'metrics',
+        title: 'How Much SaaS Spend Are You Wasting Each Year?',
+        subtitle:
+          'Interactive SaaS Waste Estimator ($1,440/Employee × 24% Waste Formula) and Tabbed Inactive Seat Breakdown.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'auditpulse_security_1',
+        type: 'pricing',
+        title: 'Enterprise-Grade Security & 3-Step Audit Walkthrough',
+        subtitle:
+          'SOC-2 Type II, Read-Only OAuth, Zero-Data Retention, Security Whitepaper Download, and 1-Click Calendar Slot Picker.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'auditpulse_footer_1',
+        type: 'footer',
+        title: 'Transparent Performance Pricing. Zero Retainers.',
+        subtitle:
+          '$0 Upfront, $0 Monthly Subscription, 15% Performance Fee only on verified 12-month savings.',
+        variant: 'varient_1',
+        visible: true,
+      },
+    ],
+  },
+  {
+    id: 'fractional_core',
+    name: 'FractionalCore',
+    folderSlug: 'fractional_core',
+    tagline:
+      'On-Demand Executive Network Matching Seed & Series-A Startups with Vetted Fractional CTOs, CFOs, CMOs & CPOs',
+    domain: 'fractionalcore.vc',
+    primaryColor: '#D97706',
+    icon: Briefcase,
+    files: [
+      { path: 'src/website/fractional_core/index.ts', kind: 'index' },
+      {
+        path: 'src/website/fractional_core/pages/FractionalCoreLandingPage.tsx',
+        kind: 'page',
+      },
+      {
+        path: 'src/website/fractional_core/component/FractionalCoreNavbar.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/fractional_core/component/FractionalCoreHeroSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/fractional_core/component/FractionalCoreCalculatorDirectorySection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/fractional_core/component/FractionalCoreAdvisoryMatchFormSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/fractional_core/component/FractionalCoreProofSitemapFooterSection.tsx',
+        kind: 'component',
+      },
+    ],
+    sections: [
+      {
+        id: 'fractional_nav_1',
+        type: 'navbar',
+        title: 'FractionalCore',
+        subtitle: 'Seed & Series-A Fractional Executive Network',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'fractional_hero_1',
+        type: 'hero',
+        title: 'Silicon Valley Executive Guidance. 1/4 the Full-Time Cost.',
+        subtitle:
+          'Access veteran CTOs, CFOs, and CMOs who have scaled companies from Series A to IPO. Get institutional strategic direction without sacrificing $250k+ salary or cap table equity.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'fractional_calc_dir_1',
+        type: 'metrics',
+        title: 'Stop Diluting Cap Tables for Early-Stage Hires',
+        subtitle:
+          'Interactive Full-Time vs. Fractional Cost Savings Calculator and Filterable Non-Confidential Executive Directory.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'fractional_match_1',
+        type: 'pricing',
+        title: 'Get Matched with a Vetted Executive in 48 Hours',
+        subtitle:
+          '3-Step Curated Advisory Match Model and 15-Minute Partner Intake Form with Embedded Cal.com Slot Picker.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'fractional_footer_1',
+        type: 'footer',
+        title: 'Trusted by General Partners & Series-A Founders',
+        subtitle:
+          'Seed & Series-A VC Endorsements, 30-Second Founder Video Testimonials, and Multi-Page Marketplace Architecture.',
+        variant: 'varient_1',
+        visible: true,
+      },
+    ],
+  },
 ];
 
 const WEBSITE_COLOR_SWATCHES = [
+  { id: 'fractional_gold', name: 'FractionalCore Amber Gold', hex: '#D97706' },
+  { id: 'audit_emerald', name: 'AuditPulse Emerald Mint', hex: '#10B981' },
+  { id: 'verdant_sage', name: 'Deep Forest Sage', hex: '#2C4A3E' },
+  { id: 'verdant_clay', name: 'Warm Terracotta Clay', hex: '#D37B58' },
+  { id: 'velvet_terracotta', name: 'Velvet Terracotta', hex: '#C86D51' },
   { id: 'quantum_blue', name: 'Quantum Cobalt', hex: '#2563EB' },
   { id: 'bazar_orange', name: 'Bazar Orange', hex: '#F37021' },
   { id: 'cardio_emerald', name: 'Cardiology Emerald', hex: '#118C74' },
@@ -945,9 +1429,9 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 }) => {
   const [projects, setProjects] = useState<WebsiteProjectPreset[]>(INITIAL_WEBSITE_PROJECTS);
   const [activeProjectId, setActiveProjectId] =
-    useState<WebsiteTemplateId>('teacher_profile');
+    useState<WebsiteTemplateId>('fractional_core');
   const [selectedSectionId, setSelectedSectionId] =
-    useState<string>('teacher_hero_1');
+    useState<string>('fractional_hero_1');
   const [isRightDrawerOpen, setIsRightDrawerOpen] = useState<boolean>(false);
   const [isMobileLeftSidebarOpen, setIsMobileLeftSidebarOpen] = useState<boolean>(false);
   const [drawerTab, setDrawerTab] = useState<'add_section' | 'manage_sections' | 'theme'>('add_section');
@@ -1128,6 +1612,11 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
     activeProject.sections[0];
 
   const availableVariantIds: WebsiteSectionVariantId[] =
+    activeProject.id === 'fractional_core' ||
+    activeProject.id === 'audit_pulse' ||
+    activeProject.id === 'verdant_spaces' ||
+    activeProject.id === 'nexus_growth_lab' ||
+    activeProject.id === 'coffee_shop' ||
     activeProject.id === 'teacher_profile' ||
     activeProject.id === 'doctor_profile_2' ||
     activeProject.id === 'store_website' ||
@@ -1352,7 +1841,47 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 
         {/* SECTION 1: NAVBAR */}
         {sec.type === 'navbar' &&
-          (activeProject.id === 'teacher_profile' ? (
+          (activeProject.id === 'fractional_core' ? (
+            <FractionalCoreNavbar
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'audit_pulse' ? (
+            <AuditPulseNavbar
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'verdant_spaces' ? (
+            <VerdantNavbar
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'nexus_growth_lab' ? (
+            <NexusNavbar
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'coffee_shop' ? (
+            <CoffeeNavbar
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'teacher_profile' ? (
             <TeacherNavbar
               title={sec.title}
               subtitle={sec.subtitle}
@@ -1448,7 +1977,47 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 
         {/* SECTION 2: HERO */}
         {sec.type === 'hero' &&
-          (activeProject.id === 'teacher_profile' ? (
+          (activeProject.id === 'fractional_core' ? (
+            <FractionalCoreHeroSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'audit_pulse' ? (
+            <AuditPulseHeroSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'verdant_spaces' ? (
+            <VerdantHeroSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'nexus_growth_lab' ? (
+            <NexusHeroSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'coffee_shop' ? (
+            <CoffeeHeroSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'teacher_profile' ? (
             <TeacherHeroSection
               title={sec.title}
               subtitle={sec.subtitle}
@@ -1684,9 +2253,17 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
           />
         )}
 
-        {/* DOCTOR / TEACHER PROFILE SECTION: SCHEDULE APPOINTMENT / LOCATION & HOURS */}
+        {/* DOCTOR / TEACHER / COFFEE SECTION: SCHEDULE APPOINTMENT / LOCATIONS & WHOLESALE */}
         {sec.type === 'doctor_appointment' &&
-          (activeProject.id === 'teacher_profile' ? (
+          (activeProject.id === 'coffee_shop' ? (
+            <CoffeeLocationsWholesaleStorySection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'teacher_profile' ? (
             <TeacherBookingContactSection
               title={sec.title}
               subtitle={sec.subtitle}
@@ -1736,7 +2313,15 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 
         {/* SECTION 4: CATALOG / PRODUCT SHOWCASE */}
         {sec.type === 'catalog' &&
-          (activeProject.id === 'store_admin_website' ? (
+          (activeProject.id === 'coffee_shop' ? (
+            <CoffeeSeasonalMenuSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'store_admin_website' ? (
             <StoreAdminPagesRouterSection
               title={sec.title}
               subtitle={sec.subtitle}
@@ -1886,28 +2471,61 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
         )}
 
         {/* SECTION 6: METRICS */}
-        {sec.type === 'metrics' && (
-          <section className="max-w-6xl mx-auto px-6 py-14">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                { value: '45,200+', label: 'Curated Titles in Print' },
-                { value: '99.4%', label: 'Damage-Free Delivery Rate' },
-                { value: '120+', label: 'Independent Press Partners' },
-                { value: '64', label: 'Countries Shipped Daily' },
-              ].map((m) => (
-                <div key={m.label} style={cardSurfaceStyle} className="p-6 text-center space-y-1">
-                  <div
-                    className="text-3xl font-black tracking-tight"
-                    style={{ color: primaryColor }}
-                  >
-                    {m.value}
+        {sec.type === 'metrics' &&
+          (activeProject.id === 'fractional_core' ? (
+            <FractionalCoreCalculatorDirectorySection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'audit_pulse' ? (
+            <AuditPulseEstimatorBreakdownSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'verdant_spaces' ? (
+            <VerdantEstimatorPortfolioSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'nexus_growth_lab' ? (
+            <NexusRoiCaseStudiesSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : (
+            <section className="max-w-6xl mx-auto px-6 py-14">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { value: '45,200+', label: 'Curated Titles in Print' },
+                  { value: '99.4%', label: 'Damage-Free Delivery Rate' },
+                  { value: '120+', label: 'Independent Press Partners' },
+                  { value: '64', label: 'Countries Shipped Daily' },
+                ].map((m) => (
+                  <div key={m.label} style={cardSurfaceStyle} className="p-6 text-center space-y-1">
+                    <div
+                      className="text-3xl font-black tracking-tight"
+                      style={{ color: primaryColor }}
+                    >
+                      {m.value}
+                    </div>
+                    <div className="text-xs font-semibold opacity-70">{m.label}</div>
                   </div>
-                  <div className="text-xs font-semibold opacity-70">{m.label}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+                ))}
+              </div>
+            </section>
+          ))}
 
         {/* SECTION 7: TESTIMONIALS */}
         {sec.type === 'testimonials' &&
@@ -1977,7 +2595,47 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 
         {/* SECTION 8: PRICING */}
         {sec.type === 'pricing' &&
-          (activeProject.id === 'teacher_profile' ? (
+          (activeProject.id === 'fractional_core' ? (
+            <FractionalCoreAdvisoryMatchFormSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'audit_pulse' ? (
+            <AuditPulseSecurityProcessBookingSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'verdant_spaces' ? (
+            <VerdantPackagesCoverageBookingSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'nexus_growth_lab' ? (
+            <NexusSolutionsBookingSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'coffee_shop' ? (
+            <CoffeeSubscriptionSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'teacher_profile' ? (
             <TeacherServicesPricingSection
               title={sec.title}
               subtitle={sec.subtitle}
@@ -2191,7 +2849,47 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 
         {/* SECTION 11: FOOTER */}
         {sec.type === 'footer' &&
-          (activeProject.id === 'teacher_profile' ? (
+          (activeProject.id === 'fractional_core' ? (
+            <FractionalCoreProofSitemapFooterSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'audit_pulse' ? (
+            <AuditPulsePricingFooterSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'verdant_spaces' ? (
+            <VerdantFaqFooterSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'nexus_growth_lab' ? (
+            <NexusTestimonialsFooterSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'coffee_shop' ? (
+            <CoffeeFooter
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'teacher_profile' ? (
             <TeacherFooter
               title={sec.title}
               subtitle={sec.subtitle}
@@ -2560,17 +3258,19 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
               </div>
             )}
             <StoreEcommerceProvider>
-              <div
-                className={`@container w-full transition-all duration-300 overflow-x-hidden shadow-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0E0C16] h-fit ${
-                  viewportWidth === 'desktop'
-                    ? 'max-w-full rounded-2xl'
-                    : viewportWidth === 'tablet'
-                    ? 'max-w-[768px] rounded-3xl ring-4 ring-neutral-300/70 dark:ring-neutral-800'
-                    : 'max-w-[390px] rounded-[36px] ring-8 ring-neutral-900 dark:ring-neutral-800'
-                }`}
-              >
-                {activeProject.sections.map((sec) => renderWebsiteSection(sec))}
-              </div>
+              <CoffeeShopProvider>
+                <div
+                  className={`@container w-full transition-all duration-300 overflow-x-hidden shadow-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0E0C16] h-fit ${
+                    viewportWidth === 'desktop'
+                      ? 'max-w-full rounded-2xl'
+                      : viewportWidth === 'tablet'
+                      ? 'max-w-[768px] rounded-3xl ring-4 ring-neutral-300/70 dark:ring-neutral-800'
+                      : 'max-w-[390px] rounded-[36px] ring-8 ring-neutral-900 dark:ring-neutral-800'
+                  }`}
+                >
+                  {activeProject.sections.map((sec) => renderWebsiteSection(sec))}
+                </div>
+              </CoffeeShopProvider>
             </StoreEcommerceProvider>
           </main>
 
