@@ -559,6 +559,46 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
           </button>
         </div>
 
+        {/* Platform Mode Switcher: Mobile App vs Website Landing Dashboard */}
+        <div className="p-3 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-[#101218]">
+          <div className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5 px-1">
+            Workspace Platform Mode
+          </div>
+          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-neutral-200/70 dark:bg-neutral-800">
+            <button
+              type="button"
+              onClick={() => {
+                if (activeProjectId === 'website_landing' && onSwitchProject) {
+                  onSwitchProject('book_store');
+                }
+              }}
+              className="py-2 px-2.5 rounded-lg text-xs font-extrabold flex items-center justify-center gap-1.5 text-white shadow-xs transition cursor-pointer"
+              style={{ backgroundColor: primaryColor, color: primaryTextColor }}
+            >
+              <Smartphone size={13} />
+              <span>Mobile App</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (onSwitchProject) {
+                  onSwitchProject('website_landing');
+                } else {
+                  window.dispatchEvent(
+                    new CustomEvent('switch-studio-platform', {
+                      detail: 'website',
+                    })
+                  );
+                }
+              }}
+              className="py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition cursor-pointer"
+            >
+              <Globe size={13} />
+              <span>Website</span>
+            </button>
+          </div>
+        </div>
+
         {/* Project List */}
         <div className="flex-1 overflow-y-auto p-3 space-y-3">
           <div className="px-2 flex items-center justify-between">

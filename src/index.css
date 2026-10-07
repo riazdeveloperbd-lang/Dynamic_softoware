@@ -1,5 +1,9 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant sm (@container (min-width: 40rem));
+@custom-variant md (@container (min-width: 48rem));
+@custom-variant lg (@container (min-width: 64rem));
+@custom-variant xl (@container (min-width: 80rem));
 
 :root {
   --app-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
