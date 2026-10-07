@@ -42,6 +42,7 @@ import {
   GripVertical,
   Move,
   HeartPulse,
+  GraduationCap,
 } from 'lucide-react';
 import JSZip from 'jszip';
 import {
@@ -78,8 +79,18 @@ import {
   StoreAdminPagesRouterSection,
   StoreAdminFooter,
 } from '../website/store_admin_website';
+import {
+  TeacherNavbar,
+  TeacherHeroSection,
+  TeacherAboutVideoCredentialsSection,
+  TeacherServicesPricingSection,
+  TeacherReviewsFaqSection,
+  TeacherBookingContactSection,
+  TeacherFooter,
+} from '../website/teacher_profile';
 
 export type WebsiteTemplateId =
+  | 'teacher_profile'
   | 'doctor_profile'
   | 'doctor_profile_2'
   | 'store_website'
@@ -751,9 +762,119 @@ export const INITIAL_WEBSITE_PROJECTS: WebsiteProjectPreset[] = [
       },
     ],
   },
+  {
+    id: 'teacher_profile',
+    name: 'Teacher Profile (3D UI)',
+    folderSlug: 'teacher_profile',
+    tagline:
+      'Prof. Julian Vance, Ph.D. — Math & Physics Tutor 3D Spatial Landing Page',
+    domain: 'julianvance.edu',
+    primaryColor: '#2563EB',
+    icon: GraduationCap,
+    files: [
+      { path: 'src/website/teacher_profile/index.ts', kind: 'index' },
+      {
+        path: 'src/website/teacher_profile/pages/TeacherProfileLandingPage.tsx',
+        kind: 'page',
+      },
+      {
+        path: 'src/website/teacher_profile/component/TeacherNavbar.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/teacher_profile/component/TeacherHeroSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/teacher_profile/component/TeacherAboutVideoCredentialsSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/teacher_profile/component/TeacherServicesPricingSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/teacher_profile/component/TeacherReviewsFaqSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/teacher_profile/component/TeacherBookingContactSection.tsx',
+        kind: 'component',
+      },
+      {
+        path: 'src/website/teacher_profile/component/TeacherFooter.tsx',
+        kind: 'component',
+      },
+    ],
+    sections: [
+      {
+        id: 'teacher_nav_1',
+        type: 'navbar',
+        title: 'Prof. Julian Vance',
+        subtitle: 'MIT Ph.D. · Math & Physics 3D Lightboard Tutor',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'teacher_hero_1',
+        type: 'hero',
+        title: 'Prof. Julian Vance, Ph.D.',
+        subtitle:
+          'Math & Physics Tutor specializing in AP Calculus BC, Multivariable Calculus, IB Physics HL, and Olympiad Problem Solving. Turning abstract equations into intuitive 3D geometric insight.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'teacher_about_1',
+        type: 'doctor_about',
+        title: 'Teaching Philosophy, 75-Second Welcome & Academic Credentials',
+        subtitle:
+          'Combining rigorous MIT research training with 12 years of one-on-one mentorship to transform how students experience mathematics and physics.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'teacher_pricing_1',
+        type: 'pricing',
+        title: 'Services & Transparent Tuition Rates',
+        subtitle:
+          'Flexible 1-on-1 tutoring, small-group problem-solving labs, and comprehensive monthly mentorship packages. Every plan begins with a complimentary 30-minute diagnostic session.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'teacher_reviews_1',
+        type: 'testimonials',
+        title: 'Verified Student & Parent Outcomes',
+        subtitle:
+          'Concrete score improvements across AP Calculus, IB Physics HL, SAT Math, and university engineering coursework.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'teacher_booking_1',
+        type: 'doctor_appointment',
+        title: 'Lock In a Calendar Slot or Send a Message',
+        subtitle:
+          'Reserve your complimentary 30-minute 3D Lightboard diagnostic session or ask a question about curriculum fit, exam timelines, and group lab availability.',
+        variant: 'varient_1',
+        visible: true,
+      },
+      {
+        id: 'teacher_footer_1',
+        type: 'footer',
+        title: 'Prof. Julian Vance, Ph.D.',
+        subtitle:
+          'MIT Applied Mathematics Ph.D. · National Board Certified Educator (#MA-88412) · Cambridge 3D Lightboard Studio.',
+        variant: 'varient_1',
+        visible: true,
+      },
+    ],
+  },
 ];
 
 const WEBSITE_COLOR_SWATCHES = [
+  { id: 'quantum_blue', name: 'Quantum Cobalt', hex: '#2563EB' },
   { id: 'bazar_orange', name: 'Bazar Orange', hex: '#F37021' },
   { id: 'cardio_emerald', name: 'Cardiology Emerald', hex: '#118C74' },
   { id: 'medical_navy', name: 'Medical Royal Navy', hex: '#1D2B6B' },
@@ -824,9 +945,9 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 }) => {
   const [projects, setProjects] = useState<WebsiteProjectPreset[]>(INITIAL_WEBSITE_PROJECTS);
   const [activeProjectId, setActiveProjectId] =
-    useState<WebsiteTemplateId>('store_admin_website');
+    useState<WebsiteTemplateId>('teacher_profile');
   const [selectedSectionId, setSelectedSectionId] =
-    useState<string>('store_admin_hero_1');
+    useState<string>('teacher_hero_1');
   const [isRightDrawerOpen, setIsRightDrawerOpen] = useState<boolean>(false);
   const [isMobileLeftSidebarOpen, setIsMobileLeftSidebarOpen] = useState<boolean>(false);
   const [drawerTab, setDrawerTab] = useState<'add_section' | 'manage_sections' | 'theme'>('add_section');
@@ -1007,6 +1128,7 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
     activeProject.sections[0];
 
   const availableVariantIds: WebsiteSectionVariantId[] =
+    activeProject.id === 'teacher_profile' ||
     activeProject.id === 'doctor_profile_2' ||
     activeProject.id === 'store_website' ||
     activeProject.id === 'store_admin_website'
@@ -1230,7 +1352,15 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 
         {/* SECTION 1: NAVBAR */}
         {sec.type === 'navbar' &&
-          (activeProject.id === 'store_admin_website' ? (
+          (activeProject.id === 'teacher_profile' ? (
+            <TeacherNavbar
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'store_admin_website' ? (
             <StoreAdminNavbar
               title={sec.title}
               subtitle={sec.subtitle}
@@ -1318,7 +1448,21 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 
         {/* SECTION 2: HERO */}
         {sec.type === 'hero' &&
-          (activeProject.id === 'store_admin_website' ? (
+          (activeProject.id === 'teacher_profile' ? (
+            <TeacherHeroSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+              onBookTrial={() =>
+                triggerToast('Scrolling to 30-Min Free Trial Calendar Booking')
+              }
+              onViewSchedule={() =>
+                triggerToast('Viewing Live Weekly Lightboard Availability')
+              }
+            />
+          ) : activeProject.id === 'store_admin_website' ? (
             <StoreAdminHeroOverviewSection
               title={sec.title}
               subtitle={sec.subtitle}
@@ -1473,9 +1617,17 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
             </section>
           ))}
 
-        {/* DOCTOR PROFILE SECTION: ABOUT, CREDENTIALS & CORE VALUES */}
+        {/* DOCTOR / TEACHER PROFILE SECTION: ABOUT, CREDENTIALS & CORE VALUES */}
         {sec.type === 'doctor_about' &&
-          (activeProject.id === 'doctor_profile_2' ? (
+          (activeProject.id === 'teacher_profile' ? (
+            <TeacherAboutVideoCredentialsSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'doctor_profile_2' ? (
             <Doctor2AboutSection
               title={sec.title}
               subtitle={sec.subtitle}
@@ -1495,7 +1647,15 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 
         {/* DOCTOR PROFILE SECTION: MEDICAL SERVICES / SPECIALIZATIONS */}
         {sec.type === 'doctor_services' &&
-          (activeProject.id === 'doctor_profile_2' ? (
+          (activeProject.id === 'teacher_profile' ? (
+            <TeacherServicesPricingSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'doctor_profile_2' ? (
             <Doctor2SpecializationsSection
               title={sec.title}
               subtitle={sec.subtitle}
@@ -1524,9 +1684,17 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
           />
         )}
 
-        {/* DOCTOR PROFILE SECTION: SCHEDULE APPOINTMENT / LOCATION & HOURS */}
+        {/* DOCTOR / TEACHER PROFILE SECTION: SCHEDULE APPOINTMENT / LOCATION & HOURS */}
         {sec.type === 'doctor_appointment' &&
-          (activeProject.id === 'doctor_profile_2' ? (
+          (activeProject.id === 'teacher_profile' ? (
+            <TeacherBookingContactSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'doctor_profile_2' ? (
             <Doctor2LocationSection
               title={sec.title}
               subtitle={sec.subtitle}
@@ -1743,7 +1911,15 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 
         {/* SECTION 7: TESTIMONIALS */}
         {sec.type === 'testimonials' &&
-          (activeProject.id === 'doctor_profile_2' ? (
+          (activeProject.id === 'teacher_profile' ? (
+            <TeacherReviewsFaqSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'doctor_profile_2' ? (
             <Doctor2ReviewsSection
               title={sec.title}
               subtitle={sec.subtitle}
@@ -1800,8 +1976,20 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
           ))}
 
         {/* SECTION 8: PRICING */}
-        {sec.type === 'pricing' && (
-          <section className="max-w-6xl mx-auto px-6 py-16 space-y-10">
+        {sec.type === 'pricing' &&
+          (activeProject.id === 'teacher_profile' ? (
+            <TeacherServicesPricingSection
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+              onSelectPlan={(planName) =>
+                triggerToast(`Selected "${planName}" — Locking in Calendar Slot`)
+              }
+            />
+          ) : (
+            <section className="max-w-6xl mx-auto px-6 py-16 space-y-10">
             <div className="text-center max-w-2xl mx-auto space-y-2">
               <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
                 {sec.title}
@@ -1900,7 +2088,7 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
               ))}
             </div>
           </section>
-        )}
+          ))}
 
         {/* SECTION 9: FAQ */}
         {sec.type === 'faq' && (
@@ -2003,7 +2191,15 @@ export const WebsiteLandingStudio: React.FC<WebsiteLandingStudioProps> = ({
 
         {/* SECTION 11: FOOTER */}
         {sec.type === 'footer' &&
-          (activeProject.id === 'store_admin_website' ? (
+          (activeProject.id === 'teacher_profile' ? (
+            <TeacherFooter
+              title={sec.title}
+              subtitle={sec.subtitle}
+              variant={sec.variant}
+              primaryColor={primaryColor}
+              isDark={isDarkSection}
+            />
+          ) : activeProject.id === 'store_admin_website' ? (
             <StoreAdminFooter
               title={sec.title}
               subtitle={sec.subtitle}

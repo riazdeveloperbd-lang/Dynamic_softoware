@@ -50,7 +50,7 @@ export default function App() {
         return saved;
       }
     }
-    return 'book_store';
+    return 'website_landing';
   });
 
   const [lastMobileProject, setLastMobileProject] = useState<string>('book_store');
