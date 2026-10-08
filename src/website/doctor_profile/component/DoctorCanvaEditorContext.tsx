@@ -175,8 +175,12 @@ export const DoctorCanvaEditorProvider: React.FC<{
   const getTextData = useCallback(
     (id: string, defaultText: string, defaultLinkUrl?: string): CanvaTextElementData => {
       const existing = store.texts[id];
+      const validText =
+        existing?.text !== undefined && existing.text.trim().length > 0
+          ? existing.text
+          : defaultText;
       return {
-        text: existing?.text !== undefined ? existing.text : defaultText,
+        text: validText,
         linkUrl: existing?.linkUrl !== undefined ? existing.linkUrl : defaultLinkUrl,
         linkTarget: existing?.linkTarget || '_self',
         textColor: existing?.textColor,
@@ -736,7 +740,8 @@ export const DoctorCanvaDrawerInspector: React.FC<{
  * ============================================================================ */
 export interface EditableTextProps {
   id: string;
-  defaultText: string;
+  defaultText?: string;
+  defaultValue?: string;
   defaultLinkUrl?: string;
   as?: 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'div';
   className?: string;
@@ -746,11 +751,13 @@ export interface EditableTextProps {
 export const EditableText: React.FC<EditableTextProps> = ({
   id,
   defaultText,
+  defaultValue,
   defaultLinkUrl,
   as: Tag = 'span',
   className = '',
   style,
 }) => {
+  const resolvedDefault = defaultText ?? defaultValue ?? '';
   const {
     isEditMode,
     selectedElement,
@@ -761,7 +768,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
     onElementSelect,
   } = useDoctorCanva();
 
-  const data = getTextData(id, defaultText, defaultLinkUrl);
+  const data = getTextData(id, resolvedDefault, defaultLinkUrl);
   const isSelected = selectedElement?.id === id;
 
   const combinedStyle: React.CSSProperties = {
@@ -781,13 +788,13 @@ export const EditableText: React.FC<EditableTextProps> = ({
           style={combinedStyle}
           className={`${className} underline decoration-[#48B89F]/60 underline-offset-4 hover:opacity-85 transition cursor-pointer`}
         >
-          {data.text}
+          {data.text || resolvedDefault}
         </a>
       );
     }
     return (
       <Tag style={combinedStyle} className={className}>
-        {data.text}
+        {data.text || resolvedDefault}
       </Tag>
     );
   }
@@ -801,7 +808,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
         const el: SelectedCanvaElement = {
           id,
           kind: 'text',
-          defaultText,
+          defaultText: resolvedDefault,
           defaultLinkUrl,
         };
         setSelectedElement(el);
@@ -810,7 +817,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
       onBlur={(e: React.FocusEvent<HTMLElement>) => {
         const nextText = e.currentTarget.innerText;
         if (nextText !== data.text) {
-          updateTextData(id, { text: nextText }, defaultText);
+          updateTextData(id, { text: nextText }, resolvedDefault);
         }
       }}
       style={combinedStyle}
@@ -825,7 +832,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
           : 'hover:ring-1 hover:ring-dashed hover:ring-[#48B89F]/70'
       }`}
     >
-      {data.text}
+      {data.text || resolvedDefault}
       {data.linkUrl && (
         <span
           contentEditable={false}
@@ -848,7 +855,8 @@ export const EditableText: React.FC<EditableTextProps> = ({
  * ============================================================================ */
 export interface EditableButtonProps {
   id: string;
-  defaultText: string;
+  defaultText?: string;
+  defaultValue?: string;
   defaultLinkUrl?: string;
   className?: string;
   style?: React.CSSProperties;
@@ -860,6 +868,7 @@ export interface EditableButtonProps {
 export const EditableButton: React.FC<EditableButtonProps> = ({
   id,
   defaultText,
+  defaultValue,
   defaultLinkUrl,
   className = '',
   style,
@@ -867,6 +876,7 @@ export const EditableButton: React.FC<EditableButtonProps> = ({
   iconRight,
   onClickFallback,
 }) => {
+  const resolvedDefault = defaultText ?? defaultValue ?? '';
   const {
     isEditMode,
     selectedElement,
@@ -877,7 +887,7 @@ export const EditableButton: React.FC<EditableButtonProps> = ({
     onElementSelect,
   } = useDoctorCanva();
 
-  const data = getTextData(id, defaultText, defaultLinkUrl);
+  const data = getTextData(id, resolvedDefault, defaultLinkUrl);
   const isSelected = selectedElement?.id === id;
 
   const combinedStyle: React.CSSProperties = {
