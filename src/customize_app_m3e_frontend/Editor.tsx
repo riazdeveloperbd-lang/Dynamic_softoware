@@ -138,11 +138,11 @@ import { constrainModalRails, modalRailOf, updateRail } from "./lib/rail";
 import { isProject, readProject, saveProject } from "./lib/project";
 import { hasShareHash, readShareHash } from "./lib/share";
 import { LoadingIndicator } from "./components/Loading";
-import { draftDesign } from "./lib/ai";
 import { ShareDialog } from "./components/ShareMenu";
 import { ColorPanel } from "./components/ColorPanel";
 import { MotionPanel, ShapePanel, TypePanel } from "./components/ThemePanel";
 import { ThemeContext, ensureFontLoaded, ensureLangFontLoaded } from "./lib/theme";
+import { buildClothShopFullAppDoc } from "./lib/clothShopFullAppDoc";
 import { BottomSheet, MobileActionBar, MobileInspector, MobileLang, MobileSettings } from "./components/Mobile";
 import { ConfirmDialog, IconBtn, Segmented } from "./components/ui";
 import { Lang, LangContext, SEED_TEXT, getLang, setGlobalLang, t, translateDefaultFrameName, translateDefaultText } from "./lib/i18n";
@@ -179,8 +179,9 @@ const MAX_Z = 3;
  *  toolbar's row at the top, a margin elsewhere */
 const GLIDE_TOP = 84;
 const GLIDE_PAD = 40;
-const HISTORY_MAX = 100;
 const DOC_KEY = "m3e:doc";
+const DOC_VERSION_KEY = "m3e:doc_version";
+const CURRENT_DOC_VERSION = "cloth_shop_v3_perfect";
 /** the design a draft or a link replaced, until the author keeps or undoes it */
 const BEFORE_KEY = "m3e:doc:before";
 const DOC_LOCK = "m3e:doc:editor";
@@ -781,7 +782,14 @@ export default function Editor({
     // React's development double-run would otherwise read back its own first save
     if (loadedRef.current) return;
     try {
-      const d = localStorage.getItem(DOC_KEY);
+      const currentVer = localStorage.getItem(DOC_VERSION_KEY);
+      let d = localStorage.getItem(DOC_KEY);
+      if (!currentVer || currentVer !== CURRENT_DOC_VERSION) {
+        const freshDoc = buildClothShopFullAppDoc();
+        localStorage.setItem(DOC_KEY, JSON.stringify(freshDoc));
+        localStorage.setItem(DOC_VERSION_KEY, CURRENT_DOC_VERSION);
+        d = JSON.stringify(freshDoc);
+      }
       if (d) {
         hadDocRef.current = true;
         applyDoc(JSON.parse(d) as Partial<Doc>, false);
@@ -2888,6 +2896,10 @@ export default function Editor({
 
   const onLoadTemplateDoc = (templateDoc: Doc) => {
     importDoc(templateDoc);
+    try {
+      localStorage.setItem(DOC_KEY, JSON.stringify(templateDoc));
+      localStorage.setItem(DOC_VERSION_KEY, CURRENT_DOC_VERSION);
+    } catch {}
     showToast(`Loaded ${templateDoc.title}`);
   };
 

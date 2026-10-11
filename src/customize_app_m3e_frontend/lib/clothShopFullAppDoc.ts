@@ -37,16 +37,12 @@ const FASHION_IMGS = {
   pinkThermal:
     localClothImages["../../cloth_shop_frontend/assets/images/product_pink_longsleeve_tshirt_1791167599439.jpg"] ||
     "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&auto=format&fit=crop&q=80",
-  accessories:
-    "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80",
-  sneakers:
-    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
 };
 
 /**
  * Builds the complete 27-screen Cloth Shop Application document for M3E Canvas.
- * Matches pixel-perfect with Define Apparel Mobile App (Discover feed, product cards,
- * cart, checkout, profile, live tracking, auth).
+ * Every screen is mathematically measured and positioned with ZERO overlapping,
+ * accurate widths & heights, no squashed cards, and clean luxury fashion UI.
  */
 export function buildClothShopFullAppDoc(): Doc {
   const FRAME_W = PHONE_W; // 412
@@ -60,7 +56,7 @@ export function buildClothShopFullAppDoc(): Doc {
   const groups: Group[] = [];
 
   // ==========================================================================
-  // ROW 0: Primary Shopping Experience (y = 0)
+  // ROW 0: Primary Shopping Flow (y = 0)
   // ==========================================================================
   const f_home: Frame = {
     id: "cloth_home",
@@ -74,7 +70,7 @@ export function buildClothShopFullAppDoc(): Doc {
 
   const f_search: Frame = {
     id: "cloth_search",
-    name: "2. Visual Search & Catalog",
+    name: "2. Search & Catalog",
     x: STRIDE_X * 1,
     y: STRIDE_Y * 0,
     w: FRAME_W,
@@ -99,7 +95,7 @@ export function buildClothShopFullAppDoc(): Doc {
     y: STRIDE_Y * 0,
     w: FRAME_W,
     h: FRAME_H,
-    note: "Overall rating 4.8/5, verified customer review cards with star ratings and reviewer photos.",
+    note: "Overall rating 4.8/5, verified customer review cards with star ratings and reviewer comments.",
   };
 
   const f_saved: Frame = {
@@ -341,7 +337,6 @@ export function buildClothShopFullAppDoc(): Doc {
     note: "New password and confirmation fields with Update Password action.",
   };
 
-  // Push all 27 frames
   frames.push(
     f_home, f_search, f_detail, f_reviews, f_saved, f_cart, f_checkout,
     f_account, f_my_orders, f_track_order, f_my_details, f_notifications, f_help_center, f_customer_service,
@@ -349,8 +344,8 @@ export function buildClothShopFullAppDoc(): Doc {
     f_splash, f_onboarding, f_login, f_signup, f_forgot_pwd, f_verify_code, f_reset_pwd
   );
 
-  // Helper for Bottom Navigation on core shopping screens
-  const buildBottomNavGroup = (frame: Frame, selectedIndex: number): Group => ({
+  // Bottom Navigation Generator
+  const buildBottomNav = (frame: Frame, selectedIndex: number): Group => ({
     id: uid(),
     x: frame.x,
     y: frame.y + FRAME_H - 76,
@@ -384,26 +379,26 @@ export function buildClothShopFullAppDoc(): Doc {
   });
 
   // ==========================================================================
-  // SCREEN 1: Homepage (Feed / Discover) - EXACT SAME UI AS SCREENSHOT 2
+  // SCREEN 1: Discover (Homepage) - EXACT SAME AS SCREENSHOT 2
   // ==========================================================================
-  // Top App Bar ("Discover", Search icon, Notifications bell with red dot badge)
+  // 1. Top Header: Discover + Search + Bell
   groups.push({
     id: uid(),
     x: f_home.x,
-    y: f_home.y + 10,
+    y: f_home.y,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "topAppBar",
         label: "Discover",
-        icon: null, // No left icon for clean bold left alignment
+        icon: null,
         icon2: "search",
         icon3: "notifications",
         font: 28,
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         actions: {
           icon2: { to: "cloth_search", transition: "fade" },
           icon3: { to: "cloth_notifications", transition: "slide" },
@@ -412,11 +407,11 @@ export function buildClothShopFullAppDoc(): Doc {
     ],
   });
 
-  // Search Bar with microphone and tune filter button
+  // 2. Search Bar
   groups.push({
     id: uid(),
     x: f_home.x + PHONE_MARGIN,
-    y: f_home.y + 74,
+    y: f_home.y + 112,
     axis: "x",
     items: [
       {
@@ -434,11 +429,11 @@ export function buildClothShopFullAppDoc(): Doc {
     ],
   });
 
-  // Category Pills: "All" (Active black pill), "Tshirts", "Jeans", "Shoes"
+  // 3. Category Pills Row
   groups.push({
     id: uid(),
     x: f_home.x + PHONE_MARGIN,
-    y: f_home.y + 134,
+    y: f_home.y + 172,
     axis: "x",
     items: [
       { id: uid(), kind: "chip", label: "All", variant: "filled", size2: 36 },
@@ -448,11 +443,11 @@ export function buildClothShopFullAppDoc(): Doc {
     ],
   });
 
-  // 2-Column Product Grid Row 1 (Regular Fit Slogan & Regular Fit Polo with -52% discount)
+  // 4. Product Grid Row 1 (Regular Fit Slogan & Regular Fit Polo)
   groups.push({
     id: uid(),
     x: f_home.x + PHONE_MARGIN,
-    y: f_home.y + 186,
+    y: f_home.y + 220,
     axis: "x",
     items: [
       {
@@ -463,9 +458,9 @@ export function buildClothShopFullAppDoc(): Doc {
         icon2: "favorite_border",
         variant: "outlined",
         size: 184,
-        size2: 260,
+        size2: 270,
         imagePos: "top",
-        imageSize: 175,
+        imageSize: 185,
         src: FASHION_IMGS.navyTee,
         action: { to: "cloth_product_detail", transition: "slide" },
       },
@@ -478,20 +473,20 @@ export function buildClothShopFullAppDoc(): Doc {
         icon2: "favorite_border",
         variant: "outlined",
         size: 184,
-        size2: 260,
+        size2: 270,
         imagePos: "top",
-        imageSize: 175,
+        imageSize: 185,
         src: FASHION_IMGS.tealPolo,
         action: { to: "cloth_product_detail", transition: "slide" },
       },
     ],
   });
 
-  // 2-Column Product Grid Row 2 (Regular Fit Black & Regular Fit V-Neck)
+  // 5. Product Grid Row 2 (Regular Fit Black & Regular Fit V-Neck)
   groups.push({
     id: uid(),
     x: f_home.x + PHONE_MARGIN,
-    y: f_home.y + 460,
+    y: f_home.y + 502,
     axis: "x",
     items: [
       {
@@ -502,9 +497,9 @@ export function buildClothShopFullAppDoc(): Doc {
         icon2: "favorite_border",
         variant: "outlined",
         size: 184,
-        size2: 260,
+        size2: 270,
         imagePos: "top",
-        imageSize: 175,
+        imageSize: 185,
         src: FASHION_IMGS.blackTee,
         action: { to: "cloth_product_detail", transition: "slide" },
       },
@@ -516,36 +511,35 @@ export function buildClothShopFullAppDoc(): Doc {
         icon2: "favorite_border",
         variant: "outlined",
         size: 184,
-        size2: 260,
+        size2: 270,
         imagePos: "top",
-        imageSize: 175,
+        imageSize: 185,
         src: FASHION_IMGS.vneckTee,
         action: { to: "cloth_product_detail", transition: "slide" },
       },
     ],
   });
 
-  // Screen 1 Bottom Navigation (Home active)
-  groups.push(buildBottomNavGroup(f_home, 0));
+  groups.push(buildBottomNav(f_home, 0));
 
   // ==========================================================================
-  // SCREEN 2: Search & Catalog
+  // SCREEN 2: Visual Search & Catalog
   // ==========================================================================
   groups.push({
     id: uid(),
     x: f_search.x,
-    y: f_search.y + 10,
+    y: f_search.y,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "topAppBar",
-        label: "Visual Search",
+        label: "Search & Catalog",
         icon: "arrow_back",
         icon2: "tune",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_home", transition: "slideLeft" },
       },
     ],
@@ -554,13 +548,13 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_search.x + PHONE_MARGIN,
-    y: f_search.y + 74,
+    y: f_search.y + 112,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "searchBar",
-        label: "T-Shirts & Polos",
+        label: "T-Shirts & Streetwear",
         icon: "search",
         icon2: "close",
         variant: "tonal",
@@ -573,7 +567,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_search.x + PHONE_MARGIN,
-    y: f_search.y + 134,
+    y: f_search.y + 172,
     axis: "x",
     items: [
       { id: uid(), kind: "chip", label: "All Items", variant: "filled", size2: 36 },
@@ -585,21 +579,21 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_search.x + PHONE_MARGIN,
-    y: f_search.y + 186,
+    y: f_search.y + 220,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "Pink Longsleeve Thermal",
+        label: "Pink Thermal Longsleeve",
         supporting: "$1,450",
         badge: "New Drop",
         icon2: "favorite_border",
         variant: "outlined",
         size: 184,
-        size2: 260,
+        size2: 270,
         imagePos: "top",
-        imageSize: 175,
+        imageSize: 185,
         src: FASHION_IMGS.pinkThermal,
         action: { to: "cloth_product_detail", transition: "slide" },
       },
@@ -611,9 +605,9 @@ export function buildClothShopFullAppDoc(): Doc {
         icon2: "favorite_border",
         variant: "outlined",
         size: 184,
-        size2: 260,
+        size2: 270,
         imagePos: "top",
-        imageSize: 175,
+        imageSize: 185,
         src: FASHION_IMGS.hero,
         action: { to: "cloth_product_detail", transition: "slide" },
       },
@@ -623,7 +617,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_search.x + PHONE_MARGIN,
-    y: f_search.y + 460,
+    y: f_search.y + 502,
     axis: "x",
     items: [
       {
@@ -634,9 +628,9 @@ export function buildClothShopFullAppDoc(): Doc {
         icon2: "favorite_border",
         variant: "outlined",
         size: 184,
-        size2: 260,
+        size2: 270,
         imagePos: "top",
-        imageSize: 175,
+        imageSize: 185,
         src: FASHION_IMGS.navyTee,
         action: { to: "cloth_product_detail", transition: "slide" },
       },
@@ -645,19 +639,20 @@ export function buildClothShopFullAppDoc(): Doc {
         kind: "card",
         label: "Regular Fit Polo",
         supporting: "$1,100",
+        badge: "-52%",
         icon2: "favorite_border",
         variant: "outlined",
         size: 184,
-        size2: 260,
+        size2: 270,
         imagePos: "top",
-        imageSize: 175,
+        imageSize: 185,
         src: FASHION_IMGS.tealPolo,
         action: { to: "cloth_product_detail", transition: "slide" },
       },
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_search, 1));
+  groups.push(buildBottomNav(f_search, 1));
 
   // ==========================================================================
   // SCREEN 3: Product Details
@@ -665,28 +660,28 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_detail.x,
-    y: f_detail.y + 10,
+    y: f_detail.y,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "topAppBar",
-        label: "Details",
+        label: "Product Details",
         icon: "arrow_back",
         icon2: "share",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_home", transition: "slideLeft" },
       },
     ],
   });
 
-  // Hero Product Showcase Photo
+  // Hero Garment Image (380 x 360)
   groups.push({
     id: uid(),
     x: f_detail.x + PHONE_MARGIN,
-    y: f_detail.y + 74,
+    y: f_detail.y + 112,
     axis: "x",
     items: [
       {
@@ -697,26 +692,26 @@ export function buildClothShopFullAppDoc(): Doc {
         icon2Fill: true,
         variant: "filled",
         size: 380,
-        size2: 320,
+        size2: 360,
         imagePos: "top",
-        imageSize: 320,
+        imageSize: 360,
         src: FASHION_IMGS.navyTee,
       },
     ],
   });
 
-  // Product Name, Price, and Star Reviews Row
+  // Title, Price & Review Rating
   groups.push({
     id: uid(),
     x: f_detail.x + PHONE_MARGIN,
-    y: f_detail.y + 406,
+    y: f_detail.y + 484,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "listItem",
         label: "Regular Fit Slogan T-Shirt",
-        supporting: "$1,190.00 · ★ 4.8/5 (240 reviews)",
+        supporting: "$1,190.00 · ★ 4.8/5 (240 verified reviews)",
         icon: "verified",
         variant: "text",
         size: 380,
@@ -725,11 +720,11 @@ export function buildClothShopFullAppDoc(): Doc {
     ],
   });
 
-  // Size chips
+  // Size chips (S, M, L, XL)
   groups.push({
     id: uid(),
     x: f_detail.x + PHONE_MARGIN,
-    y: f_detail.y + 480,
+    y: f_detail.y + 566,
     axis: "x",
     items: [
       { id: uid(), kind: "chip", label: "Size S", variant: "tonal", size2: 36 },
@@ -739,18 +734,18 @@ export function buildClothShopFullAppDoc(): Doc {
     ],
   });
 
-  // Garment Description Note
+  // Description Card
   groups.push({
     id: uid(),
     x: f_detail.x + PHONE_MARGIN,
-    y: f_detail.y + 532,
+    y: f_detail.y + 614,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "Architectural Streetwear Capsule",
-        supporting: "Custom luxury 380GSM combed cotton with rib-knit collar and dropped shoulders. Pre-shrunk finish.",
+        label: "380GSM Combed Cotton · Boxy Oversized Fit",
+        supporting: "Pre-shrunk architectural silhouette with reinforced rib collar. Model is 6'1\" wearing size M.",
         variant: "tonal",
         size: 380,
         size2: 90,
@@ -762,7 +757,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_detail.x + PHONE_MARGIN,
-    y: f_detail.y + 636,
+    y: f_detail.y + 716,
     axis: "x",
     items: [
       {
@@ -788,7 +783,7 @@ export function buildClothShopFullAppDoc(): Doc {
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_detail, 0));
+  groups.push(buildBottomNav(f_detail, 0));
 
   // ==========================================================================
   // SCREEN 4: Customer Reviews
@@ -796,17 +791,17 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_reviews.x,
-    y: f_reviews.y + 10,
+    y: f_reviews.y,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "topAppBar",
-        label: "Customer Reviews",
+        label: "Customer Reviews (240)",
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_product_detail", transition: "slideLeft" },
       },
     ],
@@ -815,14 +810,14 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_reviews.x + PHONE_MARGIN,
-    y: f_reviews.y + 74,
+    y: f_reviews.y + 112,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "4.8 out of 5 Stars",
-        supporting: "Based on 240 verified customer purchases worldwide · 96% recommend this product",
+        label: "4.8 out of 5 Stars · Verified Purchases",
+        supporting: "96% of buyers recommend this fit · 189 five-star reviews",
         icon: "star",
         variant: "tonal",
         size: 380,
@@ -834,43 +829,98 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_reviews.x + PHONE_MARGIN,
-    y: f_reviews.y + 188,
-    axis: "y",
+    y: f_reviews.y + 224,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
         label: "Marcus Vance · ★★★★★ (Verified Buyer)",
-        supporting: "The heavyweight fabric drape is incredible. Exactly the high-end streetwear silhouette I wanted.",
+        supporting: "The heavyweight fabric drape is incredible. Exactly the high-end streetwear silhouette I wanted. Fits true to size.",
         icon: "person",
         variant: "outlined",
         size: 380,
-        size2: 100,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Sarah Chen · ★★★★★ (Verified Buyer)",
-        supporting: "True to size, super fast 2-day delivery to New York. Love the subtle embroidery on the chest.",
-        icon: "person",
-        variant: "outlined",
-        size: 380,
-        size2: 100,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Liam Kowalski · ★★★★☆ (Verified Buyer)",
-        supporting: "Color matches the studio pictures perfectly. Will definitely pick up the teal polo next.",
-        icon: "person",
-        variant: "outlined",
-        size: 380,
-        size2: 100,
+        size2: 120,
       },
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_reviews, 0));
+  groups.push({
+    id: uid(),
+    x: f_reviews.x + PHONE_MARGIN,
+    y: f_reviews.y + 356,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Sarah Chen · ★★★★★ (Verified Buyer)",
+        supporting: "True to size, super fast 2-day delivery to New York. Love the subtle embroidery on the chest and thick collar.",
+        icon: "person",
+        variant: "outlined",
+        size: 380,
+        size2: 120,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_reviews.x + PHONE_MARGIN,
+    y: f_reviews.y + 488,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Liam Kowalski · ★★★★☆ (Verified Buyer)",
+        supporting: "Color matches the studio pictures perfectly. Washed twice and held its shape with zero shrinking.",
+        icon: "person",
+        variant: "outlined",
+        size: 380,
+        size2: 120,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_reviews.x + PHONE_MARGIN,
+    y: f_reviews.y + 620,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Elena Rostova · ★★★★★ (Verified Buyer)",
+        supporting: "Obsidian black is saturated and deep. Premium luxury feel that rivals designer brands at triple the price.",
+        icon: "person",
+        variant: "outlined",
+        size: 380,
+        size2: 120,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_reviews.x + PHONE_MARGIN,
+    y: f_reviews.y + 752,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Write a Verified Review",
+        icon: "rate_review",
+        variant: "filled",
+        size: 380,
+        size2: 52,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_reviews, 0));
 
   // ==========================================================================
   // SCREEN 5: Saved Items (Wishlist)
@@ -878,7 +928,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_saved.x,
-    y: f_saved.y + 10,
+    y: f_saved.y,
     axis: "x",
     items: [
       {
@@ -889,7 +939,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon2: "delete_outline",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_home", transition: "slideLeft" },
       },
     ],
@@ -898,46 +948,64 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_saved.x + PHONE_MARGIN,
-    y: f_saved.y + 74,
-    axis: "y",
+    y: f_saved.y + 112,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
         label: "Regular Fit Slogan · $1,190",
-        supporting: "Navy Blue · Size M · In Stock",
+        supporting: "Navy Blue · Size M · In Stock · Free Shipping",
         icon: "favorite",
         variant: "outlined",
         size: 380,
-        size2: 110,
+        size2: 130,
         imagePos: "leading",
-        imageSize: 90,
+        imageSize: 110,
         src: FASHION_IMGS.navyTee,
       },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_saved.x + PHONE_MARGIN,
+    y: f_saved.y + 254,
+    axis: "x",
+    items: [
       {
         id: uid(),
         kind: "card",
         label: "Regular Fit Polo · $1,100",
-        supporting: "Teal Green · Size L · -52% Sale",
+        supporting: "Teal Green · Size L · -52% Sale Active",
         icon: "favorite",
         variant: "outlined",
         size: 380,
-        size2: 110,
+        size2: 130,
         imagePos: "leading",
-        imageSize: 90,
+        imageSize: 110,
         src: FASHION_IMGS.tealPolo,
       },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_saved.x + PHONE_MARGIN,
+    y: f_saved.y + 396,
+    axis: "x",
+    items: [
       {
         id: uid(),
         kind: "card",
         label: "Regular Fit Black · $1,690",
-        supporting: "Sleeveless Tank · Size M",
+        supporting: "Sleeveless Edition · Size M · In Stock",
         icon: "favorite",
         variant: "outlined",
         size: 380,
-        size2: 110,
+        size2: 130,
         imagePos: "leading",
-        imageSize: 90,
+        imageSize: 110,
         src: FASHION_IMGS.blackTee,
       },
     ],
@@ -946,23 +1014,62 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_saved.x + PHONE_MARGIN,
-    y: f_saved.y + 424,
+    y: f_saved.y + 538,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Regular Fit V-Neck · $1,290",
+        supporting: "Sand Beige · Size L · Limited Edition Drop",
+        icon: "favorite",
+        variant: "outlined",
+        size: 380,
+        size2: 130,
+        imagePos: "leading",
+        imageSize: 110,
+        src: FASHION_IMGS.vneckTee,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_saved.x + PHONE_MARGIN,
+    y: f_saved.y + 680,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Move All to Cart ($3,980.00)",
+        label: "Move All 4 Items to Cart ($5,270.00)",
         icon: "shopping_bag",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_cart", transition: "slide" },
       },
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_saved, 2));
+  groups.push({
+    id: uid(),
+    x: f_saved.x + PHONE_MARGIN,
+    y: f_saved.y + 746,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Clear All Saved Items",
+        variant: "text",
+        size: 380,
+        size2: 44,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_saved, 2));
 
   // ==========================================================================
   // SCREEN 6: My Cart (Shopping Bag)
@@ -970,18 +1077,18 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_cart.x,
-    y: f_cart.y + 10,
+    y: f_cart.y,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "topAppBar",
-        label: "My Cart (3 Items)",
+        label: "Shopping Bag (3 Items)",
         icon: "arrow_back",
         icon2: "delete_sweep",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_home", transition: "slideLeft" },
       },
     ],
@@ -990,92 +1097,145 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_cart.x + PHONE_MARGIN,
-    y: f_cart.y + 74,
-    axis: "y",
+    y: f_cart.y + 112,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
         label: "Regular Fit Slogan · $1,190",
-        supporting: "Qty: 1 · Size: M · In Stock",
+        supporting: "Qty: 1 · Size: M · Color: Navy · $1,190.00",
         icon: "shopping_bag",
         variant: "outlined",
         size: 380,
-        size2: 100,
+        size2: 120,
         imagePos: "leading",
-        imageSize: 80,
+        imageSize: 100,
         src: FASHION_IMGS.navyTee,
       },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_cart.x + PHONE_MARGIN,
+    y: f_cart.y + 244,
+    axis: "x",
+    items: [
       {
         id: uid(),
         kind: "card",
         label: "Regular Fit Polo · $1,100",
-        supporting: "Qty: 1 · Size: L · -52% Applied",
+        supporting: "Qty: 1 · Size: L · Color: Teal · -52% Applied",
         icon: "shopping_bag",
         variant: "outlined",
         size: 380,
-        size2: 100,
+        size2: 120,
         imagePos: "leading",
-        imageSize: 80,
+        imageSize: 100,
         src: FASHION_IMGS.tealPolo,
       },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_cart.x + PHONE_MARGIN,
+    y: f_cart.y + 376,
+    axis: "x",
+    items: [
       {
         id: uid(),
         kind: "card",
         label: "Regular Fit Black · $1,690",
-        supporting: "Qty: 1 · Size: M · In Stock",
+        supporting: "Qty: 1 · Size: M · Sleeveless Edition",
         icon: "shopping_bag",
         variant: "outlined",
         size: 380,
-        size2: 100,
+        size2: 120,
         imagePos: "leading",
-        imageSize: 80,
+        imageSize: 100,
         src: FASHION_IMGS.blackTee,
       },
     ],
   });
 
-  // Price Breakdown Summary Card
   groups.push({
     id: uid(),
     x: f_cart.x + PHONE_MARGIN,
-    y: f_cart.y + 394,
+    y: f_cart.y + 508,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "Order Summary: $4,060.00",
-        supporting: "Subtotal: $3,980.00 · Standard Shipping: $80.00 · Taxes Included",
+        label: "Order Total: $4,060.00",
+        supporting: "Subtotal: $3,980.00 · Standard Express: $80.00 · Taxes Included",
         icon: "receipt_long",
         variant: "tonal",
         size: 380,
-        size2: 96,
+        size2: 105,
       },
     ],
   });
 
-  // Proceed to Checkout CTA
   groups.push({
     id: uid(),
     x: f_cart.x + PHONE_MARGIN,
-    y: f_cart.y + 504,
+    y: f_cart.y + 626,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Promo Code 'ATELIER' Applied (-$400)",
+        supporting: "VIP member 10% voucher activated · Free worldwide delivery included",
+        icon: "confirmation_number",
+        variant: "tonal",
+        size: 380,
+        size2: 70,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_cart.x + PHONE_MARGIN,
+    y: f_cart.y + 708,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Proceed to Checkout ($4,060.00)",
-        icon: "shopping_bag",
+        label: "Proceed to Checkout ($3,660.00)",
+        icon: "lock",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_checkout", transition: "slide" },
       },
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_cart, 3));
+  groups.push({
+    id: uid(),
+    x: f_cart.x + PHONE_MARGIN,
+    y: f_cart.y + 770,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Continue Shopping & Browse Drops",
+        variant: "text",
+        size: 380,
+        size2: 36,
+        action: { to: "cloth_home", transition: "slideLeft" },
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_cart, 3));
 
   // ==========================================================================
   // SCREEN 7: Order Checkout
@@ -1083,17 +1243,17 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_checkout.x,
-    y: f_checkout.y + 10,
+    y: f_checkout.y,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "topAppBar",
-        label: "Checkout",
+        label: "Order Checkout",
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_cart", transition: "slideLeft" },
       },
     ],
@@ -1102,40 +1262,19 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_checkout.x + PHONE_MARGIN,
-    y: f_checkout.y + 74,
-    axis: "y",
+    y: f_checkout.y + 112,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "Shipping Address (Home)",
-        supporting: "Alexandre Moreau · 742 Evergreen Terrace, Apt 4B, New York, NY 10001 · +1 (555) 0192",
+        label: "Shipping Address (Home Default)",
+        supporting: "Alexandre Moreau · +1 (555) 0192\n742 Evergreen Terrace, Apt 4B, New York, NY 10001",
         icon: "location_on",
         variant: "outlined",
         size: 380,
-        size2: 110,
+        size2: 120,
         action: { to: "cloth_address", transition: "slide" },
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Payment Method",
-        supporting: "Visa ending in •••• 4242 · Exp 12/28 · Secure 256-bit SSL encrypted",
-        icon: "credit_card",
-        variant: "outlined",
-        size: 380,
-        size2: 100,
-        action: { to: "cloth_payment_method", transition: "slide" },
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Delivery Speed: DHL Express",
-        supporting: "Guaranteed delivery by Oct 14, 2026 · Live GPS Tracking",
-        icon: "local_shipping",
-        variant: "tonal",
-        size: 380,
-        size2: 90,
       },
     ],
   });
@@ -1143,14 +1282,91 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_checkout.x + PHONE_MARGIN,
-    y: f_checkout.y + 400,
+    y: f_checkout.y + 244,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Payment Method: Visa •••• 4242",
+        supporting: "Expires 12/28 · Cardholder: Alexandre Moreau · SSL Encrypted",
+        icon: "credit_card",
+        variant: "outlined",
+        size: 380,
+        size2: 110,
+        action: { to: "cloth_payment_method", transition: "slide" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_checkout.x + PHONE_MARGIN,
+    y: f_checkout.y + 366,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Delivery Service: DHL Express ($80)",
+        supporting: "Estimated Arrival: Thursday, Oct 14 · Signature Required",
+        icon: "local_shipping",
+        variant: "tonal",
+        size: 380,
+        size2: 100,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_checkout.x + PHONE_MARGIN,
+    y: f_checkout.y + 478,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Total Due: $4,060.00 (3 items)",
+        supporting: "Bag Subtotal: $3,980.00 · Shipping: $80.00 · Promo 'ATELIER' applied",
+        icon: "receipt_long",
+        variant: "tonal",
+        size: 380,
+        size2: 100,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_checkout.x + PHONE_MARGIN,
+    y: f_checkout.y + 592,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Buyer Protection & 30-Day Guarantee",
+        supporting: "SSL 256-Bit Encrypted · Free return insurance included with every order",
+        icon: "verified_user",
+        variant: "tonal",
+        size: 380,
+        size2: 70,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_checkout.x + PHONE_MARGIN,
+    y: f_checkout.y + 674,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Place Order ($4,060.00)",
-        icon: "lock",
+        label: "Confirm & Place Order ($4,060.00)",
+        icon: "check_circle",
         variant: "filled",
         size: 380,
         size2: 54,
@@ -1159,7 +1375,25 @@ export function buildClothShopFullAppDoc(): Doc {
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_checkout, 3));
+  groups.push({
+    id: uid(),
+    x: f_checkout.x + PHONE_MARGIN,
+    y: f_checkout.y + 738,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Return to Shopping Bag",
+        variant: "text",
+        size: 380,
+        size2: 38,
+        action: { to: "cloth_cart", transition: "slideLeft" },
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_checkout, 3));
 
   // ==========================================================================
   // SCREEN 8: Account & Profile
@@ -1167,7 +1401,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_account.x,
-    y: f_account.y + 10,
+    y: f_account.y,
     axis: "x",
     items: [
       {
@@ -1178,17 +1412,16 @@ export function buildClothShopFullAppDoc(): Doc {
         icon2: "settings",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         actions: { icon2: { to: "cloth_notification_settings" } },
       },
     ],
   });
 
-  // Profile Card
   groups.push({
     id: uid(),
     x: f_account.x + PHONE_MARGIN,
-    y: f_account.y + 74,
+    y: f_account.y + 112,
     axis: "x",
     items: [
       {
@@ -1204,18 +1437,30 @@ export function buildClothShopFullAppDoc(): Doc {
     ],
   });
 
-  // Menu list
   groups.push({
     id: uid(),
     x: f_account.x + PHONE_MARGIN,
-    y: f_account.y + 188,
+    y: f_account.y + 224,
+    axis: "x",
+    items: [
+      { id: uid(), kind: "chip", label: "3 Orders", variant: "tonal", size2: 36, action: { to: "cloth_my_orders" } },
+      { id: uid(), kind: "chip", label: "4 Saved", variant: "tonal", size2: 36, action: { to: "cloth_saved" } },
+      { id: uid(), kind: "chip", label: "$120 Credits", variant: "filled", size2: 36 },
+      { id: uid(), kind: "chip", label: "VIP Black", variant: "tonal", size2: 36 },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_account.x + PHONE_MARGIN,
+    y: f_account.y + 272,
     axis: "y",
     items: [
       {
         id: uid(),
         kind: "listItem",
-        label: "My Orders (3)",
-        supporting: "Track active shipments, view history & receipts",
+        label: "My Orders & History",
+        supporting: "3 orders placed · 1 in transit",
         icon: "package_2",
         variant: "outlined",
         size: 380,
@@ -1224,18 +1469,8 @@ export function buildClothShopFullAppDoc(): Doc {
       {
         id: uid(),
         kind: "listItem",
-        label: "My Personal Details",
-        supporting: "Edit name, email, phone number & sizes",
-        icon: "badge",
-        variant: "outlined",
-        size: 380,
-        action: { to: "cloth_my_details", transition: "slide" },
-      },
-      {
-        id: uid(),
-        kind: "listItem",
         label: "Delivery Addresses",
-        supporting: "2 saved shipping addresses",
+        supporting: "2 saved shipping addresses (Home, Office)",
         icon: "home",
         variant: "outlined",
         size: 380,
@@ -1245,7 +1480,7 @@ export function buildClothShopFullAppDoc(): Doc {
         id: uid(),
         kind: "listItem",
         label: "Payment Methods",
-        supporting: "Visa, Mastercard, Apple Pay connected",
+        supporting: "Visa ending in •••• 4242, Apple Pay",
         icon: "credit_card",
         variant: "outlined",
         size: 380,
@@ -1254,8 +1489,18 @@ export function buildClothShopFullAppDoc(): Doc {
       {
         id: uid(),
         kind: "listItem",
+        label: "Personal Profile Details",
+        supporting: "Full Name, Email, Phone & Birthday",
+        icon: "badge",
+        variant: "outlined",
+        size: 380,
+        action: { to: "cloth_my_details", transition: "slide" },
+      },
+      {
+        id: uid(),
+        kind: "listItem",
         label: "Help Center & FAQs",
-        supporting: "24/7 client concierge, return guides & policy",
+        supporting: "Returns, client concierge & size guides",
         icon: "help_outline",
         variant: "outlined",
         size: 380,
@@ -1264,27 +1509,43 @@ export function buildClothShopFullAppDoc(): Doc {
     ],
   });
 
-  // Sign out button
   groups.push({
     id: uid(),
     x: f_account.x + PHONE_MARGIN,
-    y: f_account.y + 570,
+    y: f_account.y + 680,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Sign Out",
+        label: "Sign Out of Account",
         icon: "logout",
         variant: "outlined",
         size: 380,
-        size2: 48,
+        size2: 50,
         action: { to: "cloth_login", transition: "fade" },
       },
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_account, 4));
+  groups.push({
+    id: uid(),
+    x: f_account.x + PHONE_MARGIN,
+    y: f_account.y + 748,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Atelier VIP Black Member · Since MMXXIV",
+        variant: "text",
+        size: 380,
+        size2: 36,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_account, 4));
 
   // ==========================================================================
   // SCREEN 9: My Orders
@@ -1292,7 +1553,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_my_orders.x,
-    y: f_my_orders.y + 10,
+    y: f_my_orders.y,
     axis: "x",
     items: [
       {
@@ -1302,7 +1563,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_account", transition: "slideLeft" },
       },
     ],
@@ -1311,7 +1572,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_my_orders.x + PHONE_MARGIN,
-    y: f_my_orders.y + 74,
+    y: f_my_orders.y + 112,
     axis: "x",
     items: [
       { id: uid(), kind: "chip", label: "Active (1)", variant: "filled", size2: 36 },
@@ -1323,44 +1584,100 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_my_orders.x + PHONE_MARGIN,
-    y: f_my_orders.y + 126,
-    axis: "y",
+    y: f_my_orders.y + 160,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
         label: "Order #AT-9842 · $1,190.00",
-        supporting: "Status: In Transit (Out for Delivery today) · 1 item: Regular Fit Slogan (M)",
+        supporting: "Status: In Transit (Arriving Today)\nItem: Regular Fit Slogan T-Shirt (M)\nCourier: DHL Express Michael S.",
         icon: "local_shipping",
         variant: "outlined",
         size: 380,
-        size2: 110,
+        size2: 135,
         action: { to: "cloth_track_order", transition: "slide" },
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Order #AT-9610 · $2,200.00",
-        supporting: "Delivered on Sep 28 · Regular Fit Polo & Thermal · Receipt available",
-        icon: "check_circle",
-        variant: "outlined",
-        size: 380,
-        size2: 100,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Order #AT-9420 · $1,690.00",
-        supporting: "Delivered on Aug 14 · Regular Fit Black (S) · 5-Star reviewed",
-        icon: "check_circle",
-        variant: "outlined",
-        size: 380,
-        size2: 100,
       },
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_my_orders, 4));
+  groups.push({
+    id: uid(),
+    x: f_my_orders.x + PHONE_MARGIN,
+    y: f_my_orders.y + 308,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Order #AT-9610 · $2,200.00",
+        supporting: "Delivered on Sep 28, 2026\nItems: Regular Fit Polo (L) & Pink Thermal (M)\nReceipt available",
+        icon: "check_circle",
+        variant: "outlined",
+        size: 380,
+        size2: 130,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_my_orders.x + PHONE_MARGIN,
+    y: f_my_orders.y + 450,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Order #AT-9420 · $1,690.00",
+        supporting: "Delivered on Aug 14, 2026\nItem: Regular Fit Black Tank (M)\nRated: ★★★★★",
+        icon: "check_circle",
+        variant: "outlined",
+        size: 380,
+        size2: 130,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_my_orders.x + PHONE_MARGIN,
+    y: f_my_orders.y + 592,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Order #AT-9102 · $1,290.00",
+        supporting: "Delivered on Jul 02, 2026\nItem: Regular Fit V-Neck (L)\nReceipt available",
+        icon: "check_circle",
+        variant: "outlined",
+        size: 380,
+        size2: 125,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_my_orders.x + PHONE_MARGIN,
+    y: f_my_orders.y + 732,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Live Track Active Order #AT-9842",
+        icon: "navigation",
+        variant: "filled",
+        size: 380,
+        size2: 52,
+        action: { to: "cloth_track_order", transition: "slide" },
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_my_orders, 4));
 
   // ==========================================================================
   // SCREEN 10: Track Order Live
@@ -1368,7 +1685,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_track_order.x,
-    y: f_track_order.y + 10,
+    y: f_track_order.y,
     axis: "x",
     items: [
       {
@@ -1378,7 +1695,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_my_orders", transition: "slideLeft" },
       },
     ],
@@ -1387,18 +1704,18 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_track_order.x + PHONE_MARGIN,
-    y: f_track_order.y + 74,
+    y: f_track_order.y + 112,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "Expected Today by 4:30 PM",
-        supporting: "Courier: DHL Express · Driver: Michael S. · Van #44",
+        label: "Out for Delivery · Today by 4:30 PM",
+        supporting: "Courier: DHL Express · Driver: Michael S. · Van #44 · Contact: +1 (555) 0812",
         icon: "local_shipping",
         variant: "tonal",
         size: 380,
-        size2: 100,
+        size2: 110,
       },
     ],
   });
@@ -1406,7 +1723,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_track_order.x + PHONE_MARGIN,
-    y: f_track_order.y + 188,
+    y: f_track_order.y + 234,
     axis: "y",
     items: [
       {
@@ -1451,23 +1768,87 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_track_order.x + PHONE_MARGIN,
-    y: f_track_order.y + 490,
+    y: f_track_order.y + 504,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Delivering to: Alexandre Moreau",
+        supporting: "742 Evergreen Terrace, Apt 4B, New York, NY 10001\nDelivery window: Today 4:00 PM - 5:30 PM",
+        icon: "location_on",
+        variant: "outlined",
+        size: 380,
+        size2: 95,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_track_order.x + PHONE_MARGIN,
+    y: f_track_order.y + 614,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Contact Courier Driver",
+        label: "Call Courier",
         icon: "phone",
         variant: "filled",
-        size: 380,
+        size: 184,
         size2: 52,
         action: { to: "cloth_customer_service", transition: "slide" },
+      },
+      {
+        id: uid(),
+        kind: "button",
+        label: "Delivery Notes",
+        icon: "edit_note",
+        variant: "outlined",
+        size: 184,
+        size2: 52,
       },
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_track_order, 4));
+  groups.push({
+    id: uid(),
+    x: f_track_order.x + PHONE_MARGIN,
+    y: f_track_order.y + 680,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Live GPS Tracking Active · 100% Insured",
+        supporting: "Signature required upon physical handover at doorstep",
+        icon: "verified_user",
+        variant: "tonal",
+        size: 380,
+        size2: 65,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_track_order.x + PHONE_MARGIN,
+    y: f_track_order.y + 758,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "View Detailed Shipping Invoice",
+        variant: "text",
+        size: 380,
+        size2: 40,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_track_order, 4));
 
   // ==========================================================================
   // SCREEN 11: Personal Details
@@ -1475,7 +1856,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_my_details.x,
-    y: f_my_details.y + 10,
+    y: f_my_details.y,
     axis: "x",
     items: [
       {
@@ -1485,7 +1866,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_account", transition: "slideLeft" },
       },
     ],
@@ -1494,36 +1875,111 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_my_details.x + PHONE_MARGIN,
-    y: f_my_details.y + 74,
+    y: f_my_details.y + 112,
     axis: "y",
     items: [
       { id: uid(), kind: "textField", label: "Full Name", supporting: "Alexandre Moreau", icon: "person", variant: "outlined", size: 380 },
       { id: uid(), kind: "textField", label: "Email Address", supporting: "alexandre.moreau@atelier.com", icon: "mail", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "Phone Number", supporting: "+1 (555) 0192", icon: "phone", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "Birthday", supporting: "14/05/1996", icon: "cake", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Phone Number", supporting: "+1 (555) 0192-384", icon: "phone", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Date of Birth", supporting: "14/05/1996", icon: "cake", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Preferred Size", supporting: "Size M (Boxy Cut)", icon: "straighten", variant: "outlined", size: 380 },
     ],
   });
 
   groups.push({
     id: uid(),
     x: f_my_details.x + PHONE_MARGIN,
-    y: f_my_details.y + 400,
+    y: f_my_details.y + 440,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "VIP Membership: Tier Black",
+        supporting: "Active since 2024 · 2,840 pts available for drops",
+        icon: "verified",
+        variant: "tonal",
+        size: 380,
+        size2: 80,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_my_details.x + PHONE_MARGIN,
+    y: f_my_details.y + 530,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "SMS & WhatsApp Drop Alerts",
+        supporting: "Instant notifications when limited garments drop",
+        icon: "sms",
+        variant: "outlined",
+        size: 380,
+        size2: 80,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_my_details.x + PHONE_MARGIN,
+    y: f_my_details.y + 620,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Two-Factor Security: Enabled",
+        supporting: "Protected with biometric Touch ID / Face ID",
+        icon: "security",
+        variant: "tonal",
+        size: 380,
+        size2: 75,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_my_details.x + PHONE_MARGIN,
+    y: f_my_details.y + 705,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Save Changes",
+        label: "Save Profile Changes & Preferences",
         icon: "check",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_account", transition: "slideLeft" },
       },
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_my_details, 4));
+  groups.push({
+    id: uid(),
+    x: f_my_details.x + PHONE_MARGIN,
+    y: f_my_details.y + 768,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Download Account Data (.JSON)",
+        variant: "text",
+        size: 380,
+        size2: 36,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_my_details, 4));
 
   // ==========================================================================
   // SCREEN 12: Notifications
@@ -1531,7 +1987,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_notifications.x,
-    y: f_notifications.y + 10,
+    y: f_notifications.y,
     axis: "x",
     items: [
       {
@@ -1541,7 +1997,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_home", transition: "slideLeft" },
       },
     ],
@@ -1550,44 +2006,149 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_notifications.x + PHONE_MARGIN,
-    y: f_notifications.y + 74,
-    axis: "y",
+    y: f_notifications.y + 112,
+    axis: "x",
+    items: [
+      { id: uid(), kind: "chip", label: "All (12)", variant: "filled", size2: 36 },
+      { id: uid(), kind: "chip", label: "Orders (4)", variant: "tonal", size2: 36 },
+      { id: uid(), kind: "chip", label: "Drops (5)", variant: "tonal", size2: 36 },
+      { id: uid(), kind: "chip", label: "Security", variant: "tonal", size2: 36 },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_notifications.x + PHONE_MARGIN,
+    y: f_notifications.y + 160,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
         label: "Order #AT-9842 is Out for Delivery",
-        supporting: "Courier Michael is on the way. Tap to track · 10m ago",
+        supporting: "Courier Michael is on your street. Expected at 4:30 PM · 10m ago",
         icon: "local_shipping",
         variant: "outlined",
         size: 380,
-        size2: 90,
+        size2: 100,
         action: { to: "cloth_track_order", transition: "slide" },
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Weekend Flash Sale: 25% Off Hoodies",
-        supporting: "Use code ATELIER25 at checkout · 2 hours ago",
-        icon: "local_fire_department",
-        variant: "tonal",
-        size: 380,
-        size2: 90,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Back in Stock: Regular Fit Black",
-        supporting: "Sleeveless edition restocked in sizes M and L · Yesterday",
-        icon: "notifications",
-        variant: "outlined",
-        size: 380,
-        size2: 90,
       },
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_notifications, 4));
+  groups.push({
+    id: uid(),
+    x: f_notifications.x + PHONE_MARGIN,
+    y: f_notifications.y + 270,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Weekend Flash Sale: 25% Off Hoodies",
+        supporting: "Exclusive VIP access: Use code ATELIER25 at checkout · 2 hours ago",
+        icon: "local_fire_department",
+        variant: "tonal",
+        size: 380,
+        size2: 100,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_notifications.x + PHONE_MARGIN,
+    y: f_notifications.y + 380,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Back in Stock: Regular Fit Black",
+        supporting: "Sleeveless tank restocked in sizes M and L · Yesterday",
+        icon: "notifications",
+        variant: "outlined",
+        size: 380,
+        size2: 100,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_notifications.x + PHONE_MARGIN,
+    y: f_notifications.y + 490,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "VIP Tier Upgraded to Black Member",
+        supporting: "You have earned 2,840 loyalty points this season · 3 days ago",
+        icon: "verified",
+        variant: "outlined",
+        size: 380,
+        size2: 100,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_notifications.x + PHONE_MARGIN,
+    y: f_notifications.y + 600,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Security Alert: Login Verified",
+        supporting: "Successful biometric login from New York, NY · 4 days ago",
+        icon: "security",
+        variant: "tonal",
+        size: 380,
+        size2: 85,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_notifications.x + PHONE_MARGIN,
+    y: f_notifications.y + 695,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Mark All 12 Notifications as Read",
+        icon: "done_all",
+        variant: "filled",
+        size: 380,
+        size2: 50,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_notifications.x + PHONE_MARGIN,
+    y: f_notifications.y + 755,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Manage Notification Preferences",
+        variant: "text",
+        size: 380,
+        size2: 40,
+        action: { to: "cloth_notification_settings", transition: "slide" },
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_notifications, 4));
 
   // ==========================================================================
   // SCREEN 13: Help Center
@@ -1595,7 +2156,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_help_center.x,
-    y: f_help_center.y + 10,
+    y: f_help_center.y,
     axis: "x",
     items: [
       {
@@ -1605,7 +2166,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_account", transition: "slideLeft" },
       },
     ],
@@ -1614,7 +2175,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_help_center.x + PHONE_MARGIN,
-    y: f_help_center.y + 74,
+    y: f_help_center.y + 112,
     axis: "x",
     items: [
       {
@@ -1632,38 +2193,18 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_help_center.x + PHONE_MARGIN,
-    y: f_help_center.y + 134,
-    axis: "y",
+    y: f_help_center.y + 170,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
         label: "Shipping & Worldwide Delivery",
-        supporting: "Delivery timeframes, express shipping & customs fees",
+        supporting: "Delivery timeframes, express rates, tracking & customs fees",
         icon: "local_shipping",
         variant: "outlined",
         size: 380,
-        size2: 90,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Returns & 30-Day Exchanges",
-        supporting: "Print return labels, exchange steps & refund policy",
-        icon: "assignment_return",
-        variant: "outlined",
-        size: 380,
-        size2: 90,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Size & Sizing Guides",
-        supporting: "Chest, sleeve and body length measurements",
-        icon: "straighten",
-        variant: "outlined",
-        size: 380,
-        size2: 90,
+        size2: 95,
       },
     ],
   });
@@ -1671,7 +2212,83 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_help_center.x + PHONE_MARGIN,
-    y: f_help_center.y + 440,
+    y: f_help_center.y + 275,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Returns & 30-Day Exchanges",
+        supporting: "Print pre-paid return labels, exchange steps & refund policy",
+        icon: "assignment_return",
+        variant: "outlined",
+        size: 380,
+        size2: 95,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_help_center.x + PHONE_MARGIN,
+    y: f_help_center.y + 380,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Size & Sizing Guides",
+        supporting: "Chest, sleeve and body length measurements for all capsules",
+        icon: "straighten",
+        variant: "outlined",
+        size: 380,
+        size2: 95,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_help_center.x + PHONE_MARGIN,
+    y: f_help_center.y + 485,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Payment Security & Billing Invoices",
+        supporting: "Accepted cards, currencies, Apple Pay & PDF receipts",
+        icon: "credit_card",
+        variant: "outlined",
+        size: 380,
+        size2: 95,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_help_center.x + PHONE_MARGIN,
+    y: f_help_center.y + 590,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "24/7 VIP Concierge Desk",
+        supporting: "Direct priority line for Atelier Society members",
+        icon: "verified_user",
+        variant: "tonal",
+        size: 380,
+        size2: 80,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_help_center.x + PHONE_MARGIN,
+    y: f_help_center.y + 680,
     axis: "x",
     items: [
       {
@@ -1681,13 +2298,30 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "support_agent",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_customer_service", transition: "slide" },
       },
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_help_center, 4));
+  groups.push({
+    id: uid(),
+    x: f_help_center.x + PHONE_MARGIN,
+    y: f_help_center.y + 744,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Email Support: concierge@atelier.com",
+        variant: "text",
+        size: 380,
+        size2: 40,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_help_center, 4));
 
   // ==========================================================================
   // SCREEN 14: Customer Service
@@ -1695,17 +2329,17 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_customer_service.x,
-    y: f_customer_service.y + 10,
+    y: f_customer_service.y,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "topAppBar",
-        label: "Customer Support Desk",
+        label: "Customer Service Desk",
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_help_center", transition: "slideLeft" },
       },
     ],
@@ -1714,38 +2348,18 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_customer_service.x + PHONE_MARGIN,
-    y: f_customer_service.y + 74,
-    axis: "y",
+    y: f_customer_service.y + 112,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "Atelier Concierge: Emma",
-        supporting: "Hello Alexandre! How can we assist you with order #AT-9842 today?",
+        label: "Atelier Concierge: Emma (10:30 AM)",
+        supporting: "Hello Alexandre! Thank you for reaching out. How can I assist you with order #AT-9842 today?",
         icon: "support_agent",
         variant: "tonal",
         size: 380,
-        size2: 90,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "You (10:32 AM)",
-        supporting: "Can I request delivery after 5 PM?",
-        icon: "person",
-        variant: "outlined",
-        size: 380,
-        size2: 80,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Emma (10:33 AM)",
-        supporting: "Certainly! I have updated your delivery notes for DHL courier Michael.",
-        icon: "support_agent",
-        variant: "tonal",
-        size: 380,
-        size2: 90,
+        size2: 100,
       },
     ],
   });
@@ -1753,7 +2367,102 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_customer_service.x + PHONE_MARGIN,
-    y: f_customer_service.y + 360,
+    y: f_customer_service.y + 222,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "You (10:32 AM)",
+        supporting: "Hi Emma, can I request delivery after 5 PM today?",
+        icon: "person",
+        variant: "outlined",
+        size: 380,
+        size2: 85,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_customer_service.x + PHONE_MARGIN,
+    y: f_customer_service.y + 317,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Emma (10:33 AM)",
+        supporting: "Certainly! I have forwarded your delivery instruction to DHL courier Michael. Your package will arrive between 5:00 - 5:30 PM.",
+        icon: "support_agent",
+        variant: "tonal",
+        size: 380,
+        size2: 105,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_customer_service.x + PHONE_MARGIN,
+    y: f_customer_service.y + 432,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Ticket #CS-4091 · Resolved",
+        supporting: "Special delivery instruction confirmed with driver Michael",
+        icon: "check_circle",
+        variant: "outlined",
+        size: 380,
+        size2: 75,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_customer_service.x + PHONE_MARGIN,
+    y: f_customer_service.y + 517,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "You (10:35 AM)",
+        supporting: "Awesome, thank you for arranging the 5 PM delivery! Have a wonderful day.",
+        icon: "person",
+        variant: "outlined",
+        size: 380,
+        size2: 85,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_customer_service.x + PHONE_MARGIN,
+    y: f_customer_service.y + 612,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Emma (10:36 AM)",
+        supporting: "You are most welcome Alexandre! Enjoy your Atelier pieces.",
+        icon: "support_agent",
+        variant: "tonal",
+        size: 380,
+        size2: 80,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_customer_service.x + PHONE_MARGIN,
+    y: f_customer_service.y + 702,
     axis: "x",
     items: [
       {
@@ -1767,7 +2476,25 @@ export function buildClothShopFullAppDoc(): Doc {
     ],
   });
 
-  groups.push(buildBottomNavGroup(f_customer_service, 4));
+  groups.push({
+    id: uid(),
+    x: f_customer_service.x + PHONE_MARGIN,
+    y: f_customer_service.y + 760,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Send Message",
+        icon: "send",
+        variant: "filled",
+        size: 380,
+        size2: 44,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_customer_service, 4));
 
   // ==========================================================================
   // SCREEN 15: Payment Methods
@@ -1775,7 +2502,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_payment_method.x,
-    y: f_payment_method.y + 10,
+    y: f_payment_method.y,
     axis: "x",
     items: [
       {
@@ -1785,7 +2512,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_checkout", transition: "slideLeft" },
       },
     ],
@@ -1794,35 +2521,91 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_payment_method.x + PHONE_MARGIN,
-    y: f_payment_method.y + 74,
-    axis: "y",
+    y: f_payment_method.y + 112,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
         label: "Visa ending in •••• 4242 (Default)",
-        supporting: "Exp: 12/28 · Cardholder: Alexandre Moreau",
+        supporting: "Cardholder: Alexandre Moreau · Exp: 12/28\nPrimary payment method for 1-click checkout",
         icon: "credit_card",
         variant: "outlined",
         size: 380,
-        size2: 90,
+        size2: 105,
       },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_payment_method.x + PHONE_MARGIN,
+    y: f_payment_method.y + 227,
+    axis: "x",
+    items: [
       {
         id: uid(),
         kind: "card",
-        label: "Mastercard •••• 8812",
-        supporting: "Exp: 08/27 · Apple Pay Connected",
+        label: "Mastercard ending in •••• 8812",
+        supporting: "Cardholder: Alexandre Moreau · Exp: 08/27\nSecondary backup payment card",
         icon: "credit_card",
         variant: "outlined",
         size: 380,
-        size2: 90,
+        size2: 105,
       },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_payment_method.x + PHONE_MARGIN,
+    y: f_payment_method.y + 342,
+    axis: "x",
+    items: [
       {
         id: uid(),
         kind: "card",
         label: "Apple Pay & Google Pay",
-        supporting: "Instant biometric checkout ready",
+        supporting: "Enabled on this device · Instant biometric authorization",
         icon: "phone_iphone",
+        variant: "tonal",
+        size: 380,
+        size2: 85,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_payment_method.x + PHONE_MARGIN,
+    y: f_payment_method.y + 437,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Cash on Delivery (COD)",
+        supporting: "Pay cash directly upon parcel handover at doorstep",
+        icon: "payments",
+        variant: "outlined",
+        size: 380,
+        size2: 85,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_payment_method.x + PHONE_MARGIN,
+    y: f_payment_method.y + 532,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "256-Bit SSL Bank-Grade Security",
+        supporting: "Encrypted via PCI-DSS Level 1 payment infrastructure",
+        icon: "shield",
         variant: "tonal",
         size: 380,
         size2: 80,
@@ -1833,21 +2616,40 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_payment_method.x + PHONE_MARGIN,
-    y: f_payment_method.y + 360,
+    y: f_payment_method.y + 622,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Add New Card",
+        label: "Add New Credit / Debit Card",
         icon: "add",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_new_card", transition: "slide" },
       },
     ],
   });
+
+  groups.push({
+    id: uid(),
+    x: f_payment_method.x + PHONE_MARGIN,
+    y: f_payment_method.y + 686,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Manage Billing Currencies & Invoices",
+        variant: "text",
+        size: 380,
+        size2: 40,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_payment_method, 4));
 
   // ==========================================================================
   // SCREEN 16: Add New Card
@@ -1855,7 +2657,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_new_card.x,
-    y: f_new_card.y + 10,
+    y: f_new_card.y,
     axis: "x",
     items: [
       {
@@ -1865,7 +2667,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_payment_method", transition: "slideLeft" },
       },
     ],
@@ -1874,30 +2676,102 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_new_card.x + PHONE_MARGIN,
-    y: f_new_card.y + 74,
-    axis: "y",
+    y: f_new_card.y + 112,
+    axis: "x",
     items: [
-      { id: uid(), kind: "textField", label: "Cardholder Name", supporting: "Name on front of card", icon: "person", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "16-Digit Card Number", supporting: "4000 1234 5678 9010", icon: "credit_card", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "Expiry Date (MM/YY)", supporting: "12/28", icon: "calendar_today", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "CVV Security Code", supporting: "3 digits on back", icon: "lock", variant: "outlined", size: 380 },
+      {
+        id: uid(),
+        kind: "card",
+        label: "••••  ••••  ••••  4242",
+        supporting: "ALEXANDRE MOREAU · EXP 12/28\nVISA SIGNATURE · 256-BIT ENCRYPTED",
+        icon: "credit_card",
+        variant: "filled",
+        size: 380,
+        size2: 130,
+      },
     ],
   });
 
   groups.push({
     id: uid(),
     x: f_new_card.x + PHONE_MARGIN,
-    y: f_new_card.y + 400,
+    y: f_new_card.y + 252,
+    axis: "y",
+    items: [
+      { id: uid(), kind: "textField", label: "Cardholder Full Name", supporting: "Alexandre Moreau", icon: "person", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "16-Digit Card Number", supporting: "4000 1234 5678 9010", icon: "credit_card", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Expiration Date (MM/YY)", supporting: "12 / 28", icon: "calendar_today", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "CVV Security Code (3 Digits)", supporting: "782", icon: "lock", variant: "outlined", size: 380 },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_new_card.x + PHONE_MARGIN,
+    y: f_new_card.y + 510,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "switch",
+        label: "Set as primary card for all orders",
+        checked: true,
+        size: 380,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_new_card.x + PHONE_MARGIN,
+    y: f_new_card.y + 580,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Zero Fraud Liability Guarantee",
+        supporting: "Verified by Visa 3D Secure 2.0 authentication protocol",
+        icon: "shield",
+        variant: "tonal",
+        size: 380,
+        size2: 75,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_new_card.x + PHONE_MARGIN,
+    y: f_new_card.y + 665,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Save Card Securely",
+        label: "Save & Authorize Card ($0.00)",
         icon: "lock",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
+        action: { to: "cloth_payment_method", transition: "slideLeft" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_new_card.x + PHONE_MARGIN,
+    y: f_new_card.y + 729,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Cancel and Return to Payment Methods",
+        variant: "text",
+        size: 380,
+        size2: 40,
         action: { to: "cloth_payment_method", transition: "slideLeft" },
       },
     ],
@@ -1909,7 +2783,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_address.x,
-    y: f_address.y + 10,
+    y: f_address.y,
     axis: "x",
     items: [
       {
@@ -1919,7 +2793,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_checkout", transition: "slideLeft" },
       },
     ],
@@ -1928,28 +2802,18 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_address.x + PHONE_MARGIN,
-    y: f_address.y + 74,
-    axis: "y",
+    y: f_address.y + 112,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "Home Address (Primary Default)",
-        supporting: "742 Evergreen Terrace, Apt 4B, New York, NY 10001 · Phone: +1 555-0192",
+        label: "Home Address (Default Primary)",
+        supporting: "Alexandre Moreau · +1 (555) 0192\n742 Evergreen Terrace, Apt 4B, New York, NY 10001",
         icon: "home",
         variant: "outlined",
         size: 380,
-        size2: 100,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "Office Address",
-        supporting: "100 Silicon Blvd, Suite 400, San Francisco, CA 94107",
-        icon: "business",
-        variant: "outlined",
-        size: 380,
-        size2: 100,
+        size2: 115,
       },
     ],
   });
@@ -1957,21 +2821,97 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_address.x + PHONE_MARGIN,
-    y: f_address.y + 300,
+    y: f_address.y + 237,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Design Studio Office",
+        supporting: "Alexandre Moreau · +1 (555) 0192\n120 Mercer Street, Floor 3, SoHo, New York, NY 10012",
+        icon: "business",
+        variant: "outlined",
+        size: 380,
+        size2: 115,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_address.x + PHONE_MARGIN,
+    y: f_address.y + 362,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Hamptons Retreat Residence",
+        supporting: "Alexandre Moreau · +1 (555) 0192\n45 Ocean Dune Rd, East Hampton, NY 11937",
+        icon: "villa",
+        variant: "outlined",
+        size: 380,
+        size2: 115,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_address.x + PHONE_MARGIN,
+    y: f_address.y + 487,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Free Worldwide Express Delivery",
+        supporting: "DHL Express 2-3 day transit with signature on delivery",
+        icon: "local_shipping",
+        variant: "tonal",
+        size: 380,
+        size2: 80,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_address.x + PHONE_MARGIN,
+    y: f_address.y + 577,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Add New Address",
+        label: "Add New Shipping Address",
         icon: "add",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_new_address", transition: "slide" },
       },
     ],
   });
+
+  groups.push({
+    id: uid(),
+    x: f_address.x + PHONE_MARGIN,
+    y: f_address.y + 641,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Manage Special Courier Instructions",
+        variant: "text",
+        size: 380,
+        size2: 40,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_address, 4));
 
   // ==========================================================================
   // SCREEN 18: Add New Address
@@ -1979,7 +2919,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_new_address.x,
-    y: f_new_address.y + 10,
+    y: f_new_address.y,
     axis: "x",
     items: [
       {
@@ -1989,7 +2929,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_address", transition: "slideLeft" },
       },
     ],
@@ -1998,31 +2938,97 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_new_address.x + PHONE_MARGIN,
-    y: f_new_address.y + 74,
-    axis: "y",
+    y: f_new_address.y + 112,
+    axis: "x",
     items: [
-      { id: uid(), kind: "textField", label: "Address Label (e.g. Home, Office)", icon: "label", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "Street Address", icon: "home", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "Apt / Suite / Floor (Optional)", icon: "apartment", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "City & State", icon: "location_city", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "Postal Zip Code", icon: "markunread_mailbox", variant: "outlined", size: 380 },
+      { id: uid(), kind: "chip", label: "Home", variant: "filled", size2: 36 },
+      { id: uid(), kind: "chip", label: "Office", variant: "tonal", size2: 36 },
+      { id: uid(), kind: "chip", label: "Apartment", variant: "tonal", size2: 36 },
+      { id: uid(), kind: "chip", label: "Other", variant: "tonal", size2: 36 },
     ],
   });
 
   groups.push({
     id: uid(),
     x: f_new_address.x + PHONE_MARGIN,
-    y: f_new_address.y + 470,
+    y: f_new_address.y + 160,
+    axis: "y",
+    items: [
+      { id: uid(), kind: "textField", label: "Recipient Full Name", supporting: "Alexandre Moreau", icon: "person", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Phone Number", supporting: "+1 (555) 0192-384", icon: "phone", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Street Address", supporting: "742 Evergreen Terrace", icon: "home", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Apt / Suite / Unit", supporting: "Apt 4B", icon: "apartment", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "City & Zip Code", supporting: "New York, NY 10001", icon: "location_city", variant: "outlined", size: 380 },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_new_address.x + PHONE_MARGIN,
+    y: f_new_address.y + 490,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "switch",
+        label: "Set as default shipping address",
+        checked: true,
+        size: 380,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_new_address.x + PHONE_MARGIN,
+    y: f_new_address.y + 560,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Signature On Delivery Required",
+        supporting: "For security, all luxury parcels require a signee upon drop-off",
+        icon: "draw",
+        variant: "tonal",
+        size: 380,
+        size2: 75,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_new_address.x + PHONE_MARGIN,
+    y: f_new_address.y + 645,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Save Delivery Address",
+        label: "Save Shipping Address",
         icon: "check",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
+        action: { to: "cloth_address", transition: "slideLeft" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_new_address.x + PHONE_MARGIN,
+    y: f_new_address.y + 709,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Cancel and Return to Addresses",
+        variant: "text",
+        size: 380,
+        size2: 40,
         action: { to: "cloth_address", transition: "slideLeft" },
       },
     ],
@@ -2034,7 +3040,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_notification_settings.x,
-    y: f_notification_settings.y + 10,
+    y: f_notification_settings.y,
     axis: "x",
     items: [
       {
@@ -2044,7 +3050,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_account", transition: "slideLeft" },
       },
     ],
@@ -2053,47 +3059,110 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_notification_settings.x + PHONE_MARGIN,
-    y: f_notification_settings.y + 74,
-    axis: "y",
+    y: f_notification_settings.y + 112,
+    axis: "x",
     items: [
       {
         id: uid(),
-        kind: "switch",
-        label: "Order Tracking Alerts (Real-time delivery status push)",
-        checked: true,
+        kind: "card",
+        label: "Order & Dispatch Updates",
+        supporting: "Real-time alerts regarding shipping progress & delivery status",
+        icon: "local_shipping",
+        variant: "tonal",
         size: 380,
-      },
-      {
-        id: uid(),
-        kind: "switch",
-        label: "New Drops & Collections (Seasonal capsules)",
-        checked: true,
-        size: 380,
-      },
-      {
-        id: uid(),
-        kind: "switch",
-        label: "Promotions & Discounts (Flash sales)",
-        checked: false,
-        size: 380,
-      },
-      {
-        id: uid(),
-        kind: "switch",
-        label: "SMS Text Messages (Delivery confirmation texts)",
-        checked: true,
-        size: 380,
+        size2: 75,
       },
     ],
   });
 
+  groups.push({
+    id: uid(),
+    x: f_notification_settings.x + PHONE_MARGIN,
+    y: f_notification_settings.y + 197,
+    axis: "y",
+    items: [
+      { id: uid(), kind: "switch", label: "Order Tracking Alerts (Push notifications)", checked: true, size: 380 },
+      { id: uid(), kind: "switch", label: "Out for Delivery SMS (Live courier ETA)", checked: true, size: 380 },
+      { id: uid(), kind: "switch", label: "Delivery Confirmation Photos", checked: true, size: 380 },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_notification_settings.x + PHONE_MARGIN,
+    y: f_notification_settings.y + 390,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Seasonal Drops & Privileges",
+        supporting: "VIP early access to runway collections & bespoke capsules",
+        icon: "local_fire_department",
+        variant: "tonal",
+        size: 380,
+        size2: 75,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_notification_settings.x + PHONE_MARGIN,
+    y: f_notification_settings.y + 475,
+    axis: "y",
+    items: [
+      { id: uid(), kind: "switch", label: "VIP Seasonal Collection Drops", checked: true, size: 380 },
+      { id: uid(), kind: "switch", label: "Wishlist Price Drops & Restocks", checked: true, size: 380 },
+      { id: uid(), kind: "switch", label: "Weekly Fashion Editorial Lookbook", checked: false, size: 380 },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_notification_settings.x + PHONE_MARGIN,
+    y: f_notification_settings.y + 670,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Save Notification Preferences",
+        icon: "check",
+        variant: "filled",
+        size: 380,
+        size2: 54,
+        action: { to: "cloth_account", transition: "slideLeft" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_notification_settings.x + PHONE_MARGIN,
+    y: f_notification_settings.y + 734,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Reset All Notification Preferences",
+        variant: "text",
+        size: 380,
+        size2: 40,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_notification_settings, 4));
+
   // ==========================================================================
-  // SCREEN 20: FAQs
+  // SCREEN 20: Frequently Asked Questions (FAQs)
   // ==========================================================================
   groups.push({
     id: uid(),
     x: f_faqs.x,
-    y: f_faqs.y + 10,
+    y: f_faqs.y,
     axis: "x",
     items: [
       {
@@ -2103,7 +3172,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_help_center", transition: "slideLeft" },
       },
     ],
@@ -2112,41 +3181,148 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_faqs.x + PHONE_MARGIN,
-    y: f_faqs.y + 74,
-    axis: "y",
+    y: f_faqs.y + 112,
+    axis: "x",
+    items: [
+      { id: uid(), kind: "chip", label: "All", variant: "filled", size2: 36 },
+      { id: uid(), kind: "chip", label: "Shipping", variant: "tonal", size2: 36 },
+      { id: uid(), kind: "chip", label: "Returns", variant: "tonal", size2: 36 },
+      { id: uid(), kind: "chip", label: "Sizing", variant: "tonal", size2: 36 },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_faqs.x + PHONE_MARGIN,
+    y: f_faqs.y + 160,
+    axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "What is your return & exchange policy?",
-        supporting: "We offer 30-day hassle-free returns on all unworn items with tags attached.",
-        icon: "help_outline",
+        label: "What is your 30-day return policy?",
+        supporting: "30-day hassle-free returns on unworn items with tags. Prepaid DHL labels are included inside every box.",
+        icon: "assignment_return",
         variant: "outlined",
         size: 380,
-        size2: 90,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "How long does standard delivery take?",
-        supporting: "Standard shipping takes 3-5 business days. Express takes 1-2 days.",
-        icon: "schedule",
-        variant: "outlined",
-        size: 380,
-        size2: 90,
-      },
-      {
-        id: uid(),
-        kind: "card",
-        label: "How do I choose the correct clothing size?",
-        supporting: "Our tees feature a relaxed boxy fit. Sizing true to size is recommended.",
-        icon: "straighten",
-        variant: "outlined",
-        size: 380,
-        size2: 90,
+        size2: 95,
       },
     ],
   });
+
+  groups.push({
+    id: uid(),
+    x: f_faqs.x + PHONE_MARGIN,
+    y: f_faqs.y + 265,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "How fast is worldwide DHL delivery?",
+        supporting: "US orders arrive in 2-3 business days. Worldwide express delivery takes 3-5 days across 120+ countries.",
+        icon: "local_shipping",
+        variant: "outlined",
+        size: 380,
+        size2: 95,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_faqs.x + PHONE_MARGIN,
+    y: f_faqs.y + 370,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "How does the boxy oversized fit work?",
+        supporting: "Our tees and hoodies feature a deliberate drop-shoulder cut. Order true-to-size for oversized drape.",
+        icon: "straighten",
+        variant: "outlined",
+        size: 380,
+        size2: 95,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_faqs.x + PHONE_MARGIN,
+    y: f_faqs.y + 475,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "How should I wash 380GSM cotton garments?",
+        supporting: "Machine wash cold inside out, hang dry in shade. Avoid tumble dryers to preserve garment structure.",
+        icon: "local_laundry_service",
+        variant: "outlined",
+        size: 380,
+        size2: 95,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_faqs.x + PHONE_MARGIN,
+    y: f_faqs.y + 580,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Which payment options are supported?",
+        supporting: "Visa, Mastercard, Amex, Apple Pay, Google Pay, and Cash on Delivery in select metropolitan areas.",
+        icon: "credit_card",
+        variant: "outlined",
+        size: 380,
+        size2: 95,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_faqs.x + PHONE_MARGIN,
+    y: f_faqs.y + 685,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Still Have Questions? Chat with Concierge",
+        icon: "support_agent",
+        variant: "filled",
+        size: 380,
+        size2: 54,
+        action: { to: "cloth_customer_service", transition: "slide" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_faqs.x + PHONE_MARGIN,
+    y: f_faqs.y + 749,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Email Concierge: concierge@atelier.com",
+        variant: "text",
+        size: 380,
+        size2: 36,
+      },
+    ],
+  });
+
+  groups.push(buildBottomNav(f_faqs, 4));
 
   // ==========================================================================
   // SCREEN 21: Splash Screen
@@ -2154,14 +3330,14 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_splash.x,
-    y: f_splash.y + 240,
+    y: f_splash.y + 140,
     axis: "y",
     items: [
       {
         id: uid(),
         kind: "topAppBar",
         label: "DEFINE ATELIER",
-        icon: "checkroom",
+        icon: "diamond",
         variant: "text",
         size: FRAME_W,
         size2: 64,
@@ -2170,11 +3346,32 @@ export function buildClothShopFullAppDoc(): Doc {
       {
         id: uid(),
         kind: "card",
-        label: "Luxury Streetwear Capsule",
-        supporting: "Designed in New York · Worldwide Edition 2026",
+        label: "Haute Streetwear & Architectural Silhouettes",
+        supporting: "Crafted from 380GSM combed cotton in limited seasonal batches.",
+        icon: "checkroom",
+        variant: "filled",
+        size: 380,
+        size2: 120,
+      },
+      {
+        id: uid(),
+        kind: "card",
+        label: "PARIS · TOKYO · NEW YORK · MILANO",
+        supporting: "Global boutique shipping across 120+ countries worldwide.",
+        icon: "public",
         variant: "tonal",
         size: 380,
-        size2: 80,
+        size2: 90,
+      },
+      {
+        id: uid(),
+        kind: "card",
+        label: "VIP Society Access · Fall/Winter '26",
+        supporting: "Members receive priority drop reservations & private concierge.",
+        icon: "verified",
+        variant: "outlined",
+        size: 380,
+        size2: 90,
       },
     ],
   });
@@ -2182,41 +3379,57 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_splash.x + PHONE_MARGIN,
-    y: f_splash.y + 440,
+    y: f_splash.y + 640,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Enter Atelier",
+        label: "Enter Atelier Collection",
         icon: "arrow_forward",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 56,
         action: { to: "cloth_onboarding", transition: "fade" },
       },
     ],
   });
 
+  groups.push({
+    id: uid(),
+    x: f_splash.x + PHONE_MARGIN,
+    y: f_splash.y + 710,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "© 2026 Define Atelier Inc. All Rights Reserved.",
+        variant: "text",
+        size: 380,
+        size2: 40,
+      },
+    ],
+  });
+
   // ==========================================================================
-  // SCREEN 22: Onboarding Screen - EXACT SAME AS SCREENSHOT
+  // SCREEN 22: Onboarding Screen
   // ==========================================================================
   groups.push({
     id: uid(),
     x: f_onboarding.x + PHONE_MARGIN,
-    y: f_onboarding.y + 30,
+    y: f_onboarding.y + 70,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "Define yourself in your unique way.",
-        supporting: "Explore the new seasonal collection of premium streetwear and minimalist essentials.",
+        label: "",
         variant: "filled",
         size: 380,
-        size2: 440,
+        size2: 400,
         imagePos: "top",
-        imageSize: 320,
+        imageSize: 400,
         src: FASHION_IMGS.hero,
       },
     ],
@@ -2225,18 +3438,66 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_onboarding.x + PHONE_MARGIN,
-    y: f_onboarding.y + 510,
+    y: f_onboarding.y + 485,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Curated Luxury. Engineered Simplicity.",
+        supporting: "Discover limited-edition seasonal drops crafted from premium 380GSM combed cotton with architectural silhouettes.",
+        variant: "tonal",
+        size: 380,
+        size2: 110,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_onboarding.x + PHONE_MARGIN,
+    y: f_onboarding.y + 610,
+    axis: "x",
+    items: [
+      { id: uid(), kind: "chip", label: "● Drop 01", variant: "filled", size2: 32 },
+      { id: uid(), kind: "chip", label: "○ Drop 02", variant: "tonal", size2: 32 },
+      { id: uid(), kind: "chip", label: "○ Drop 03", variant: "tonal", size2: 32 },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_onboarding.x + PHONE_MARGIN,
+    y: f_onboarding.y + 660,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Get Started Now",
+        label: "Get Started (Create Account)",
         icon: "arrow_forward",
         variant: "filled",
         size: 380,
         size2: 54,
         action: { to: "cloth_signup", transition: "slide" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_onboarding.x + PHONE_MARGIN,
+    y: f_onboarding.y + 724,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Already have an account? Sign In",
+        variant: "text",
+        size: 380,
+        size2: 42,
+        action: { to: "cloth_login", transition: "slide" },
       },
     ],
   });
@@ -2247,7 +3508,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_login.x,
-    y: f_login.y + 10,
+    y: f_login.y,
     axis: "x",
     items: [
       {
@@ -2257,7 +3518,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_onboarding", transition: "slideLeft" },
       },
     ],
@@ -2266,10 +3527,29 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_login.x + PHONE_MARGIN,
-    y: f_login.y + 74,
+    y: f_login.y + 112,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Welcome Back to Atelier",
+        supporting: "Sign in with your email to access your saved wardrobe and VIP perks",
+        icon: "lock",
+        variant: "tonal",
+        size: 380,
+        size2: 85,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_login.x + PHONE_MARGIN,
+    y: f_login.y + 207,
     axis: "y",
     items: [
-      { id: uid(), kind: "textField", label: "Email Address", supporting: "name@example.com", icon: "mail", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Email Address", supporting: "alexandre.moreau@atelier.com", icon: "mail", variant: "outlined", size: 380 },
       { id: uid(), kind: "textField", label: "Password", supporting: "••••••••••••", icon: "lock", variant: "outlined", size: 380 },
       { id: uid(), kind: "switch", label: "Remember Me on this device", checked: true, size: 380 },
     ],
@@ -2278,7 +3558,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_login.x + PHONE_MARGIN,
-    y: f_login.y + 310,
+    y: f_login.y + 395,
     axis: "x",
     items: [
       {
@@ -2288,7 +3568,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "login",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_home", transition: "fade" },
       },
     ],
@@ -2297,16 +3577,82 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_login.x + PHONE_MARGIN,
-    y: f_login.y + 380,
+    y: f_login.y + 459,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Forgot Password?",
+        label: "Forgot your password? Reset",
         variant: "text",
         size: 380,
+        size2: 40,
         action: { to: "cloth_forgot_password", transition: "slide" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_login.x + PHONE_MARGIN,
+    y: f_login.y + 510,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Continue with Apple",
+        icon: "phone_iphone",
+        variant: "outlined",
+        size: 184,
+        size2: 50,
+      },
+      {
+        id: uid(),
+        kind: "button",
+        label: "Continue with Google",
+        icon: "g_translate",
+        variant: "outlined",
+        size: 184,
+        size2: 50,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_login.x + PHONE_MARGIN,
+    y: f_login.y + 575,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Biometric Login Available",
+        supporting: "Use Face ID / Touch ID for fast authentication",
+        icon: "fingerprint",
+        variant: "tonal",
+        size: 380,
+        size2: 70,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_login.x + PHONE_MARGIN,
+    y: f_login.y + 655,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Don't have an account? Create Account",
+        icon: "person_add",
+        variant: "filled",
+        size: 380,
+        size2: 52,
+        action: { to: "cloth_signup", transition: "slide" },
       },
     ],
   });
@@ -2317,7 +3663,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_signup.x,
-    y: f_signup.y + 10,
+    y: f_signup.y,
     axis: "x",
     items: [
       {
@@ -2327,7 +3673,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_login", transition: "slideLeft" },
       },
     ],
@@ -2336,12 +3682,32 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_signup.x + PHONE_MARGIN,
-    y: f_signup.y + 74,
+    y: f_signup.y + 112,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Join Define Atelier VIP Society",
+        supporting: "Receive $25 welcome credit on your first order and priority drop access",
+        icon: "card_membership",
+        variant: "tonal",
+        size: 380,
+        size2: 85,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_signup.x + PHONE_MARGIN,
+    y: f_signup.y + 207,
     axis: "y",
     items: [
-      { id: uid(), kind: "textField", label: "Full Name", supporting: "John Doe", icon: "person", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "Email Address", supporting: "name@example.com", icon: "mail", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "Password", supporting: "At least 8 characters", icon: "lock", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Full Name", supporting: "Alexandre Moreau", icon: "person", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Email Address", supporting: "alexandre.moreau@atelier.com", icon: "mail", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Phone Number", supporting: "+1 (555) 0192-384", icon: "phone", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Password (8+ characters)", supporting: "••••••••••••", icon: "lock", variant: "outlined", size: 380 },
       { id: uid(), kind: "checkbox", label: "I agree to Terms & Conditions and Privacy Policy", checked: true, size: 380 },
     ],
   });
@@ -2349,18 +3715,63 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_signup.x + PHONE_MARGIN,
-    y: f_signup.y + 380,
+    y: f_signup.y + 510,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Create Account",
-        icon: "person_add",
+        label: "Create VIP Account",
+        icon: "check_circle",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_home", transition: "fade" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_signup.x + PHONE_MARGIN,
+    y: f_signup.y + 574,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Apple Sign Up",
+        icon: "phone_iphone",
+        variant: "outlined",
+        size: 184,
+        size2: 48,
+      },
+      {
+        id: uid(),
+        kind: "button",
+        label: "Google Sign Up",
+        icon: "g_translate",
+        variant: "outlined",
+        size: 184,
+        size2: 48,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_signup.x + PHONE_MARGIN,
+    y: f_signup.y + 636,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Already have an account? Sign In",
+        variant: "text",
+        size: 380,
+        size2: 44,
+        action: { to: "cloth_login", transition: "slideLeft" },
       },
     ],
   });
@@ -2371,7 +3782,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_forgot_pwd.x,
-    y: f_forgot_pwd.y + 10,
+    y: f_forgot_pwd.y,
     axis: "x",
     items: [
       {
@@ -2381,7 +3792,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_login", transition: "slideLeft" },
       },
     ],
@@ -2390,17 +3801,18 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_forgot_pwd.x + PHONE_MARGIN,
-    y: f_forgot_pwd.y + 74,
+    y: f_forgot_pwd.y + 112,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "Reset your password",
-        supporting: "Enter your registered email address and we'll send a 4-digit verification code.",
+        label: "Reset your account password",
+        supporting: "Enter your registered email address below. We will send you a 4-digit verification code to reset your account credentials.",
+        icon: "lock_reset",
         variant: "tonal",
         size: 380,
-        size2: 80,
+        size2: 100,
       },
     ],
   });
@@ -2408,28 +3820,92 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_forgot_pwd.x + PHONE_MARGIN,
-    y: f_forgot_pwd.y + 168,
+    y: f_forgot_pwd.y + 224,
     axis: "x",
     items: [
-      { id: uid(), kind: "textField", label: "Email Address", supporting: "name@example.com", icon: "mail", variant: "outlined", size: 380 },
+      {
+        id: uid(),
+        kind: "textField",
+        label: "Email Address",
+        supporting: "alexandre.moreau@atelier.com",
+        icon: "mail",
+        variant: "outlined",
+        size: 380,
+      },
     ],
   });
 
   groups.push({
     id: uid(),
     x: f_forgot_pwd.x + PHONE_MARGIN,
-    y: f_forgot_pwd.y + 248,
+    y: f_forgot_pwd.y + 292,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Send 4-Digit Code",
+        label: "Send 4-Digit Verification Code",
         icon: "send",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_verification_code", transition: "slide" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_forgot_pwd.x + PHONE_MARGIN,
+    y: f_forgot_pwd.y + 360,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Security & Confidentiality Notice",
+        supporting: "We never ask for your password or verification codes via phone call.",
+        icon: "shield",
+        variant: "tonal",
+        size: 380,
+        size2: 75,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_forgot_pwd.x + PHONE_MARGIN,
+    y: f_forgot_pwd.y + 445,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Lost access to your email? Contact Concierge",
+        icon: "support_agent",
+        variant: "outlined",
+        size: 380,
+        size2: 48,
+        action: { to: "cloth_customer_service", transition: "slide" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_forgot_pwd.x + PHONE_MARGIN,
+    y: f_forgot_pwd.y + 505,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Remember password? Back to Sign In",
+        variant: "text",
+        size: 380,
+        size2: 44,
+        action: { to: "cloth_login", transition: "slideLeft" },
       },
     ],
   });
@@ -2440,7 +3916,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_verify_code.x,
-    y: f_verify_code.y + 10,
+    y: f_verify_code.y,
     axis: "x",
     items: [
       {
@@ -2450,7 +3926,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_forgot_password", transition: "slideLeft" },
       },
     ],
@@ -2459,17 +3935,18 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_verify_code.x + PHONE_MARGIN,
-    y: f_verify_code.y + 74,
+    y: f_verify_code.y + 112,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "card",
-        label: "Enter 4-Digit Code",
-        supporting: "Code sent to alexandre.moreau@atelier.com. Resend in 0:45s",
+        label: "Check your email inbox",
+        supporting: "We sent a 4-digit security code to alexandre.moreau@atelier.com. Code expires in 10 minutes.",
+        icon: "mark_email_read",
         variant: "tonal",
         size: 380,
-        size2: 80,
+        size2: 100,
       },
     ],
   });
@@ -2477,28 +3954,90 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_verify_code.x + PHONE_MARGIN,
-    y: f_verify_code.y + 168,
+    y: f_verify_code.y + 224,
     axis: "x",
     items: [
-      { id: uid(), kind: "textField", label: "PIN Code (4-Digits)", supporting: "4 8 2 1", icon: "pin", variant: "outlined", size: 380 },
+      {
+        id: uid(),
+        kind: "textField",
+        label: "Enter 4-Digit Security Code",
+        supporting: "4  8  2  1",
+        icon: "pin",
+        variant: "outlined",
+        size: 380,
+      },
     ],
   });
 
   groups.push({
     id: uid(),
     x: f_verify_code.x + PHONE_MARGIN,
-    y: f_verify_code.y + 248,
+    y: f_verify_code.y + 292,
     axis: "x",
     items: [
       {
         id: uid(),
         kind: "button",
-        label: "Verify & Continue",
+        label: "Verify & Proceed to Reset",
         icon: "check_circle",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_reset_password", transition: "slide" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_verify_code.x + PHONE_MARGIN,
+    y: f_verify_code.y + 360,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Code Delivery Assistance",
+        supporting: "If you don't see the code in 1 minute, check your spam or promotions folder.",
+        icon: "info",
+        variant: "tonal",
+        size: 380,
+        size2: 75,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_verify_code.x + PHONE_MARGIN,
+    y: f_verify_code.y + 448,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Didn't receive code? Resend Code (0:45s)",
+        variant: "text",
+        size: 380,
+        size2: 44,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_verify_code.x + PHONE_MARGIN,
+    y: f_verify_code.y + 504,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Change email address and try again",
+        variant: "text",
+        size: 380,
+        size2: 40,
+        action: { to: "cloth_forgot_password", transition: "slideLeft" },
       },
     ],
   });
@@ -2509,7 +4048,7 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_reset_pwd.x,
-    y: f_reset_pwd.y + 10,
+    y: f_reset_pwd.y,
     axis: "x",
     items: [
       {
@@ -2519,7 +4058,7 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "arrow_back",
         variant: "text",
         size: FRAME_W,
-        size2: 60,
+        size2: 64,
         action: { to: "cloth_verification_code", transition: "slideLeft" },
       },
     ],
@@ -2528,18 +4067,56 @@ export function buildClothShopFullAppDoc(): Doc {
   groups.push({
     id: uid(),
     x: f_reset_pwd.x + PHONE_MARGIN,
-    y: f_reset_pwd.y + 74,
-    axis: "y",
+    y: f_reset_pwd.y + 112,
+    axis: "x",
     items: [
-      { id: uid(), kind: "textField", label: "New Password", supporting: "At least 8 characters", icon: "lock", variant: "outlined", size: 380 },
-      { id: uid(), kind: "textField", label: "Confirm New Password", supporting: "Re-type password", icon: "lock_reset", variant: "outlined", size: 380 },
+      {
+        id: uid(),
+        kind: "card",
+        label: "Create a strong new password",
+        supporting: "Must contain at least 8 characters with a mix of letters, numbers, and symbols.",
+        icon: "security",
+        variant: "tonal",
+        size: 380,
+        size2: 90,
+      },
     ],
   });
 
   groups.push({
     id: uid(),
     x: f_reset_pwd.x + PHONE_MARGIN,
-    y: f_reset_pwd.y + 238,
+    y: f_reset_pwd.y + 214,
+    axis: "y",
+    items: [
+      { id: uid(), kind: "textField", label: "New Password", supporting: "••••••••••••", icon: "lock", variant: "outlined", size: 380 },
+      { id: uid(), kind: "textField", label: "Confirm New Password", supporting: "••••••••••••", icon: "lock_reset", variant: "outlined", size: 380 },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_reset_pwd.x + PHONE_MARGIN,
+    y: f_reset_pwd.y + 350,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "card",
+        label: "Password Requirements Checklist",
+        supporting: "✓ 8+ Characters · ✓ Uppercase Letter · ✓ Number Included",
+        icon: "checklist",
+        variant: "tonal",
+        size: 380,
+        size2: 75,
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_reset_pwd.x + PHONE_MARGIN,
+    y: f_reset_pwd.y + 438,
     axis: "x",
     items: [
       {
@@ -2549,8 +4126,26 @@ export function buildClothShopFullAppDoc(): Doc {
         icon: "check_circle",
         variant: "filled",
         size: 380,
-        size2: 52,
+        size2: 54,
         action: { to: "cloth_login", transition: "slide" },
+      },
+    ],
+  });
+
+  groups.push({
+    id: uid(),
+    x: f_reset_pwd.x + PHONE_MARGIN,
+    y: f_reset_pwd.y + 502,
+    axis: "x",
+    items: [
+      {
+        id: uid(),
+        kind: "button",
+        label: "Cancel and return to Sign In",
+        variant: "text",
+        size: 380,
+        size2: 40,
+        action: { to: "cloth_login", transition: "slideLeft" },
       },
     ],
   });
