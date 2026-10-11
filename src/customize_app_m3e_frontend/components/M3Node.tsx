@@ -922,7 +922,7 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
          onto a line of its own at the foot, the way M3's flexible bars do */
       const barH = topBarHeightOf(item);
       const tall = barH > TOP_BAR_SIZES[0].h;
-      const font = topBarFontOf(item);
+      const font = item.font || (tall ? 28 : (item.icon ? 20 : 26));
       return (
         <div
           style={{
@@ -935,20 +935,32 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             position: "relative",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 4px", height: 64, flex: "0 0 auto" }}>
-            <div style={{ width: 48, height: 48, display: "grid", placeItems: "center", flex: "0 0 auto" }}>
-              {item.icon && <Icon name={item.icon} size={24} color={p.onSurface} />}
-            </div>
-            <div className="m3-size-ease" style={{ flex: 1, minWidth: 0, fontSize: tall ? 0 : font, opacity: tall ? 0 : 1, fontWeight: w(400, 600), color: p.onSurface, transition: "opacity 200ms", ...ellipsis }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 12px", height: 64, flex: "0 0 auto" }}>
+            {item.icon ? (
+              <div style={{ width: 44, height: 44, display: "grid", placeItems: "center", flex: "0 0 auto" }}>
+                <Icon name={item.icon} size={24} color={p.onSurface} />
+              </div>
+            ) : null}
+            <div className="m3-size-ease" style={{ flex: 1, minWidth: 0, fontSize: font, fontWeight: 700, color: p.onSurface, letterSpacing: -0.5, ...ellipsis }}>
               {item.label}
             </div>
-            <div style={{ width: 48, height: 48, display: "grid", placeItems: "center", flex: "0 0 auto" }}>
-              {item.icon2 && <Icon name={item.icon2} size={24} color={p.onSurfaceVariant} />}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flex: "0 0 auto" }}>
+              {item.icon2 && (
+                <div style={{ width: 40, height: 40, display: "grid", placeItems: "center", borderRadius: "50%", background: p.surfaceContainerLow, color: p.onSurface }}>
+                  <Icon name={item.icon2} size={22} color={p.onSurface} />
+                </div>
+              )}
+              {item.icon3 && (
+                <div style={{ width: 40, height: 40, display: "grid", placeItems: "center", borderRadius: "50%", background: p.surfaceContainerLow, color: p.onSurface, position: "relative" }}>
+                  <Icon name={item.icon3} size={22} color={p.onSurface} />
+                  <span style={{ position: "absolute", top: 8, right: 8, width: 8, height: 8, borderRadius: "50%", background: "#EF4444" }} />
+                </div>
+              )}
             </div>
           </div>
-          {tall && (
-            <div className="m3-size-ease" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "flex-end", padding: "0 16px 24px", fontSize: font, lineHeight: 1.2, fontWeight: w(400, 600), color: p.onSurface, ...ellipsis }}>
-              {item.label}
+          {tall && item.supporting && (
+            <div className="m3-size-ease" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "flex-end", padding: "0 16px 16px", fontSize: 13, color: p.onSurfaceVariant, ...ellipsis }}>
+              {item.supporting}
             </div>
           )}
         </div>
@@ -957,12 +969,17 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
 
     case "searchBar":
       return (
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 16px", height: "100%" }}>
-          {item.icon && <Icon name={item.icon} size={24} color={p.onSurface} />}
-          <div style={{ flex: 1, minWidth: 0, fontSize: 16, color: p.onSurfaceVariant, ...ellipsis }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 12px", height: "100%", borderRadius: scaleR(12), background: p.surfaceContainerLow, border: `1px solid ${p.outline}` }}>
+          {item.icon && <Icon name={item.icon} size={20} color={p.onSurfaceVariant} />}
+          <div style={{ flex: 1, minWidth: 0, fontSize: 14, color: p.onSurfaceVariant, ...ellipsis }}>
             {item.label}
           </div>
-          {item.icon2 && <Icon name={item.icon2} size={24} color={p.onSurfaceVariant} />}
+          {item.icon2 && <Icon name={item.icon2} size={20} color={p.onSurfaceVariant} />}
+          {item.icon3 && (
+            <div style={{ width: 34, height: 34, borderRadius: 8, background: p.primary, color: p.onPrimary, display: "grid", placeItems: "center", flex: "0 0 auto" }}>
+              <Icon name={item.icon3} size={18} color={p.onPrimary} />
+            </div>
+          )}
         </div>
       );
 
@@ -986,27 +1003,66 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
       const media = (style: React.CSSProperties) => (
         <div
           style={{
-            borderRadius: scaleR(14),
+            borderRadius: scaleR(12),
             background: p.primaryContainer,
             color: p.onPrimaryContainer,
             display: "grid",
             placeItems: "center",
             flex: "0 0 auto",
             overflow: "hidden",
+            position: "relative",
             ...style,
           }}
         >
           {picture}
+          {item.badge && (
+            <span
+              style={{
+                position: "absolute",
+                top: 8,
+                left: 8,
+                background: "#EF4444",
+                color: "#FFFFFF",
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "2px 6px",
+                borderRadius: 6,
+                zIndex: 2,
+              }}
+            >
+              {item.badge}
+            </span>
+          )}
+          {item.icon2 && (
+            <div
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                background: "rgba(255,255,255,0.92)",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+                display: "grid",
+                placeItems: "center",
+                color: "#EF4444",
+                zIndex: 2,
+              }}
+            >
+              <Icon name={item.icon2} size={16} color="#EF4444" fill={item.icon2Fill} />
+            </div>
+          )}
         </div>
       );
       const text = (
         /* the column may shrink under a large picture: what does not fit is clipped, never pushed out of the card */
         <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column", gap: CARD_TEXT_GAP, justifyContent, alignItems, textAlign }}>
           {hasLabel && (
-            <div style={{ fontSize: 16, fontWeight: w(600, 700), color: ink, maxWidth: "100%", ...ellipsis }}>{item.label}</div>
+            <div style={{ fontSize: 14, fontWeight: w(600, 700), color: ink, maxWidth: "100%", ...ellipsis }}>{item.label}</div>
           )}
           {hasSupporting && (
-            <div style={{ fontSize: 13, lineHeight: 1.5, color: body.color, opacity: body.opacity, overflow: "hidden" }}>
+            <div style={{ fontSize: 13, lineHeight: 1.4, color: body.color, opacity: body.opacity, overflow: "hidden" }}>
               {item.supporting}
             </div>
           )}

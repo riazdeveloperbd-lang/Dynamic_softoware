@@ -562,6 +562,7 @@ export default function Editor({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedFrameId, setSelectedFrameId] = useState<string | null>(null);
   const [selectedLinkId, setSelectedLinkId] = useState<string | null>(null);
+  const [showFlows, setShowFlows] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [pressedId, setPressedId] = useState<string | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
@@ -4580,7 +4581,12 @@ export default function Editor({
                     </marker>
                   </defs>
                   {!draftBusy && links.map((l) => {
-                    const on = l.id === selectedLinkId;
+                    const isLinkOn = l.id === selectedLinkId;
+                    const isItemOn = selectedIds.some((id) => l.id.startsWith(id + "|"));
+                    const isFrameOn = selectedFrameId !== null && l.id.includes(selectedFrameId);
+                    const show = showFlows || isLinkOn || isItemOn || isFrameOn;
+                    if (!show) return null;
+                    const on = isLinkOn || isItemOn;
                     return (
                       <g key={l.id}>
                         <path

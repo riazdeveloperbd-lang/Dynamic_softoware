@@ -255,6 +255,31 @@ const ERROR = {
 /* presets are authored without secondary; it is derived from the seed below */
 const PRESETS: Omit<Palette, "secondary">[] = [
   {
+    key: "cloth_shop",
+    label: "Cloth Shop",
+    primary: "#111827",
+    onPrimary: "#FFFFFF",
+    primaryContainer: "#F3F4F6",
+    onPrimaryContainer: "#111827",
+    inversePrimary: "#F9FAFB",
+    secondaryContainer: "#F3F4F6",
+    onSecondaryContainer: "#1F2937",
+    tertiaryContainer: "#FEE2E2",
+    onTertiaryContainer: "#991B1B",
+    surface: "#FFFFFF",
+    surfaceContainerLow: "#FFFFFF",
+    surfaceContainer: "#F9FAFB",
+    surfaceContainerHigh: "#F3F4F6",
+    surfaceContainerHighest: "#E5E7EB",
+    onSurface: "#111827",
+    onSurfaceVariant: "#6B7280",
+    outline: "#E5E7EB",
+    outlineVariant: "#F3F4F6",
+    inverseSurface: "#111827",
+    inverseOnSurface: "#FFFFFF",
+    ...ERROR,
+  },
+  {
     key: "purple",
     label: "Purple",
     primary: "#6750A4",
@@ -1631,6 +1656,10 @@ export type Item = {
   label: string;
   icon: string | null;
   icon2?: string | null;
+  icon3?: string | null;
+  icon2Fill?: boolean;
+  badge?: string;
+  font?: number;
   variant: Variant;
   supporting?: string;
   size?: number;
