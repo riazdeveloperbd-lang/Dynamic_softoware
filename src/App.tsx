@@ -5,6 +5,9 @@ import ClothShopAdminApp from './cloth_shop_admin_frontend/ClothShopAdminApp';
 import AdminConsoleApp from './admin_app_frontend/AdminConsoleApp';
 import SuperVpnApp from './super_vpn_frontend/SuperVpnApp';
 import BookStoreApp from './book_store_frontend/BookStoreApp';
+import FoodGroceryDeliveryApp from './food_grocery_delivery_frontend/FoodGroceryDeliveryApp';
+import CustomEcommerceApp from './custom_ecommerce_frontend/CustomEcommerceApp';
+import CustomizeAppM3ECanvas from './customize_app_m3e_frontend/CustomizeAppM3ECanvas';
 import WebsiteLandingStudio from './website_builder_frontend/WebsiteLandingStudio';
 import CustomProjectApp from './components/CustomProjectApp';
 import FullWebsitePreloader from './components/FullWebsitePreloader';
@@ -38,7 +41,10 @@ export default function App() {
       const saved = localStorage.getItem('active_studio_project');
       if (
         saved &&
-        (saved === 'book_store' ||
+        (saved === 'customize_app' ||
+          saved === 'custom_ecommerce' ||
+          saved === 'food_grocery_delivery' ||
+          saved === 'book_store' ||
           saved === 'website_landing' ||
           saved === 'super_vpn' ||
           saved === 'admin_app' ||
@@ -50,10 +56,10 @@ export default function App() {
         return saved;
       }
     }
-    return 'website_landing';
+    return 'customize_app';
   });
 
-  const [lastMobileProject, setLastMobileProject] = useState<string>('book_store');
+  const [lastMobileProject, setLastMobileProject] = useState<string>('custom_ecommerce');
   const [isWebsiteLoading, setIsWebsiteLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -89,7 +95,14 @@ export default function App() {
   }, [lastMobileProject]);
 
   const handleSwitchProject = (projectId: string) => {
-    triggerWebsitePreloader(600);
+    const isSwitchingPlatform =
+      (activeProject === 'website_landing' && projectId !== 'website_landing') ||
+      (activeProject !== 'website_landing' && projectId === 'website_landing');
+
+    if (isSwitchingPlatform) {
+      triggerWebsitePreloader(520);
+    }
+
     setCustomProjects(loadCustomProjects());
     if (projectId !== 'website_landing') {
       setLastMobileProject(projectId);
@@ -118,6 +131,15 @@ export default function App() {
       );
     }
 
+    if (activeProject === 'customize_app') {
+      return <CustomizeAppM3ECanvas onSwitchProject={handleSwitchProject} />;
+    }
+    if (activeProject === 'custom_ecommerce') {
+      return <CustomEcommerceApp onSwitchProject={handleSwitchProject} />;
+    }
+    if (activeProject === 'food_grocery_delivery') {
+      return <FoodGroceryDeliveryApp onSwitchProject={handleSwitchProject} />;
+    }
     if (activeProject === 'book_store') {
       return <BookStoreApp onSwitchProject={handleSwitchProject} />;
     }

@@ -90,7 +90,10 @@ export interface StudioDashboardShellProps {
 
   // Content Slots (ONLY THESE CHANGE PER PROJECT)
   middleContent: React.ReactNode;
+  rightRailContent?: React.ReactNode;
   mobileContent: React.ReactNode;
+  customSimulatorViewport?: React.ReactNode;
+  simulatorRightInspectorContent?: React.ReactNode;
 }
 
 const ALL_FLOW_MODULE_IDS = [
@@ -144,7 +147,10 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
   onSelectColorSwatch,
   activeFontName = 'Plus Jakarta Sans',
   middleContent,
+  rightRailContent,
   mobileContent,
+  customSimulatorViewport,
+  simulatorRightInspectorContent,
 }) => {
   const [addAppModalOpen, setAddAppModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<CustomProjectDefinition | null>(null);
@@ -182,6 +188,15 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
   const [isGeneratingProject, setIsGeneratingProject] = useState(false);
   const [aiDynamicAnalysis, setAiDynamicAnalysis] = useState<any | null>(null);
   const [isFetchingAiArchitecture, setIsFetchingAiArchitecture] = useState(false);
+  const [isRightWorkspaceLoading, setIsRightWorkspaceLoading] = useState(true);
+
+  useEffect(() => {
+    setIsRightWorkspaceLoading(true);
+    const timer = setTimeout(() => {
+      setIsRightWorkspaceLoading(false);
+    }, 480);
+    return () => clearTimeout(timer);
+  }, [activeProjectId]);
 
   const safeParseJsonResponse = async (res: Response): Promise<any | null> => {
     try {
@@ -480,6 +495,24 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
   };
 
   const builtInProjectsList = [
+    {
+      id: 'customize_app',
+      title: 'Customize App',
+      subtitle: 'M3E Canvas · Interactive UI Builder',
+      icon: Wand2,
+    },
+    {
+      id: 'custom_ecommerce',
+      title: 'Custom E-commerce',
+      subtitle: '30 Screens · 180 Variants (Drag & Drop)',
+      icon: ShoppingBag,
+    },
+    {
+      id: 'food_grocery_delivery',
+      title: 'FreshPulse Food & Grocery',
+      subtitle: '3 Apps · 13 Screens (Customer, KDS, HUD)',
+      icon: Utensils,
+    },
     {
       id: 'book_store',
       title: 'Book Store',
@@ -837,9 +870,33 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. CENTER SECTION: REUSABLE TOP HEADER + DYNAMIC MIDDLE CONTENT           */}
+      {/* 2 & 3. RIGHT SIDE WORKSPACE (CENTER + FAR RIGHT SIMULATOR)                */}
       {/* ========================================================================= */}
-      <div className="flex-1 h-full flex flex-col min-w-0 overflow-hidden bg-neutral-50/70 dark:bg-[#121214]">
+      <div className="flex-1 h-full flex min-w-0 overflow-hidden relative">
+        {isRightWorkspaceLoading && (
+          <div className="absolute inset-0 z-50 bg-white dark:bg-[#0d0f14] flex items-center justify-center select-none">
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 64 64"
+              className="animate-spin"
+              style={{ animationDuration: '1.15s' }}
+            >
+              <circle
+                cx="32"
+                cy="32"
+                r="24"
+                fill="none"
+                stroke="#7ED321"
+                strokeWidth="4.5"
+                strokeDasharray="26 11.7"
+              />
+            </svg>
+          </div>
+        )}
+
+        {/* 2. CENTER SECTION: REUSABLE TOP HEADER + DYNAMIC MIDDLE CONTENT */}
+        <div className="flex-1 h-full flex flex-col min-w-0 overflow-hidden bg-neutral-50/70 dark:bg-[#121214]">
         {/* Top Studio Bar with 4 Required Tabs & Global Actions */}
         <div className="h-16 px-6 border-b border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-[#18181B]/90 backdrop-blur flex items-center justify-between gap-4 flex-shrink-0 z-10">
           {/* Breadcrumb */}
@@ -933,8 +990,15 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
           </div>
         </div>
 
-        {/* Dynamic Middle Content Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">{middleContent}</div>
+        {/* Dynamic Middle Content Area + Left-of-Main-Simulator Multi-Simulator & Drag-and-Drop Column */}
+        <div className="flex-1 flex min-h-0 min-w-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">{middleContent}</div>
+          {rightRailContent && (
+            <div className="w-[410px] xl:w-[425px] h-full flex-shrink-0 border-l border-neutral-200 dark:border-neutral-800 bg-neutral-100/60 dark:bg-[#0f1117] overflow-hidden flex flex-col">
+              {rightRailContent}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ========================================================================= */}
@@ -984,18 +1048,24 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
           )}
         </div>
 
-        {/* Mobile Viewport Stage */}
-        <div className="flex-1 flex items-center justify-center p-3 overflow-hidden bg-neutral-100/50 dark:bg-[#0d0f14]">
-          {/* Realistic iPhone 16 Pro Device Frame */}
-          <div className="relative w-[378px] h-[760px] rounded-[50px] p-[6px] bg-[#1a1a1e] shadow-2xl ring-1 ring-white/10 flex flex-col items-center justify-center">
-            <div
-              className="w-[366px] h-[748px] rounded-[44px] overflow-hidden bg-white dark:bg-[#090D16] relative flex flex-col transform-gpu"
-              style={{ transform: 'translateZ(0)' }}
-            >
-              {mobileContent}
+        {/* Mobile Viewport Stage (Single Phone Frame OR Multi-Simulator ScrollY Stack) */}
+        {customSimulatorViewport ? (
+          <div className="flex-1 overflow-y-auto bg-neutral-100/50 dark:bg-[#0d0f14]">
+            {customSimulatorViewport}
+          </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center p-3 overflow-hidden bg-neutral-100/50 dark:bg-[#0d0f14]">
+            {/* Realistic iPhone 16 Pro Device Frame */}
+            <div className="relative w-[378px] h-[760px] rounded-[50px] p-[6px] bg-[#1a1a1e] shadow-2xl ring-1 ring-white/10 flex flex-col items-center justify-center">
+              <div
+                className="w-[366px] h-[748px] rounded-[44px] overflow-hidden bg-white dark:bg-[#090D16] relative flex flex-col transform-gpu"
+                style={{ transform: 'translateZ(0)' }}
+              >
+                {mobileContent}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Device Bottom Quick Swatches */}
         <div className="p-3 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-white dark:bg-neutral-900 flex-shrink-0">
@@ -1021,6 +1091,12 @@ export const StudioDashboardShell: React.FC<StudioDashboardShellProps> = ({
             </span>
           </div>
         </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 4. MOBILE SIMULATOR RIGHT-SIDE DOCKED INSPECTOR (NO FLOATING MODAL)       */}
+      {/* ========================================================================= */}
+      {simulatorRightInspectorContent}
       </div>
 
       {/* ========================================================================= */}
