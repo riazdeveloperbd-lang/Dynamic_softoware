@@ -181,7 +181,7 @@ const GLIDE_TOP = 84;
 const GLIDE_PAD = 40;
 const DOC_KEY = "m3e:doc";
 const DOC_VERSION_KEY = "m3e:doc_version";
-const CURRENT_DOC_VERSION = "cloth_shop_v5_frame_isolated";
+const CURRENT_DOC_VERSION = "cloth_shop_v6_clean_typography";
 /** the design a draft or a link replaced, until the author keeps or undoes it */
 const BEFORE_KEY = "m3e:doc:before";
 const DOC_LOCK = "m3e:doc:editor";

@@ -132,7 +132,7 @@ export function buildClothShopFullAppDoc(): Doc {
   ]);
   addGroup(f_splash, 156, 340, "y", [
     { id: uid(), kind: "card", label: "", icon: "add", variant: "filled", fill: "surface", size: 100, size2: 100, radiusTop: 28, radiusBottom: 28, contentAlign: "center", textAlign: "center" },
-    { id: uid(), kind: "text", label: "DEFINE ATELIER", icon: null, variant: "filled", font: 20, bold: true, textColor: "inversePrimary", textAlign: "center", size: 100 },
+    { id: uid(), kind: "text", label: "DEFINE ATELIER", icon: null, variant: "filled", font: 20, bold: true, textColor: "inversePrimary", textAlign: "center", size: 20 },
   ]);
   addGroup(f_splash, 188, 520, "x", [
     { id: uid(), kind: "circularProgress", label: "", icon: null, variant: "filled", size: 36 },
@@ -142,24 +142,24 @@ export function buildClothShopFullAppDoc(): Doc {
   // SCREEN 2: Onboarding
   // ==========================================================================
   addGroup(f_onboarding, 24, 48, "y", [
-    { id: uid(), kind: "text", label: "Define", icon: null, variant: "filled", font: 32, bold: true, size: 364 },
+    { id: uid(), kind: "text", label: "Define", icon: null, variant: "filled", font: 32, bold: true, size: 32 },
     { id: uid(), kind: "card", label: "", icon: null, variant: "filled", src: FASHION_IMGS.hero, imagePos: "background", size: 364, size2: 560, radiusTop: 24, radiusBottom: 24 },
     { id: uid(), kind: "button", label: "Get Started  ➔", icon: null, icon2: "arrow_forward", variant: "filled", size: 364, size2: 54 },
-    { id: uid(), kind: "text", label: "● ○ ○", icon: null, variant: "filled", font: 14, textColor: "outline", textAlign: "center", size: 364 },
+    { id: uid(), kind: "text", label: "● ○ ○", icon: null, variant: "filled", font: 14, textColor: "outline", textAlign: "center", size: 14 },
   ]);
 
   // ==========================================================================
   // SCREEN 3: SignUp
   // ==========================================================================
   addGroup(f_signup, 24, 48, "y", [
-    { id: uid(), kind: "text", label: "Create an account", icon: null, variant: "filled", font: 26, bold: true, size: 364 },
-    { id: uid(), kind: "text", label: "Let's create your account.", icon: null, variant: "filled", font: 14, textColor: "onSurfaceVariant", size: 364 },
+    { id: uid(), kind: "text", label: "Create an account", icon: null, variant: "filled", font: 26, bold: true, size: 26 },
+    { id: uid(), kind: "text", label: "Let's create your account.", icon: null, variant: "filled", font: 14, textColor: "onSurfaceVariant", size: 14 },
     { id: uid(), kind: "textField", label: "Full Name", placeholder: "Enter your full name", icon: null, variant: "outlined", size: 364 },
     { id: uid(), kind: "textField", label: "Email", placeholder: "Enter your email address", icon: null, variant: "outlined", size: 364 },
     { id: uid(), kind: "textField", label: "Password", placeholder: "Enter your password", icon: null, icon2: "visibility_off", variant: "outlined", size: 364 },
-    { id: uid(), kind: "text", label: "By signing up you agree to our Terms, Privacy Policy, and Cookie Use", icon: null, variant: "filled", font: 12, textColor: "onSurfaceVariant", size: 364 },
+    { id: uid(), kind: "text", label: "By signing up you agree to our Terms, Privacy Policy, and Cookie Use", icon: null, variant: "filled", font: 12, textColor: "onSurfaceVariant", size: 12 },
     { id: uid(), kind: "button", label: "Create an Account", icon: null, variant: "filled", size: 364, size2: 50 },
-    { id: uid(), kind: "text", label: "───  Or  ───", icon: null, variant: "filled", textColor: "outline", textAlign: "center", size: 364 },
+    { id: uid(), kind: "text", label: "───  Or  ───", icon: null, variant: "filled", textColor: "outline", textAlign: "center", size: 16 },
     { id: uid(), kind: "button", label: "Sign Up with Google", icon: "g_mobiledata", variant: "outlined", size: 364, size2: 50 },
   ]);
 
@@ -167,13 +167,13 @@ export function buildClothShopFullAppDoc(): Doc {
   // SCREEN 4: Login
   // ==========================================================================
   addGroup(f_login, 24, 56, "y", [
-    { id: uid(), kind: "text", label: "Login to your account", icon: null, variant: "filled", font: 26, bold: true, size: 364 },
-    { id: uid(), kind: "text", label: "It's great to see you again.", icon: null, variant: "filled", font: 14, textColor: "onSurfaceVariant", size: 364 },
+    { id: uid(), kind: "text", label: "Login to your account", icon: null, variant: "filled", font: 26, bold: true, size: 26 },
+    { id: uid(), kind: "text", label: "It's great to see you again.", icon: null, variant: "filled", font: 14, textColor: "onSurfaceVariant", size: 14 },
     { id: uid(), kind: "textField", label: "Email", placeholder: "Enter your email address", icon: null, variant: "outlined", size: 364 },
     { id: uid(), kind: "textField", label: "Password", placeholder: "Enter your password", icon: null, icon2: "visibility_off", variant: "outlined", size: 364 },
-    { id: uid(), kind: "text", label: "Forgot your password? Reset your password", icon: null, variant: "filled", font: 13, textColor: "primary", size: 364 },
+    { id: uid(), kind: "text", label: "Forgot your password? Reset your password", icon: null, variant: "filled", font: 13, textColor: "primary", size: 13 },
     { id: uid(), kind: "button", label: "Login", icon: null, variant: "filled", size: 364, size2: 50 },
-    { id: uid(), kind: "text", label: "───  Or  ───", icon: null, variant: "filled", textColor: "outline", textAlign: "center", size: 364 },
+    { id: uid(), kind: "text", label: "───  Or  ───", icon: null, variant: "filled", textColor: "outline", textAlign: "center", size: 16 },
     { id: uid(), kind: "button", label: "Login with Google", icon: "g_mobiledata", variant: "outlined", size: 364, size2: 50 },
     { id: uid(), kind: "button", label: "Login with Facebook", icon: "facebook", variant: "filled", fill: "primary", size: 364, size2: 50 },
   ]);
@@ -185,8 +185,8 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "topAppBar", label: "", icon: "arrow_back", variant: "filled", size: 412 },
   ]);
   addGroup(f_forgot, 24, 112, "y", [
-    { id: uid(), kind: "text", label: "Forgot password", icon: null, variant: "filled", font: 26, bold: true, size: 364 },
-    { id: uid(), kind: "text", label: "Enter your email for the verification process. We will send 4 digits code to your email.", icon: null, variant: "filled", font: 14, textColor: "onSurfaceVariant", size: 364 },
+    { id: uid(), kind: "text", label: "Forgot password", icon: null, variant: "filled", font: 26, bold: true, size: 26 },
+    { id: uid(), kind: "text", label: "Enter your email for the verification process. We will send 4 digits code to your email.", icon: null, variant: "filled", font: 14, textColor: "onSurfaceVariant", size: 14 },
     { id: uid(), kind: "textField", label: "Email", placeholder: "cody.fisher45@example.com", icon: null, variant: "outlined", size: 364 },
     { id: uid(), kind: "button", label: "Send Code", icon: null, variant: "filled", size: 364, size2: 50 },
   ]);
@@ -198,8 +198,8 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "topAppBar", label: "", icon: "arrow_back", variant: "filled", size: 412 },
   ]);
   addGroup(f_verify, 24, 112, "y", [
-    { id: uid(), kind: "text", label: "Enter 4 Digit Code", icon: null, variant: "filled", font: 26, bold: true, size: 364 },
-    { id: uid(), kind: "text", label: "Enter 4 digits code that you receive on your email (cody.fisher45@example.com)", icon: null, variant: "filled", font: 14, textColor: "onSurfaceVariant", size: 364 },
+    { id: uid(), kind: "text", label: "Enter 4 Digit Code", icon: null, variant: "filled", font: 26, bold: true, size: 26 },
+    { id: uid(), kind: "text", label: "Enter 4 digits code that you receive on your email (cody.fisher45@example.com)", icon: null, variant: "filled", font: 14, textColor: "onSurfaceVariant", size: 14 },
   ]);
   addGroup(f_verify, 24, 240, "x", [
     { id: uid(), kind: "card", label: "1", icon: null, variant: "outlined", font: 24, bold: true, size: 80, size2: 64, contentAlign: "center", textAlign: "center" },
@@ -208,7 +208,7 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "card", label: "0", icon: null, variant: "outlined", font: 24, bold: true, size: 80, size2: 64, contentAlign: "center", textAlign: "center" },
   ]);
   addGroup(f_verify, 24, 330, "y", [
-    { id: uid(), kind: "text", label: "Email not received? Resend code", icon: null, variant: "filled", font: 13, textColor: "onSurfaceVariant", textAlign: "center", size: 364 },
+    { id: uid(), kind: "text", label: "Email not received? Resend code", icon: null, variant: "filled", font: 13, textColor: "onSurfaceVariant", textAlign: "center", size: 13 },
     { id: uid(), kind: "button", label: "Continue", icon: null, variant: "filled", size: 364, size2: 50 },
   ]);
 
@@ -219,8 +219,8 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "topAppBar", label: "", icon: "arrow_back", variant: "filled", size: 412 },
   ]);
   addGroup(f_reset, 24, 112, "y", [
-    { id: uid(), kind: "text", label: "Reset Password", icon: null, variant: "filled", font: 26, bold: true, size: 364 },
-    { id: uid(), kind: "text", label: "Set the new password for your account so you can login and access all the features.", icon: null, variant: "filled", font: 14, textColor: "onSurfaceVariant", size: 364 },
+    { id: uid(), kind: "text", label: "Reset Password", icon: null, variant: "filled", font: 26, bold: true, size: 26 },
+    { id: uid(), kind: "text", label: "Set the new password for your account so you can login and access all the features.", icon: null, variant: "filled", font: 14, textColor: "onSurfaceVariant", size: 14 },
     { id: uid(), kind: "textField", label: "Password", placeholder: "••••••••••••", icon: null, icon2: "visibility_off", variant: "outlined", size: 364 },
     { id: uid(), kind: "textField", label: "Confirm Password", placeholder: "••••••••••••", icon: null, icon2: "visibility_off", variant: "outlined", size: 364 },
     { id: uid(), kind: "button", label: "Continue", icon: null, variant: "filled", size: 364, size2: 50 },
@@ -260,8 +260,8 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "searchBar", label: "Search for clothes...", icon: "search", icon3: "tune", variant: "filled", size: 364 },
   ]);
   addGroup(f_search, 24, 116, "x", [
-    { id: uid(), kind: "text", label: "Recent Searches", icon: null, variant: "filled", font: 16, bold: true, size: 260 },
-    { id: uid(), kind: "text", label: "Clear all", icon: null, variant: "filled", font: 13, textColor: "onSurfaceVariant", textAlign: "end", size: 88 },
+    { id: uid(), kind: "text", label: "Recent Searches", icon: null, variant: "filled", font: 16, bold: true, size: 16 },
+    { id: uid(), kind: "text", label: "Clear all", icon: null, variant: "filled", font: 13, textColor: "onSurfaceVariant", textAlign: "end", size: 13 },
   ]);
   addGroup(f_search, 12, 154, "y", [
     { id: uid(), kind: "listItem", label: "Jeans", icon: "schedule", icon2: "close", variant: "filled", size: 388 },
@@ -305,10 +305,10 @@ export function buildClothShopFullAppDoc(): Doc {
   ]);
   addGroup(f_detail, 24, 112, "y", [
     { id: uid(), kind: "card", label: "", icon: null, icon2: "favorite", icon2Fill: true, variant: "filled", src: FASHION_IMGS.navyTee, imagePos: "background", radiusTop: 24, radiusBottom: 24, size: 364, size2: 360 },
-    { id: uid(), kind: "text", label: "Regular Fit Slogan", icon: null, variant: "filled", font: 22, bold: true, size: 364 },
-    { id: uid(), kind: "text", label: "★ 4.0/5  (45 reviews)", icon: null, variant: "filled", font: 14, textColor: "primary", size: 364 },
-    { id: uid(), kind: "text", label: "The name says it all, the right size slightly snugs the body leaving enough room for comfort in the sleeves and waist.", icon: null, variant: "filled", font: 13, textColor: "onSurfaceVariant", size: 364 },
-    { id: uid(), kind: "text", label: "Choose size", icon: null, variant: "filled", font: 15, bold: true, size: 364 },
+    { id: uid(), kind: "text", label: "Regular Fit Slogan", icon: null, variant: "filled", font: 22, bold: true, size: 22 },
+    { id: uid(), kind: "text", label: "★ 4.0/5  (45 reviews)", icon: null, variant: "filled", font: 14, textColor: "primary", size: 14 },
+    { id: uid(), kind: "text", label: "The name says it all, the right size slightly snugs the body leaving enough room for comfort in the sleeves and waist.", icon: null, variant: "filled", font: 13, textColor: "onSurfaceVariant", size: 13 },
+    { id: uid(), kind: "text", label: "Choose size", icon: null, variant: "filled", font: 15, bold: true, size: 15 },
   ]);
   addGroup(f_detail, 24, 642, "x", [
     { id: uid(), kind: "chip", label: "S", icon: null, variant: "outlined", size: 52 },
@@ -318,7 +318,7 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "chip", label: "XXL", icon: null, variant: "outlined", size: 56 },
   ]);
   addGroup(f_detail, 24, 720, "x", [
-    { id: uid(), kind: "text", label: "$1,190", icon: null, variant: "filled", font: 24, bold: true, size: 140 },
+    { id: uid(), kind: "text", label: "$1,190", icon: null, variant: "filled", font: 24, bold: true, size: 24 },
     { id: uid(), kind: "button", label: "Add to Bag", icon: "shopping_bag", variant: "filled", size: 208, size2: 52 },
   ]);
 
@@ -338,7 +338,7 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "divider", label: "", icon: null, variant: "filled", size: 364 },
   ]);
   addGroup(f_reviews, 24, 304, "x", [
-    { id: uid(), kind: "text", label: "45 Reviews", icon: null, variant: "filled", font: 16, bold: true, size: 200 },
+    { id: uid(), kind: "text", label: "45 Reviews", icon: null, variant: "filled", font: 16, bold: true, size: 16 },
     { id: uid(), kind: "chip", label: "Most Relevant ▾", icon: null, variant: "outlined", size: 128 },
   ]);
   addGroup(f_reviews, 24, 342, "y", [
@@ -373,12 +373,12 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "topAppBar", label: "Checkout", icon: "arrow_back", icon2: "more_vert", variant: "filled", size: 412 },
   ]);
   addGroup(f_checkout, 24, 112, "x", [
-    { id: uid(), kind: "text", label: "Delivery Address", icon: null, variant: "filled", font: 16, bold: true, size: 260 },
-    { id: uid(), kind: "text", label: "Change", icon: null, variant: "filled", font: 13, textColor: "primary", textAlign: "end", size: 88 },
+    { id: uid(), kind: "text", label: "Delivery Address", icon: null, variant: "filled", font: 16, bold: true, size: 16 },
+    { id: uid(), kind: "text", label: "Change", icon: null, variant: "filled", font: 13, textColor: "primary", textAlign: "end", size: 13 },
   ]);
   addGroup(f_checkout, 24, 140, "y", [
     { id: uid(), kind: "card", label: "Home", supporting: "925 S Chugach St #APT 10, Alaska 99645", icon: "location_on", imagePos: "leading", imageSize: 36, variant: "filled", size: 364, size2: 76 },
-    { id: uid(), kind: "text", label: "Payment Method", icon: null, variant: "filled", font: 16, bold: true, size: 364 },
+    { id: uid(), kind: "text", label: "Payment Method", icon: null, variant: "filled", font: 16, bold: true, size: 16 },
   ]);
   addGroup(f_checkout, 24, 254, "x", [
     { id: uid(), kind: "chip", label: "💳 Card", icon: null, variant: "filled", checked: true, size: 108 },
@@ -387,7 +387,7 @@ export function buildClothShopFullAppDoc(): Doc {
   ]);
   addGroup(f_checkout, 24, 298, "y", [
     { id: uid(), kind: "card", label: "VISA   •••••••• 2512", supporting: "Expires 07/23", icon: "credit_card", imagePos: "leading", imageSize: 36, icon2: "radio_button_checked", variant: "outlined", size: 364, size2: 66 },
-    { id: uid(), kind: "text", label: "Order Summary", icon: null, variant: "filled", font: 16, bold: true, size: 364 },
+    { id: uid(), kind: "text", label: "Order Summary", icon: null, variant: "filled", font: 16, bold: true, size: 16 },
     { id: uid(), kind: "card", label: "Sub-total: $5,870   |   VAT: $0.00", supporting: "Shipping fee: $80 • Order Total: $5,950", icon: null, variant: "filled", font: 15, bold: true, size: 364, size2: 110 },
   ]);
   addGroup(f_checkout, 24, 526, "x", [
@@ -405,7 +405,7 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "topAppBar", label: "Address", icon: "arrow_back", icon2: "add", variant: "filled", size: 412 },
   ]);
   addGroup(f_address, 24, 112, "y", [
-    { id: uid(), kind: "text", label: "Saved Address", icon: null, variant: "filled", font: 16, bold: true, size: 364 },
+    { id: uid(), kind: "text", label: "Saved Address", icon: null, variant: "filled", font: 16, bold: true, size: 16 },
     { id: uid(), kind: "card", label: "Home", badge: "Default", supporting: "925 S Chugach St #APT 10, Alaska 99645", icon: "location_on", imagePos: "leading", imageSize: 36, icon2: "radio_button_checked", variant: "filled", size: 364, size2: 84 },
     { id: uid(), kind: "card", label: "Office", supporting: "2438 6th Ave, Ketchikan, Alaska 99901", icon: "location_on", imagePos: "leading", imageSize: 36, icon2: "radio_button_unchecked", variant: "outlined", size: 364, size2: 84 },
     { id: uid(), kind: "card", label: "Apartment", supporting: "2551 Vista Dr #B301, Juneau, Alaska 99801", icon: "location_on", imagePos: "leading", imageSize: 36, icon2: "radio_button_unchecked", variant: "outlined", size: 364, size2: 84 },
@@ -436,7 +436,7 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "topAppBar", label: "Payment Method", icon: "arrow_back", icon2: "help_outline", variant: "filled", size: 412 },
   ]);
   addGroup(f_payment, 24, 112, "y", [
-    { id: uid(), kind: "text", label: "Saved Cards", icon: null, variant: "filled", font: 16, bold: true, size: 364 },
+    { id: uid(), kind: "text", label: "Saved Cards", icon: null, variant: "filled", font: 16, bold: true, size: 16 },
     { id: uid(), kind: "card", label: "VISA   •••• •••• •••• 2512", badge: "Default", supporting: "Expires 07/23", icon: "credit_card", imagePos: "leading", imageSize: 36, icon2: "radio_button_checked", variant: "filled", size: 364, size2: 80 },
     { id: uid(), kind: "card", label: "MasterCard   •••• •••• •••• 3421", supporting: "Expires 11/25", icon: "credit_card", imagePos: "leading", imageSize: 36, icon2: "radio_button_unchecked", variant: "outlined", size: 364, size2: 80 },
     { id: uid(), kind: "card", label: "VISA   •••• •••• •••• 2512", supporting: "Expires 09/26", icon: "credit_card", imagePos: "leading", imageSize: 36, icon2: "radio_button_unchecked", variant: "outlined", size: 364, size2: 80 },
@@ -451,7 +451,7 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "topAppBar", label: "New Card", icon: "arrow_back", icon2: "help_outline", variant: "filled", size: 412 },
   ]);
   addGroup(f_new_card, 24, 112, "y", [
-    { id: uid(), kind: "text", label: "Add Debit or Credit Card", icon: null, variant: "filled", font: 17, bold: true, size: 364 },
+    { id: uid(), kind: "text", label: "Add Debit or Credit Card", icon: null, variant: "filled", font: 17, bold: true, size: 17 },
     { id: uid(), kind: "textField", label: "Card number", placeholder: "Enter your card number", icon: null, variant: "outlined", size: 364 },
   ]);
   addGroup(f_new_card, 24, 244, "x", [
@@ -548,12 +548,12 @@ export function buildClothShopFullAppDoc(): Doc {
     { id: uid(), kind: "topAppBar", label: "Notifications", icon: "arrow_back", icon2: "more_vert", variant: "filled", size: 412 },
   ]);
   addGroup(f_notifs, 24, 112, "y", [
-    { id: uid(), kind: "text", label: "Today", icon: null, variant: "filled", font: 16, bold: true, size: 364 },
+    { id: uid(), kind: "text", label: "Today", icon: null, variant: "filled", font: 16, bold: true, size: 16 },
     { id: uid(), kind: "card", label: "30% Special Discount!", supporting: "Special promotion only valid today.", icon: "local_offer", imagePos: "leading", imageSize: 36, variant: "filled", size: 364, size2: 74 },
-    { id: uid(), kind: "text", label: "Yesterday", icon: null, variant: "filled", font: 16, bold: true, size: 364 },
+    { id: uid(), kind: "text", label: "Yesterday", icon: null, variant: "filled", font: 16, bold: true, size: 16 },
     { id: uid(), kind: "card", label: "Top Up E-wallet Successfully!", supporting: "You have top up your e-wallet.", icon: "account_balance_wallet", imagePos: "leading", imageSize: 36, variant: "outlined", size: 364, size2: 74 },
     { id: uid(), kind: "card", label: "New Service Available!", supporting: "Now you can track order in real-time.", icon: "location_on", imagePos: "leading", imageSize: 36, variant: "outlined", size: 364, size2: 74 },
-    { id: uid(), kind: "text", label: "June 7, 2023", icon: null, variant: "filled", font: 16, bold: true, size: 364 },
+    { id: uid(), kind: "text", label: "June 7, 2023", icon: null, variant: "filled", font: 16, bold: true, size: 16 },
     { id: uid(), kind: "card", label: "Credit Card Connected!", supporting: "Credit card has been linked.", icon: "credit_card", imagePos: "leading", imageSize: 36, variant: "outlined", size: 364, size2: 74 },
     { id: uid(), kind: "card", label: "Account Setup Successfully!", supporting: "Your account has been created.", icon: "person", imagePos: "leading", imageSize: 36, variant: "outlined", size: 364, size2: 74 },
   ]);

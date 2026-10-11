@@ -406,17 +406,20 @@ function CheckboxContent({ item, p }: { item: Item; p: Palette }) {
 
 function TextContent({ item, p }: { item: Item; p: Palette }) {
   const w = useWeight();
-  const fs = item.size ?? 28;
+  const fs = item.font ?? (item.size && item.size <= 57 ? item.size : 16);
+  const color = item.textColor ? onToken(item.textColor, p) : p.onSurface;
   return (
     <span
       style={{
         display: "inline-block",
         fontSize: fs,
-        lineHeight: 1.3,
+        lineHeight: 1.35,
         fontWeight: item.bold ? w(700, 800) : w(400, fs >= 22 ? 600 : 500),
         letterSpacing: fs >= 28 ? -0.25 : 0,
-        color: p.onSurface,
-        whiteSpace: "nowrap",
+        color,
+        whiteSpace: "normal",
+        maxWidth: 364,
+        textAlign: (item.textAlign as any) || undefined,
         padding: "0 2px",
       }}
     >

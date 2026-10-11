@@ -2508,8 +2508,10 @@ export function sizeOf(it: Item, widths: Record<string, number>) {
       return { w: toolbarWidth(it), h: s.h };
     case "tabs":
       return { w: n, h: s.h };
-    case "text":
-      return { w: widths[it.id] ?? 120, h: Math.round(n * 1.3) };
+    case "text": {
+      const fs = it.font ?? (it.size && it.size <= 57 ? it.size : 16);
+      return { w: widths[it.id] ?? 120, h: Math.round(fs * 1.35) };
+    }
     case "fab":
       return menuOpen(it) ? { w: widths[it.id] ?? 220, h: menuHeight(it, FAB_MENU_CLOSE) } : { w: n, h: n };
     case "iconButton":
