@@ -11,6 +11,8 @@ import {
   makeItem,
   uid,
 } from "./tokens";
+import { buildClothShopFullAppDoc } from "./clothShopFullAppDoc";
+export { buildClothShopFullAppDoc };
 
 export type EcommerceCategoryKey =
   | "products"
@@ -1477,7 +1479,16 @@ export function buildMoneyManagementAppDoc(): Doc {
   };
 }
 
+/**
+ * Loads the complete 27-screen Cloth Shop Application (Define Atelier).
+ * Every screen is loaded onto the main canvas as a fully editable, re-orderable,
+ * component-customizable Frame with full Expo Router .ZIP and APK export support.
+ */
 export function buildEcommerceAppDoc(): Doc {
+  return buildClothShopFullAppDoc();
+}
+
+export function buildApexEcommerceAppDoc(): Doc {
   const FRAME_W = PHONE_W;
   const FRAME_H = PHONE_H;
   const GAP_X = 80;

@@ -362,7 +362,7 @@ export function PartsPalette({
             gap: 5,
             whiteSpace: "nowrap",
           }}
-          title="Load complete 4-screen Professional E-Commerce App (Marketplace, Catalog, Details, Cart)"
+          title="Load complete 27-screen Cloth Shop Application (Define Atelier: Shop, Search, Details, Reviews, Cart, Checkout, Profile, Orders, Live Tracking, Cards, Auth)"
         >
           <Icon name="storefront" size={15} />
           <span>🛍️ E-Commerce App</span>

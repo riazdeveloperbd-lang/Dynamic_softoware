@@ -184,8 +184,8 @@ export function ShareDialog({
       templateFn: buildMoneyManagementAppDoc,
     },
     {
-      label: "🛍️ Professional E-Commerce App",
-      prompt: "Professional e-commerce shopping app with marketplace home, promo banners, 2-column product grid, product details with color/size picker, and shopping cart checkout",
+      label: "🛍️ Define Atelier (27-Screen Cloth Shop App)",
+      prompt: "Production-ready 27-screen luxury fashion and streetwear cloth shop app with full shopping feed, search, product details, reviews, cart, checkout, live tracking, addresses, payment cards, and complete auth",
       templateFn: buildEcommerceAppDoc,
     },
     {
@@ -355,9 +355,9 @@ export function ShareDialog({
                       fontWeight: 700,
                       cursor: "pointer",
                     }}
-                    title="Instantly replace canvas with 4-screen Professional E-Commerce App"
+                    title="Instantly load complete 27-screen Cloth Shop App (Define Atelier)"
                   >
-                    🛍️ Load E-Commerce
+                    🛍️ Load Cloth Shop (27 Screens)
                   </button>
                 </div>
               </div>
