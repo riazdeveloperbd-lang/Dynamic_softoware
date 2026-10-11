@@ -2,13 +2,15 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import QRCode from "qrcode";
-import { Palette, Frame, Group } from "../lib/tokens";
+import { Palette, Frame, Group, Theme } from "../lib/tokens";
 import { Icon } from "./M3Node";
+import { exportM3EExpoRouterZip } from "../utils/exportM3EExpoRouterZip";
 
 export interface BuildApkPanelProps {
   p: Palette;
   frames: Frame[];
   groups: Group[];
+  theme?: Theme;
 }
 
 // Curated stylish preset icons for e-commerce apps
@@ -121,7 +123,7 @@ const PRESET_LOGOS = [
 
 type IconShape = "squircle" | "circle" | "rounded" | "teardrop";
 
-export function BuildApkPanel({ p, frames, groups }: BuildApkPanelProps) {
+export function BuildApkPanel({ p, frames, groups, theme }: BuildApkPanelProps) {
   // 1. App name & metadata
   const defaultTitle = frames[0]?.name || "Define Apparel Mobile";
   const [appName, setAppName] = useState(defaultTitle);
@@ -149,6 +151,34 @@ export function BuildApkPanel({ p, frames, groups }: BuildApkPanelProps) {
   const [apkFilename, setApkFilename] = useState<string>("");
   const [mobileQrDataUrl, setMobileQrDataUrl] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // 4. Expo Router Project ZIP Export State
+  const [isExportingZip, setIsExportingZip] = useState(false);
+  const [zipExportDone, setZipExportDone] = useState(false);
+
+  // Handle Export Expo Router Project (.ZIP)
+  const handleExportExpoZip = async () => {
+    try {
+      setIsExportingZip(true);
+      setZipExportDone(false);
+      await exportM3EExpoRouterZip({
+        frames,
+        groups,
+        palette: p,
+        theme,
+        appName: appName.trim(),
+        packageName: packageName.trim(),
+        appLogoUri: getLogoBase64ForApk(),
+        versionName: versionName.trim() || "1.0.0",
+      });
+      setZipExportDone(true);
+      setTimeout(() => setZipExportDone(false), 4000);
+    } catch (err) {
+      console.error("Failed to export Expo Router zip:", err);
+    } finally {
+      setIsExportingZip(false);
+    }
+  };
 
   // Auto-slug package name when app name changes if untouched
   const handleAppNameChange = (val: string) => {
@@ -406,14 +436,14 @@ export function BuildApkPanel({ p, frames, groups }: BuildApkPanelProps) {
             flexShrink: 0,
           }}
         >
-          <Icon name="android" size={28} />
+          <Icon name="code" size={26} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 800, fontSize: 16, color: p.onPrimaryContainer, letterSpacing: -0.2 }}>
-            Android .APK Builder
+            Expo Project & APK Builder
           </div>
           <div style={{ fontSize: 12, color: p.onSurfaceVariant, marginTop: 2 }}>
-            Package and compile your mobile app design into a standalone installer
+            Download ready-to-run Expo Router code (.ZIP) or compile standalone signed Android APK
           </div>
         </div>
       </div>
@@ -699,8 +729,53 @@ export function BuildApkPanel({ p, frames, groups }: BuildApkPanelProps) {
         </div>
       </div>
 
-      {/* 4. Generate .APK Action Button & Progress */}
+      {/* 4. Export Expo Router Project (.ZIP) & Generate .APK Action Buttons */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {/* 1-Click Expo Router Source Code ZIP Export */}
+        <button
+          onClick={handleExportExpoZip}
+          disabled={isExportingZip}
+          className="m3-press"
+          style={{
+            width: "100%",
+            height: 52,
+            borderRadius: 26,
+            border: `1.5px solid ${p.primary}`,
+            background: zipExportDone
+              ? "#10B981"
+              : `linear-gradient(135deg, ${p.primaryContainer}, ${p.surfaceContainerHigh})`,
+            color: zipExportDone ? "#FFFFFF" : p.onPrimaryContainer,
+            fontSize: 14,
+            fontWeight: 800,
+            cursor: isExportingZip ? "wait" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+            transition: "all 200ms ease",
+          }}
+        >
+          {isExportingZip ? (
+            <>
+              <span className="m3-spin">
+                <Icon name="progress_activity" size={22} />
+              </span>
+              <span>Bundling Expo Project (.ZIP)...</span>
+            </>
+          ) : zipExportDone ? (
+            <>
+              <Icon name="check_circle" size={22} />
+              <span>Expo Project .ZIP Downloaded!</span>
+            </>
+          ) : (
+            <>
+              <Icon name="folder_zip" size={22} />
+              <span>1. Download Expo Router Code (.ZIP)</span>
+            </>
+          )}
+        </button>
+
         {buildStatus !== "building" && buildStatus !== "success" && (
           <button
             onClick={handleGenerateApk}
@@ -712,7 +787,7 @@ export function BuildApkPanel({ p, frames, groups }: BuildApkPanelProps) {
               border: "none",
               background: `linear-gradient(135deg, ${p.primary}, #10B981)`,
               color: "#FFFFFF",
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: 800,
               cursor: "pointer",
               display: "flex",
@@ -722,8 +797,8 @@ export function BuildApkPanel({ p, frames, groups }: BuildApkPanelProps) {
               boxShadow: "0 6px 20px rgba(16, 185, 129, 0.35)",
             }}
           >
-            <Icon name="build_circle" size={24} />
-            <span>3. Generate .apk File</span>
+            <Icon name="android" size={22} />
+            <span>2. Generate Signed .apk File</span>
           </button>
         )}
 

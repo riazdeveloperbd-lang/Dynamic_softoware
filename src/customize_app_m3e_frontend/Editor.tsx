@@ -130,6 +130,7 @@ import { GitHubLink, Mode, Toolbar } from "./components/Toolbar";
 import { LangMenu } from "./components/Menus";
 import { AiActionKey, AiPanel, aiErrorText } from "./components/AiPanel";
 import { BuildApkPanel } from "./components/BuildApkPanel";
+import { exportM3EExpoRouterZip } from "./utils/exportM3EExpoRouterZip";
 import { TidyState, PANEL_FADE_H } from "./components/ui";
 import { AiSettings, DEFAULT_AI, hasKey, isSecureUrl, loadAiSettings, proposeBehavior, proposeDescription, pushHistory, saveAiSettings } from "./lib/ai";
 import { barSlotOf, bodyRect, carryFrame, holdsEdgeBar, maxFrameLength, minFrameLength, pullInto, stretchFrame, tidyFrame } from "./lib/tidy";
@@ -3167,6 +3168,23 @@ export default function Editor({
     setAiFrameId(null);
   };
 
+  const handleExportExpo = async () => {
+    try {
+      showToast("Bundling Expo Router project (.ZIP)...", 3000, "folder_zip");
+      await exportM3EExpoRouterZip({
+        frames,
+        groups,
+        palette: p,
+        theme,
+        appName: title || "Material 3 Mobile App",
+      });
+      showToast("Expo Router Project Downloaded! ✓", 3500, "check");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to export Expo project", 3500, "error");
+    }
+  };
+
   useEffect(
     () => () => {
       aiAbortRef.current?.abort();
@@ -4284,7 +4302,7 @@ export default function Editor({
                 ) : leftTab === "ai" ? (
                   <AiPanel p={p} settings={aiSettings} onSettings={updateAiSettings} />
                 ) : leftTab === "build" ? (
-                  <BuildApkPanel p={p} frames={frames} groups={groups} />
+                  <BuildApkPanel p={p} frames={frames} groups={groups} theme={theme} />
                 ) : (
                   <LayersPanel
                     p={p}
@@ -4740,6 +4758,7 @@ export default function Editor({
               } catch {}
             }}
             onSwitchProject={onSwitchProject}
+            onExportExpo={handleExportExpo}
           />
 
           {isMobile && (

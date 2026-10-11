@@ -218,6 +218,7 @@ export function Toolbar({
   onDraftSave,
   quickUndo,
   onSwitchProject,
+  onExportExpo,
 }: {
   p: Palette;
   mode: Mode;
@@ -261,6 +262,7 @@ export function Toolbar({
   /** after a kept draft: the header's undo, shown beside the opener so the previous design stays a tap away */
   quickUndo?: boolean;
   onSwitchProject?: (projectId: string) => void;
+  onExportExpo?: () => void;
 }) {
   const lang = useLang();
   if (mobile) {
@@ -560,6 +562,18 @@ export function Toolbar({
                       onOpenProject();
                     }}
                   />
+                  {onExportExpo && (
+                    <IconBtn
+                      icon="code"
+                      p={p}
+                      size={44}
+                      title="Export Expo Router Project (.ZIP)"
+                      onClick={() => {
+                        close();
+                        onExportExpo();
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </Popover>
