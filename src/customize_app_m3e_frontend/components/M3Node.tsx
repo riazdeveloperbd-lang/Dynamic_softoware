@@ -994,18 +994,19 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
       const textAlign = { start: "start", center: "center", end: "end" }[across] as React.CSSProperties["textAlign"];
       const ink = cardTextColorOf(item, p);
       const body = cardBodyColorOf(item, p);
+      const isBareIcon = !item.src && item.icon && (item.iconFill === "none" || pos === "leading");
       const picture = item.src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.src} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       ) : (
-        item.icon && <Icon name={item.icon} size={34} />
+        item.icon && <Icon name={item.icon} size={isBareIcon ? 24 : 34} />
       );
       const media = (style: React.CSSProperties) => (
         <div
           style={{
             borderRadius: scaleR(12),
-            background: p.primaryContainer,
-            color: p.onPrimaryContainer,
+            background: isBareIcon ? "transparent" : p.primaryContainer,
+            color: isBareIcon ? p.onSurface : p.onPrimaryContainer,
             display: "grid",
             placeItems: "center",
             flex: "0 0 auto",
@@ -1015,7 +1016,7 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
           }}
         >
           {picture}
-          {item.badge && (
+          {item.badge && (pos === "top" && item.src) && (
             <span
               style={{
                 position: "absolute",
@@ -1033,7 +1034,7 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
               {item.badge}
             </span>
           )}
-          {item.icon2 && (
+          {item.icon2 && (pos === "top" && item.src) && (
             <div
               style={{
                 position: "absolute",
@@ -1058,9 +1059,29 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
       const text = (
         /* the column may shrink under a large picture: what does not fit is clipped, never pushed out of the card */
         <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column", gap: CARD_TEXT_GAP, justifyContent, alignItems, textAlign }}>
-          {hasLabel && (
-            <div style={{ fontSize: 14, fontWeight: w(600, 700), color: ink, maxWidth: "100%", ...ellipsis }}>{item.label}</div>
-          )}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%" }}>
+            {hasLabel && (
+              <div style={{ fontSize: item.font || 14, fontWeight: w(600, 700), color: ink, maxWidth: "100%", ...ellipsis }}>
+                {item.label}
+              </div>
+            )}
+            {item.badge && (pos !== "top" || !item.src) && (
+              <span
+                style={{
+                  flex: "0 0 auto",
+                  background: item.badge.startsWith("-") ? "#EF4444" : (item.badge === "Default" ? "#111827" : "#F3F4F6"),
+                  color: item.badge === "Default" || item.badge.startsWith("-") ? "#FFFFFF" : "#111827",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  padding: "2px 6px",
+                  borderRadius: 6,
+                  lineHeight: "13px",
+                }}
+              >
+                {item.badge}
+              </span>
+            )}
+          </div>
           {hasSupporting && (
             <div style={{ fontSize: 13, lineHeight: 1.4, color: body.color, opacity: body.opacity, overflow: "hidden" }}>
               {item.supporting}
@@ -1068,6 +1089,20 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
           )}
         </div>
       );
+      const trailingIcon = item.icon2 && (pos !== "top" || !item.src) ? (
+        <div
+          style={{
+            flex: "0 0 auto",
+            display: "grid",
+            placeItems: "center",
+            alignSelf: "center",
+            color: item.icon2Fill ? "#EF4444" : (item.textColor ? p[item.textColor] : p.onSurfaceVariant),
+            paddingLeft: 6,
+          }}
+        >
+          <Icon name={item.icon2} size={20} fill={item.icon2Fill} />
+        </div>
+      ) : null;
       if (hasImage && pos === "background") {
         /* Full-bleed media behind the text. A photo, or a chosen text color that the placeholder's
          * container may not carry, gets a scrim on the text's side: dark under light text, light under dark. */
@@ -1092,6 +1127,7 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             height: "100%",
             display: "flex",
             flexDirection: side ? "row" : "column",
+            alignItems: side ? "center" : undefined,
             gap: CARD_MEDIA_GAP,
             boxSizing: "border-box",
             overflow: "hidden",
@@ -1099,6 +1135,7 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
         >
           {hasImage && !after && media(side ? { width: cardImageSizeOf(item), alignSelf: "stretch" } : { height: cardImageSizeOf(item) })}
           {text}
+          {trailingIcon}
           {hasImage && after && media(side ? { width: cardImageSizeOf(item), alignSelf: "stretch" } : { height: cardImageSizeOf(item) })}
         </div>
       );
@@ -1106,6 +1143,7 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
 
     case "listItem": {
       const iconBg = item.iconFill === "none" ? null : (item.iconFill ?? "primaryContainer");
+      const isRed = item.textColor === "error" || item.label === "Logout";
       return (
         <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "0 16px", height: "100%" }}>
           {item.icon && (
@@ -1115,22 +1153,26 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
                 height: 40,
                 borderRadius: 20,
                 background: iconBg ? p[iconBg] : "transparent",
-                color: iconBg ? onToken(iconBg, p) : onToken(item.fill ?? "surfaceContainerLow", p),
+                color: isRed ? "#EF4444" : (iconBg ? onToken(iconBg, p) : onToken(item.fill ?? "surfaceContainerLow", p)),
                 display: "grid",
                 placeItems: "center",
                 flex: "0 0 auto",
               }}
             >
-              <Icon name={item.icon} size={22} />
+              <Icon name={item.icon} size={22} color={isRed ? "#EF4444" : undefined} />
             </div>
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {hasLabel && <div style={{ fontSize: 16, color: p.onSurface, ...ellipsis }}>{item.label}</div>}
+            {hasLabel && (
+              <div style={{ fontSize: 16, color: isRed ? "#EF4444" : p.onSurface, ...ellipsis }}>
+                {item.label}
+              </div>
+            )}
             {hasSupporting && (
               <div style={{ fontSize: 13, color: p.onSurfaceVariant, ...ellipsis }}>{item.supporting}</div>
             )}
           </div>
-          {item.switch ? <SwitchControl on={!!item.checked} p={p} /> : item.icon2 && <Icon name={item.icon2} size={22} color={p.onSurfaceVariant} />}
+          {item.switch ? <SwitchControl on={!!item.checked} p={p} /> : item.icon2 && <Icon name={item.icon2} size={22} color={isRed ? "#EF4444" : p.onSurfaceVariant} />}
         </div>
       );
     }
