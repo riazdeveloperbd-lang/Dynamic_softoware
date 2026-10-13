@@ -641,7 +641,151 @@ export type Kind =
   | "radio"
   | "carousel"
   | "datePicker"
-  | "timePicker";
+  | "timePicker"
+  // Media & Social
+  | "avatar"
+  | "badge"
+  | "rating"
+  | "audioPlayer"
+  | "videoPlayer"
+  | "qrCode"
+  | "tag"
+  // Commerce & Sales
+  | "stepper"
+  | "priceTag"
+  | "couponCode"
+  | "colorSwatch"
+  | "creditCard"
+  | "deliveryEstimate"
+  | "orderStatus"
+  | "sizeSelector"
+  | "countdownTimer"
+  | "reviewSummary"
+  | "addressCard"
+  | "paymentMethodSelector"
+  // Finance & Wallet
+  | "balanceCard"
+  | "transactionItem"
+  | "statMetricCard"
+  | "miniChart"
+  | "expenseProgress"
+  // Social & Community
+  | "storyBubble"
+  | "chatBubble"
+  | "userProfileHeader"
+  | "notificationItem"
+  | "socialLoginGroup"
+  // Inputs
+  | "passwordStrength"
+  | "biometricPrompt"
+  | "filterChips"
+  | "signaturePad"
+  // Navigation
+  | "floatingActionDock"
+  | "segmentedTabs"
+  // Charts & Analytics
+  | "lineChart"
+  | "barChart"
+  | "areaChart"
+  | "donutChart"
+  | "pieChart"
+  | "candlestickChart"
+  | "radarChart"
+  | "gaugeChart"
+  | "funnelChart"
+  | "heatMapGrid"
+  | "scatterPlot"
+  | "progressRingGroup"
+  // Finance & Wallet (Extensions)
+  | "cryptoTicker"
+  | "loanCalculator"
+  | "billReminderCard"
+  | "cardStackCarousel"
+  // Commerce & Sales (Extensions)
+  | "priceBreakdown"
+  | "freeShippingBar"
+  | "productComparisonTable"
+  | "loyaltyPointsBadge"
+  // Social & Community (Extensions)
+  | "commentThread"
+  | "pollCard"
+  | "audioWaveMessage"
+  | "userBadgeGroup"
+  // Media & Audio (Extensions)
+  | "liveStreamBadge"
+  | "podcastEpisodeTile"
+  | "waveformPlayer"
+  // Inputs & Security (Extensions)
+  | "verificationBadge"
+  | "colorPalettePicker"
+  | "starRatingInput"
+  // Containment & Layout (Extensions)
+  | "stickyBottomBar"
+  | "notificationBannerSticky"
+  | "segmentedSplitView"
+  // AI & Smart Assistants
+  | "aiPromptInput"
+  | "aiMessageBubble"
+  | "aiSuggestionsRow"
+  | "codeSnippetBlock"
+  // Travel & Food Delivery
+  | "boardingPassCard"
+  | "foodDeliveryTracker"
+  | "restaurantMenuRow"
+  | "hotelBookingCard"
+  | "rideVehicleSelector"
+  // Health & Fitness
+  | "heartRateMonitorCard"
+  | "sleepTrackerCard"
+  | "waterIntakeTracker"
+  | "medicationReminderTile"
+  | "stepCounterCard"
+  // Productivity & Tasks
+  | "kanbanCard"
+  | "taskChecklistRow"
+  | "calendarEventCard"
+  | "fileAttachmentCard"
+  | "notesSnippetCard"
+  | "todoCard"
+  | "todoStatsCard"
+  | "todoCreateCard"
+  | "todoDetailCard"
+  | "todoEditCard"
+  | "todoListInteractive"
+  // Smart Home & IoT
+  | "thermostatDial"
+  | "smartLightControl"
+  | "deviceStatusTile"
+  | "securityCameraFeed"
+  // Education & Learning
+  | "courseProgressCard"
+  | "quizQuestionCard"
+  | "flashcardViewer"
+  | "certificateBadgeCard"
+  // Gaming & Rewards
+  | "leaderboardRow"
+  | "achievementBadge"
+  | "rewardStreakCard"
+  | "inventoryItemSlot"
+  // Media & Streaming (Extensions)
+  | "audioPlaylistRow"
+  | "videoStoryThumbnail"
+  // Navigation & Headers (Extensions)
+  | "searchFilterHeader"
+  | "bottomSheetMenu"
+  // Feedback & Overlays
+  | "banner"
+  | "tooltip"
+  | "skeleton"
+  | "emptyState"
+  | "toast"
+  // Data & Structure
+  | "segmentedButton"
+  | "timeline"
+  | "accordion"
+  | "faqAccordion"
+  | "otpInput"
+  | "fileUpload";
 
 /** how a carousel arranges its items: M3's four layouts */
 export type CarouselLayout = "multiBrowse" | "uncontained" | "hero" | "fullScreen";
@@ -904,7 +1048,27 @@ export type ConnectSpec = { axis: Axis; outer: number; inner: number; family: st
 /** `presets` are quick picks shown as chips; values outside min..max are hidden */
 export type SizeSpec = { min: number; max: number; step: number; icon: string; presets?: number[] };
 
-export type Category = "actions" | "navigation" | "containment" | "inputs" | "content" | "progress";
+export type Category =
+  | "actions"
+  | "navigation"
+  | "containment"
+  | "inputs"
+  | "content"
+  | "progress"
+  | "media"
+  | "commerce"
+  | "finance"
+  | "charts"
+  | "social"
+  | "feedback"
+  | "data"
+  | "ai"
+  | "travel"
+  | "health"
+  | "productivity"
+  | "smarthome"
+  | "education"
+  | "gaming";
 
 export const CATEGORIES: { key: Category; label: string; icon: string }[] = [
   { key: "actions", label: "Actions", icon: "touch_app" },
@@ -913,6 +1077,20 @@ export const CATEGORIES: { key: Category; label: string; icon: string }[] = [
   { key: "inputs", label: "Inputs", icon: "toggle_on" },
   { key: "content", label: "Content", icon: "notes" },
   { key: "progress", label: "Progress", icon: "progress_activity" },
+  { key: "media", label: "Media & Audio", icon: "perm_media" },
+  { key: "commerce", label: "Commerce & Sales", icon: "shopping_bag" },
+  { key: "finance", label: "Finance & Wallet", icon: "account_balance_wallet" },
+  { key: "charts", label: "Charts & Analytics", icon: "query_stats" },
+  { key: "social", label: "Social & Community", icon: "forum" },
+  { key: "ai", label: "AI & Assistants", icon: "auto_awesome" },
+  { key: "travel", label: "Travel & Booking", icon: "flight_takeoff" },
+  { key: "health", label: "Health & Fitness", icon: "favorite" },
+  { key: "productivity", label: "Productivity & Tasks", icon: "task_alt" },
+  { key: "smarthome", label: "Smart Home & IoT", icon: "sensors" },
+  { key: "education", label: "Education & Learning", icon: "school" },
+  { key: "gaming", label: "Gaming & Rewards", icon: "sports_esports" },
+  { key: "feedback", label: "Feedback & Overlays", icon: "notifications_active" },
+  { key: "data", label: "Data & Structure", icon: "table_chart" },
 ];
 
 export type KindSpec = {
@@ -1604,6 +1782,2319 @@ export const KIND_SPEC: Record<Kind, KindSpec> = {
     defLabel: "選択肢",
     defIcon: null,
   },
+  avatar: {
+    label: "Avatar",
+    noun: "アバター",
+    category: "media",
+    paletteIcon: "account_circle",
+    w: 48,
+    h: 48,
+    radius: 24,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: true,
+    size: { min: 32, max: 96, step: 4, icon: "open_in_full", presets: [32, 40, 48, 64, 80] },
+    defLabel: "JD",
+    defIcon: "person",
+    defSize: 48,
+    defVariant: "tonal",
+  },
+  badge: {
+    label: "Badge",
+    noun: "バッジ",
+    category: "media",
+    paletteIcon: "mark_email_unread",
+    w: 48,
+    h: 26,
+    radius: 13,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 24, max: 80, step: 4, icon: "width", presets: [24, 36, 48, 64] },
+    defLabel: "99+",
+    defIcon: null,
+    defSize: 48,
+    defVariant: "filled",
+  },
+  rating: {
+    label: "Rating",
+    noun: "評価スター",
+    category: "media",
+    paletteIcon: "star",
+    w: 140,
+    h: 32,
+    radius: 8,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: true,
+    size: { min: 100, max: 200, step: 4, icon: "width", presets: [120, 140, 160] },
+    defLabel: "4.8 (120)",
+    defIcon: "star",
+    defSize: 140,
+  },
+  audioPlayer: {
+    label: "Audio Player",
+    noun: "オーディオ再生",
+    category: "media",
+    paletteIcon: "graphic_eq",
+    w: 240,
+    h: 44,
+    radius: 22,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 160, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    defLabel: "Voice Note",
+    defSupporting: "0:24 / 1:15",
+    defIcon: "play_arrow",
+    defSize: 240,
+    defVariant: "tonal",
+  },
+  videoPlayer: {
+    label: "Video Player",
+    noun: "動画プレーヤー",
+    category: "media",
+    paletteIcon: "play_circle",
+    w: 280,
+    h: 160,
+    radius: 16,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 120, max: 300, step: 4, icon: "height", presets: [140, 160, 200] },
+    defLabel: "Product Preview",
+    defSupporting: "HD 1080p",
+    defIcon: "play_arrow",
+    defSize: 280,
+  },
+  qrCode: {
+    label: "QR Code",
+    noun: "QRコード",
+    category: "media",
+    paletteIcon: "qr_code_2",
+    w: 120,
+    h: 120,
+    radius: 16,
+    hasVariant: false,
+    hasLabel: false,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 80, max: 220, step: 4, icon: "open_in_full", presets: [100, 120, 160] },
+    defLabel: "",
+    defIcon: null,
+    defSize: 120,
+  },
+  tag: {
+    label: "Tag",
+    noun: "タグ",
+    category: "media",
+    paletteIcon: "label",
+    w: 96,
+    h: 32,
+    radius: 8,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: true,
+    size: { min: 60, max: 180, step: 4, icon: "width", presets: [80, 96, 120] },
+    defLabel: "#Fashion",
+    defIcon: "tag",
+    defSize: 96,
+    defVariant: "outlined",
+  },
+  stepper: {
+    label: "Quantity Stepper",
+    noun: "数量変更",
+    category: "commerce",
+    paletteIcon: "exposure",
+    w: 120,
+    h: 40,
+    radius: 20,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 96, max: 180, step: 4, icon: "width", presets: [100, 120, 140] },
+    defLabel: "1",
+    defIcon: null,
+    defSize: 120,
+    defVariant: "tonal",
+  },
+  priceTag: {
+    label: "Price Tag",
+    noun: "価格表示",
+    category: "commerce",
+    paletteIcon: "sell",
+    w: 140,
+    h: 36,
+    radius: 8,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 100, max: 220, step: 4, icon: "width", presets: [120, 140, 180] },
+    defLabel: "$89.00",
+    defSupporting: "$120.00",
+    defIcon: "local_offer",
+    defSize: 140,
+    defVariant: "tonal",
+  },
+  couponCode: {
+    label: "Coupon Voucher",
+    noun: "クーポン",
+    category: "commerce",
+    paletteIcon: "confirmation_number",
+    w: 240,
+    h: 48,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 240, CONTENT_W] },
+    defLabel: "SAVE20",
+    defSupporting: "20% OFF",
+    defIcon: "percent",
+    defSize: 240,
+    defVariant: "outlined",
+  },
+  colorSwatch: {
+    label: "Color Swatch",
+    noun: "カラースウォッチ",
+    category: "commerce",
+    paletteIcon: "palette",
+    w: 160,
+    h: 40,
+    radius: 20,
+    hasVariant: false,
+    hasLabel: false,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 120, max: 240, step: 4, icon: "width", presets: [140, 160, 200] },
+    defLabel: "Colors",
+    defIcon: null,
+    defSize: 160,
+  },
+  creditCard: {
+    label: "Payment Card",
+    noun: "クレジットカード",
+    category: "commerce",
+    paletteIcon: "credit_card",
+    w: 280,
+    h: 160,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 220, max: PHONE_W, step: 4, icon: "width", presets: [260, 280, CONTENT_W] },
+    size2: { min: 130, max: 220, step: 4, icon: "height", presets: [150, 160, 180] },
+    defLabel: "Visa •••• 4242",
+    defSupporting: "EXP 08/28",
+    defIcon: "credit_card",
+    defSize: 280,
+    defVariant: "filled",
+  },
+  deliveryEstimate: {
+    label: "Delivery Badge",
+    noun: "配送目安",
+    category: "commerce",
+    paletteIcon: "local_shipping",
+    w: 240,
+    h: 44,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 240, CONTENT_W] },
+    defLabel: "Express Shipping",
+    defSupporting: "Arrives in 2-3 Days",
+    defIcon: "local_shipping",
+    defSize: 240,
+    defVariant: "tonal",
+  },
+  orderStatus: {
+    label: "Order Status",
+    noun: "注文状態",
+    category: "commerce",
+    paletteIcon: "fact_check",
+    w: 160,
+    h: 34,
+    radius: 17,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: true,
+    size: { min: 120, max: 220, step: 4, icon: "width", presets: [140, 160, 180] },
+    defLabel: "In Transit",
+    defIcon: "schedule",
+    defSize: 160,
+    defVariant: "filled",
+  },
+  banner: {
+    label: "Alert Banner",
+    noun: "アラートバナー",
+    category: "feedback",
+    paletteIcon: "notification_important",
+    w: 280,
+    h: 64,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Special Offer",
+    defSupporting: "Get 30% off on your first order!",
+    defIcon: "campaign",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  tooltip: {
+    label: "Tooltip",
+    noun: "ツールチップ",
+    category: "feedback",
+    paletteIcon: "tooltip",
+    w: 160,
+    h: 36,
+    radius: 8,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: true,
+    size: { min: 100, max: 240, step: 4, icon: "width", presets: [140, 160, 200] },
+    defLabel: "Tap to view details",
+    defIcon: "info",
+    defSize: 160,
+  },
+  skeleton: {
+    label: "Skeleton Loader",
+    noun: "スケルトン",
+    category: "feedback",
+    paletteIcon: "hourglass_empty",
+    w: 240,
+    h: 64,
+    radius: 12,
+    hasVariant: false,
+    hasLabel: false,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 160, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    defLabel: "",
+    defIcon: null,
+    defSize: 240,
+  },
+  emptyState: {
+    label: "Empty State",
+    noun: "エンプティ状態",
+    category: "feedback",
+    paletteIcon: "inbox",
+    w: 240,
+    h: 140,
+    radius: 16,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 240, CONTENT_W] },
+    size2: { min: 100, max: 260, step: 4, icon: "height", presets: [120, 140, 180] },
+    defLabel: "No items yet",
+    defSupporting: "Your cart is currently empty",
+    defIcon: "shopping_bag",
+    defSize: 240,
+  },
+  toast: {
+    label: "Toast Notice",
+    noun: "トースト通知",
+    category: "feedback",
+    paletteIcon: "check_circle",
+    w: 220,
+    h: 42,
+    radius: 21,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: true,
+    size: { min: 160, max: PHONE_W, step: 4, icon: "width", presets: [180, 220, 260] },
+    defLabel: "Added to Cart!",
+    defIcon: "check_circle",
+    defSize: 220,
+    defVariant: "filled",
+  },
+  segmentedButton: {
+    label: "Segmented Button",
+    noun: "セグメントボタン",
+    category: "data",
+    paletteIcon: "splitscreen",
+    w: 240,
+    h: 40,
+    radius: 20,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 160, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    defLabel: "Day | Week | Month",
+    defIcon: null,
+    defSize: 240,
+    defVariant: "tonal",
+  },
+  timeline: {
+    label: "Timeline Tracker",
+    noun: "タイムライン",
+    category: "data",
+    paletteIcon: "timeline",
+    w: 260,
+    h: 72,
+    radius: 10,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 260, CONTENT_W] },
+    defLabel: "Order Placed",
+    defSupporting: "Processing • Oct 14",
+    defIcon: "radio_button_checked",
+    defSize: 260,
+  },
+  accordion: {
+    label: "Accordion Item",
+    noun: "アコーディオン",
+    category: "data",
+    paletteIcon: "expand_circle_down",
+    w: 260,
+    h: 48,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Product Details & Care",
+    defSupporting: "100% Organic Cotton",
+    defIcon: "expand_more",
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  otpInput: {
+    label: "OTP Code Input",
+    noun: "OTP入力",
+    category: "data",
+    paletteIcon: "pin",
+    w: 200,
+    h: 48,
+    radius: 10,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 160, max: 280, step: 4, icon: "width", presets: [180, 200, 240] },
+    defLabel: "5 8 2 9",
+    defIcon: null,
+    defSize: 200,
+  },
+  fileUpload: {
+    label: "File Upload Zone",
+    noun: "ファイルアップロード",
+    category: "data",
+    paletteIcon: "cloud_upload",
+    w: 260,
+    h: 96,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 70, max: 180, step: 4, icon: "height", presets: [80, 96, 120] },
+    defLabel: "Upload Screenshot",
+    defSupporting: "PNG, JPG up to 10MB",
+    defIcon: "cloud_upload",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  sizeSelector: {
+    label: "Size Selector",
+    noun: "サイズ選択",
+    category: "commerce",
+    paletteIcon: "straighten",
+    w: 220,
+    h: 46,
+    radius: 12,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 160, max: PHONE_W, step: 4, icon: "width", presets: [180, 220, CONTENT_W] },
+    defLabel: "M",
+    defIcon: null,
+    defSize: 220,
+  },
+  countdownTimer: {
+    label: "Countdown Timer",
+    noun: "カウントダウン",
+    category: "commerce",
+    paletteIcon: "timer",
+    w: 240,
+    h: 56,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    defLabel: "Flash Sale Ends In",
+    defSupporting: "02:45:18",
+    defIcon: "local_fire_department",
+    defSize: 240,
+    defVariant: "tonal",
+  },
+  reviewSummary: {
+    label: "Review Summary",
+    noun: "レビュー集計",
+    category: "commerce",
+    paletteIcon: "rate_review",
+    w: 260,
+    h: 88,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 70, max: 150, step: 4, icon: "height", presets: [80, 88, 110] },
+    defLabel: "4.8",
+    defSupporting: "Based on 1,420 reviews",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  addressCard: {
+    label: "Address Card",
+    noun: "配送先カード",
+    category: "commerce",
+    paletteIcon: "home_pin",
+    w: 260,
+    h: 78,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 60, max: 130, step: 4, icon: "height", presets: [70, 78, 96] },
+    defLabel: "Home (Default)",
+    defSupporting: "742 Evergreen Terrace, Springfield",
+    defIcon: "location_on",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  paymentMethodSelector: {
+    label: "Payment Selector",
+    noun: "決済方法選択",
+    category: "commerce",
+    paletteIcon: "payments",
+    w: 260,
+    h: 58,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Apple Pay",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  balanceCard: {
+    label: "Wallet Balance",
+    noun: "ウォレット残高",
+    category: "finance",
+    paletteIcon: "account_balance_wallet",
+    w: 280,
+    h: 120,
+    radius: 18,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 90, max: 180, step: 4, icon: "height", presets: [100, 120, 140] },
+    defLabel: "$12,485.50",
+    defSupporting: "Total Available Balance",
+    defIcon: "visibility",
+    defSize: 280,
+    defVariant: "filled",
+  },
+  transactionItem: {
+    label: "Transaction Item",
+    noun: "取引履歴",
+    category: "finance",
+    paletteIcon: "receipt_long",
+    w: 260,
+    h: 58,
+    radius: 12,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Coffee House",
+    defSupporting: "Today, 10:45 AM • Dining",
+    defIcon: "local_cafe",
+    defSize: 260,
+  },
+  statMetricCard: {
+    label: "KPI Metric Card",
+    noun: "KPI指標カード",
+    category: "finance",
+    paletteIcon: "trending_up",
+    w: 160,
+    h: 96,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 120, max: 240, step: 4, icon: "width", presets: [140, 160, 200] },
+    size2: { min: 70, max: 140, step: 4, icon: "height", presets: [84, 96, 112] },
+    defLabel: "$48.6K",
+    defSupporting: "Monthly Revenue",
+    defIcon: "insights",
+    defSize: 160,
+    defVariant: "tonal",
+  },
+  miniChart: {
+    label: "Mini Sparkline Chart",
+    noun: "ミニチャート",
+    category: "finance",
+    paletteIcon: "bar_chart",
+    w: 260,
+    h: 90,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 70, max: 150, step: 4, icon: "height", presets: [80, 90, 120] },
+    defLabel: "Weekly Performance",
+    defSupporting: "+24% vs last week",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  expenseProgress: {
+    label: "Budget Progress",
+    noun: "予算進捗",
+    category: "finance",
+    paletteIcon: "donut_large",
+    w: 260,
+    h: 68,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 54, max: 120, step: 4, icon: "height", presets: [60, 68, 84] },
+    defLabel: "$720 of $1,000",
+    defSupporting: "72% spent this month",
+    defIcon: "pie_chart",
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  storyBubble: {
+    label: "Story Avatar",
+    noun: "ストーリーアバター",
+    category: "social",
+    paletteIcon: "history_edu",
+    w: 72,
+    h: 84,
+    radius: 36,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: true,
+    size: { min: 56, max: 96, step: 4, icon: "open_in_full", presets: [64, 72, 80] },
+    defLabel: "Alex R.",
+    defIcon: "person",
+    defIcon2: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+    defSize: 72,
+  },
+  chatBubble: {
+    label: "Chat Message Bubble",
+    noun: "チャットバブル",
+    category: "social",
+    paletteIcon: "chat_bubble",
+    w: 240,
+    h: 64,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 160, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    defLabel: "Hey! Did you check out the new design?",
+    defSupporting: "10:42 AM • Read",
+    defIcon: null,
+    defSize: 240,
+    defVariant: "tonal",
+  },
+  userProfileHeader: {
+    label: "Profile Summary",
+    noun: "プロフィール要約",
+    category: "social",
+    paletteIcon: "badge",
+    w: 280,
+    h: 100,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 80, max: 160, step: 4, icon: "height", presets: [90, 100, 120] },
+    defLabel: "Sophia Chen",
+    defSupporting: "Senior Product Designer • 12.4k followers",
+    defIcon: "verified",
+    defSize: 280,
+    defVariant: "outlined",
+  },
+  notificationItem: {
+    label: "Notification Tile",
+    noun: "通知タイル",
+    category: "social",
+    paletteIcon: "notifications",
+    w: 260,
+    h: 64,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "New follower alert",
+    defSupporting: "Emma Watson started following you • 5m ago",
+    defIcon: "person_add",
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  socialLoginGroup: {
+    label: "Social Login Group",
+    noun: "ソーシャルログイン",
+    category: "social",
+    paletteIcon: "group_add",
+    w: 260,
+    h: 68,
+    radius: 12,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 54, max: 110, step: 4, icon: "height", presets: [60, 68, 80] },
+    defLabel: "Or continue with",
+    defIcon: null,
+    defSize: 260,
+  },
+  passwordStrength: {
+    label: "Password Strength",
+    noun: "パスワード強度",
+    category: "inputs",
+    paletteIcon: "security",
+    w: 240,
+    h: 48,
+    radius: 10,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 160, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    defLabel: "Strong Password",
+    defSupporting: "Includes symbols & numbers",
+    defIcon: "lock",
+    defSize: 240,
+  },
+  biometricPrompt: {
+    label: "Biometric Auth",
+    noun: "生体認証プロンプト",
+    category: "inputs",
+    paletteIcon: "fingerprint",
+    w: 240,
+    h: 56,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    defLabel: "Face ID / Touch ID",
+    defSupporting: "Touch sensor to confirm",
+    defIcon: "fingerprint",
+    defSize: 240,
+    defVariant: "tonal",
+  },
+  filterChips: {
+    label: "Filter Chips Bar",
+    noun: "フィルターチップバー",
+    category: "inputs",
+    paletteIcon: "filter_list",
+    w: 260,
+    h: 42,
+    radius: 21,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Filter (2)",
+    defIcon: "tune",
+    defSize: 260,
+  },
+  signaturePad: {
+    label: "Signature Pad",
+    noun: "電子サイン欄",
+    category: "inputs",
+    paletteIcon: "draw",
+    w: 260,
+    h: 96,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 70, max: 160, step: 4, icon: "height", presets: [80, 96, 120] },
+    defLabel: "Sign Here",
+    defSupporting: "Touch or draw signature",
+    defIcon: "history_edu",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  floatingActionDock: {
+    label: "Floating Action Dock",
+    noun: "フローティングドック",
+    category: "navigation",
+    paletteIcon: "dock",
+    w: 240,
+    h: 54,
+    radius: 27,
+    hasVariant: true,
+    hasLabel: false,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, 280] },
+    size2: { min: 46, max: 70, step: 2, icon: "height", presets: [50, 54, 60] },
+    defLabel: "Dock",
+    defIcon: null,
+    defSize: 240,
+    defVariant: "elevated",
+  },
+  segmentedTabs: {
+    label: "Pill Segment Switcher",
+    noun: "セグメント切替",
+    category: "navigation",
+    paletteIcon: "view_agenda",
+    w: 260,
+    h: 42,
+    radius: 21,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Overview",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  faqAccordion: {
+    label: "FAQ Card",
+    noun: "よくある質問カード",
+    category: "data",
+    paletteIcon: "quiz",
+    w: 260,
+    h: 92,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 70, max: 160, step: 4, icon: "height", presets: [80, 92, 120] },
+    defLabel: "How do returns work?",
+    defSupporting: "We offer 30-day hassle-free returns. Simply initiate from your orders tab.",
+    defIcon: "help_outline",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  // Charts & Analytics
+  lineChart: {
+    label: "Area Line Chart",
+    noun: "折れ線グラフ",
+    category: "charts",
+    paletteIcon: "show_chart",
+    w: 260,
+    h: 140,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 240, step: 4, icon: "height", presets: [120, 140, 180] },
+    defLabel: "Revenue Trends",
+    defSupporting: "+34.5% vs last quarter",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  barChart: {
+    label: "Grouped Bar Chart",
+    noun: "棒グラフ",
+    category: "charts",
+    paletteIcon: "bar_chart",
+    w: 260,
+    h: 140,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 240, step: 4, icon: "height", presets: [120, 140, 180] },
+    defLabel: "Quarterly Sales",
+    defSupporting: "Q1-Q4 Target vs Actual",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  areaChart: {
+    label: "Smooth Area Chart",
+    noun: "エリアチャート",
+    category: "charts",
+    paletteIcon: "stacked_line_chart",
+    w: 260,
+    h: 130,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 220, step: 4, icon: "height", presets: [110, 130, 160] },
+    defLabel: "Traffic Volume",
+    defSupporting: "482.4K monthly page views",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  donutChart: {
+    label: "Donut Metric Chart",
+    noun: "ドーナツグラフ",
+    category: "charts",
+    paletteIcon: "donut_large",
+    w: 260,
+    h: 130,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 200, step: 4, icon: "height", presets: [110, 130, 150] },
+    defLabel: "Expense Breakdown",
+    defSupporting: "Shopping 45% • Food 35% • Bills 20%",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  pieChart: {
+    label: "Pie Share Chart",
+    noun: "円グラフ",
+    category: "charts",
+    paletteIcon: "pie_chart",
+    w: 260,
+    h: 130,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 200, step: 4, icon: "height", presets: [110, 130, 150] },
+    defLabel: "Market Share",
+    defSupporting: "Mobile 58% • Desktop 32% • Tablet 10%",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  candlestickChart: {
+    label: "Candlestick Stock Chart",
+    noun: "ローソク足チャート",
+    category: "charts",
+    paletteIcon: "candlestick_chart",
+    w: 260,
+    h: 140,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 100, max: 240, step: 4, icon: "height", presets: [120, 140, 180] },
+    defLabel: "AAPL $189.45",
+    defSupporting: "+2.34 (1.25%) Today",
+    defIcon: "trending_up",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  radarChart: {
+    label: "Radar Spider Chart",
+    noun: "レーダーチャート",
+    category: "charts",
+    paletteIcon: "radar",
+    w: 240,
+    h: 150,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    size2: { min: 110, max: 240, step: 4, icon: "height", presets: [130, 150, 180] },
+    defLabel: "Skill Matrix",
+    defSupporting: "UI 90 • Speed 85 • Code 95 • Team 80",
+    defIcon: null,
+    defSize: 240,
+    defVariant: "tonal",
+  },
+  gaugeChart: {
+    label: "Speedometer Gauge",
+    noun: "スピードメーター",
+    category: "charts",
+    paletteIcon: "speed",
+    w: 240,
+    h: 120,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 160, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    size2: { min: 90, max: 200, step: 4, icon: "height", presets: [100, 120, 150] },
+    defLabel: "78% Optimal",
+    defSupporting: "System Performance Score",
+    defIcon: null,
+    defSize: 240,
+    defVariant: "outlined",
+  },
+  funnelChart: {
+    label: "Sales Funnel Chart",
+    noun: "ファネル分析",
+    category: "charts",
+    paletteIcon: "filter_alt",
+    w: 260,
+    h: 130,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 220, step: 4, icon: "height", presets: [110, 130, 160] },
+    defLabel: "Conversion Funnel",
+    defSupporting: "100k Leads → 12k Paid (12%)",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  heatMapGrid: {
+    label: "Activity Heatmap",
+    noun: "ヒートマップ",
+    category: "charts",
+    paletteIcon: "grid_on",
+    w: 260,
+    h: 100,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 70, max: 160, step: 4, icon: "height", presets: [80, 100, 130] },
+    defLabel: "842 Contributions",
+    defSupporting: "Active across last 12 weeks",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  scatterPlot: {
+    label: "Scatter Bubble Plot",
+    noun: "散布図チャート",
+    category: "charts",
+    paletteIcon: "bubble_chart",
+    w: 260,
+    h: 130,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 220, step: 4, icon: "height", presets: [110, 130, 160] },
+    defLabel: "Correlation Matrix",
+    defSupporting: "Price vs Customer Satisfaction",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  progressRingGroup: {
+    label: "Fitness Ring Triple",
+    noun: "トリプル活動リング",
+    category: "charts",
+    paletteIcon: "radio_button_checked",
+    w: 240,
+    h: 120,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    size2: { min: 90, max: 200, step: 4, icon: "height", presets: [100, 120, 150] },
+    defLabel: "Daily Activity",
+    defSupporting: "Move 520 kcal • Exercise 38m • Stand 10h",
+    defIcon: null,
+    defSize: 240,
+    defVariant: "tonal",
+  },
+  // Finance & Wallet (Extensions)
+  cryptoTicker: {
+    label: "Crypto Asset Ticker",
+    noun: "仮想通貨ティッカー",
+    category: "finance",
+    paletteIcon: "currency_bitcoin",
+    w: 260,
+    h: 68,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Bitcoin (BTC)",
+    defSupporting: "$64,280.00 • +5.4% 24h",
+    defIcon: "currency_bitcoin",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  loanCalculator: {
+    label: "Loan Payment Estimator",
+    noun: "ローン返済計算",
+    category: "finance",
+    paletteIcon: "calculate",
+    w: 260,
+    h: 110,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 80, max: 180, step: 4, icon: "height", presets: [96, 110, 140] },
+    defLabel: "$485 / mo",
+    defSupporting: "36 Months at 4.2% APR • Total: $17,460",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  billReminderCard: {
+    label: "Upcoming Bill Reminder",
+    noun: "請求リマインダー",
+    category: "finance",
+    paletteIcon: "event_available",
+    w: 260,
+    h: 72,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Electric Utility Bill",
+    defSupporting: "Due Oct 24 • $89.50",
+    defIcon: "bolt",
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  cardStackCarousel: {
+    label: "Credit Card Stack",
+    noun: "カードスタック",
+    category: "finance",
+    paletteIcon: "style",
+    w: 260,
+    h: 120,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 180, step: 4, icon: "height", presets: [100, 120, 150] },
+    defLabel: "Platinum Rewards Card",
+    defSupporting: "•••• 8829 • Balance: $4,210.00",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "filled",
+  },
+  // Commerce & Sales (Extensions)
+  priceBreakdown: {
+    label: "Receipt Breakdown",
+    noun: "明細サマリー",
+    category: "commerce",
+    paletteIcon: "receipt",
+    w: 260,
+    h: 120,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 180, step: 4, icon: "height", presets: [100, 120, 150] },
+    defLabel: "Order Summary",
+    defSupporting: "Subtotal $120.00 • Discount -$20.00 • Total $109.60",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  freeShippingBar: {
+    label: "Free Shipping Milestone",
+    noun: "送料無料バー",
+    category: "commerce",
+    paletteIcon: "local_shipping",
+    w: 260,
+    h: 56,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Add $15.00 for FREE Shipping!",
+    defSupporting: "$65 of $80 reached (81%)",
+    defIcon: "local_shipping",
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  productComparisonTable: {
+    label: "Product Comparison",
+    noun: "商品比較表",
+    category: "commerce",
+    paletteIcon: "compare",
+    w: 260,
+    h: 130,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 200, step: 4, icon: "height", presets: [110, 130, 160] },
+    defLabel: "Basic vs Pro Plan",
+    defSupporting: "Standard vs Priority Support & Features",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  loyaltyPointsBadge: {
+    label: "Loyalty VIP Tier",
+    noun: "会員ランクバッジ",
+    category: "commerce",
+    paletteIcon: "stars",
+    w: 260,
+    h: 68,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Gold VIP Member",
+    defSupporting: "2,450 / 3,000 pts to Platinum",
+    defIcon: "workspace_premium",
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  // Social & Community (Extensions)
+  commentThread: {
+    label: "Social Comment Tile",
+    noun: "コメント欄",
+    category: "social",
+    paletteIcon: "forum",
+    w: 260,
+    h: 84,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 60, max: 150, step: 4, icon: "height", presets: [70, 84, 110] },
+    defLabel: "David Miller",
+    defSupporting: "The quality of the jacket is even better in person! • 2h ago",
+    defIcon: "thumb_up",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  pollCard: {
+    label: "Community Poll Card",
+    noun: "アンケート投票",
+    category: "social",
+    paletteIcon: "how_to_vote",
+    w: 260,
+    h: 130,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 200, step: 4, icon: "height", presets: [110, 130, 160] },
+    defLabel: "Which colorway is best?",
+    defSupporting: "Midnight Blue (54%) • Forest Green (46%)",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  audioWaveMessage: {
+    label: "Voice Message Audio",
+    noun: "ボイスメッセージ",
+    category: "social",
+    paletteIcon: "graphic_eq",
+    w: 240,
+    h: 54,
+    radius: 27,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    defLabel: "Voice Note (0:34)",
+    defSupporting: "Recorded today at 3:15 PM",
+    defIcon: "play_arrow",
+    defSize: 240,
+    defVariant: "tonal",
+  },
+  userBadgeGroup: {
+    label: "Avatar Friends Stack",
+    noun: "アバタースタック",
+    category: "social",
+    paletteIcon: "groups",
+    w: 220,
+    h: 44,
+    radius: 22,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 160, max: PHONE_W, step: 4, icon: "width", presets: [180, 220, CONTENT_W] },
+    defLabel: "+18 others joined",
+    defIcon: null,
+    defSize: 220,
+  },
+  // Media & Audio (Extensions)
+  liveStreamBadge: {
+    label: "Live Stream Pill",
+    noun: "ライブ配信バッジ",
+    category: "media",
+    paletteIcon: "sensors",
+    w: 220,
+    h: 42,
+    radius: 21,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 160, max: PHONE_W, step: 4, icon: "width", presets: [180, 220, CONTENT_W] },
+    defLabel: "LIVE Now",
+    defSupporting: "2.8k viewers watching",
+    defIcon: "videocam",
+    defSize: 220,
+    defVariant: "tonal",
+  },
+  podcastEpisodeTile: {
+    label: "Podcast Episode Tile",
+    noun: "ポッドキャスト",
+    category: "media",
+    paletteIcon: "podcasts",
+    w: 260,
+    h: 72,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Design Systems Ep. 42",
+    defSupporting: "Material Design & Tokens • 38 min",
+    defIcon: "play_circle",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  waveformPlayer: {
+    label: "Full Waveform Scrubber",
+    noun: "波形プレーヤー",
+    category: "media",
+    paletteIcon: "waves",
+    w: 260,
+    h: 68,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Neon Horizons",
+    defSupporting: "2:45 / 4:18 • Synthwave",
+    defIcon: "pause",
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  // Inputs & Security (Extensions)
+  verificationBadge: {
+    label: "2FA Security Prompt",
+    noun: "2段階認証プロンプト",
+    category: "inputs",
+    paletteIcon: "security_update_good",
+    w: 260,
+    h: 68,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Two-Factor Auth Active",
+    defSupporting: "Protected by Authenticator App",
+    defIcon: "shield",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  colorPalettePicker: {
+    label: "Color Palette Swatches",
+    noun: "カラーパレット選択",
+    category: "inputs",
+    paletteIcon: "palette",
+    w: 260,
+    h: 56,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "#6366F1 Indigo",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  starRatingInput: {
+    label: "Interactive Rating Star",
+    noun: "評価入力スター",
+    category: "inputs",
+    paletteIcon: "grade",
+    w: 240,
+    h: 50,
+    radius: 12,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    defLabel: "5.0 Excellent!",
+    defSupporting: "Tap stars to rate",
+    defIcon: null,
+    defSize: 240,
+  },
+  // Containment & Layout (Extensions)
+  stickyBottomBar: {
+    label: "Checkout Bottom Bar",
+    noun: "固定下部バー",
+    category: "containment",
+    paletteIcon: "call_to_action",
+    w: 280,
+    h: 64,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Proceed to Checkout",
+    defSupporting: "Total: $109.60 (Incl. VAT)",
+    defIcon: "arrow_forward",
+    defSize: 280,
+    defVariant: "filled",
+  },
+  notificationBannerSticky: {
+    label: "Sticky Alert Banner",
+    noun: "固定バナー",
+    category: "containment",
+    paletteIcon: "notification_important",
+    w: 260,
+    h: 52,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Payment Successful!",
+    defSupporting: "Receipt sent to your email",
+    defIcon: "check_circle",
+    defSize: 260,
+    defVariant: "tonal",
+  },
+  segmentedSplitView: {
+    label: "Dual Split Container",
+    noun: "スプリットビュー",
+    category: "containment",
+    paletteIcon: "vertical_split",
+    w: 260,
+    h: 100,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 70, max: 180, step: 4, icon: "height", presets: [80, 100, 130] },
+    defLabel: "Before vs After",
+    defSupporting: "Split comparison preview",
+    defIcon: null,
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  // AI & Smart Assistants
+  aiPromptInput: {
+    label: "AI Prompt Input",
+    noun: "AIプロンプト入力",
+    category: "ai",
+    paletteIcon: "auto_awesome",
+    w: 280,
+    h: 56,
+    radius: 28,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Ask Copilot anything...",
+    defSupporting: "Powered by GPT-4o",
+    defIcon: "auto_awesome",
+    defSize: 280,
+    defVariant: "filled",
+  },
+  aiMessageBubble: {
+    label: "AI Message Bubble",
+    noun: "AIメッセージバブル",
+    category: "ai",
+    paletteIcon: "smart_toy",
+    w: 280,
+    h: 120,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 80, max: 240, step: 4, icon: "height", presets: [100, 120, 160] },
+    defLabel: "Here is your generated analysis summary and recommendations.",
+    defSupporting: "AI Assistant • Just now",
+    defIcon: "psychology",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  aiSuggestionsRow: {
+    label: "AI Suggestions Chips",
+    noun: "AI提案チップ",
+    category: "ai",
+    paletteIcon: "assistant",
+    w: 280,
+    h: 40,
+    radius: 20,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 280, CONTENT_W] },
+    defLabel: "✨ Summarize • Draft email • Translate",
+    defSupporting: "Tap to auto-prompt",
+    defIcon: "magic_button",
+    defSize: 280,
+  },
+  codeSnippetBlock: {
+    label: "Code Snippet Box",
+    noun: "コードブロック",
+    category: "ai",
+    paletteIcon: "code",
+    w: 280,
+    h: 120,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 80, max: 200, step: 4, icon: "height", presets: [100, 120, 160] },
+    defLabel: "const response = await fetch('/api');",
+    defSupporting: "TypeScript • 4 lines",
+    defIcon: "terminal",
+    defSize: 280,
+    defVariant: "outlined",
+  },
+  // Travel & Food Delivery
+  boardingPassCard: {
+    label: "Boarding Pass Ticket",
+    noun: "搭乗券カード",
+    category: "travel",
+    paletteIcon: "flight_takeoff",
+    w: 280,
+    h: 150,
+    radius: 18,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 220, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 120, max: 200, step: 4, icon: "height", presets: [140, 150, 180] },
+    defLabel: "JFK ✈️ NRT • Flight PA-240",
+    defSupporting: "Seat 14A • Gate B22 • Boarding 09:45",
+    defIcon: "flight",
+    defSize: 280,
+    defVariant: "elevated",
+  },
+  foodDeliveryTracker: {
+    label: "Food Delivery Tracker",
+    noun: "配達追跡カード",
+    category: "travel",
+    paletteIcon: "delivery_dining",
+    w: 280,
+    h: 90,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Driver Alex is on the way!",
+    defSupporting: "Estimated delivery in 18 mins",
+    defIcon: "two_wheeler",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  restaurantMenuRow: {
+    label: "Restaurant Menu Item",
+    noun: "メニュー項目",
+    category: "travel",
+    paletteIcon: "restaurant_menu",
+    w: 280,
+    h: 84,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Truffle Mushroom Risotto",
+    defSupporting: "Creamy arborio rice with parmesan • $18.50",
+    defIcon: "restaurant",
+    defSize: 280,
+    defVariant: "outlined",
+  },
+  hotelBookingCard: {
+    label: "Hotel Stay Card",
+    noun: "ホテル予約カード",
+    category: "travel",
+    paletteIcon: "hotel",
+    w: 280,
+    h: 140,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 220, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 110, max: 200, step: 4, icon: "height", presets: [120, 140, 170] },
+    defLabel: "Grand Luxury Resort & Spa",
+    defSupporting: "4.9 ★ • Oct 18 - 22 • $185/night",
+    defIcon: "apartment",
+    defSize: 280,
+    defVariant: "elevated",
+  },
+  rideVehicleSelector: {
+    label: "Ride Vehicle Option",
+    noun: "配車選択タイル",
+    category: "travel",
+    paletteIcon: "directions_car",
+    w: 280,
+    h: 68,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Comfort Ride (4 Seats)",
+    defSupporting: "3 min away • Top rated drivers • $22.40",
+    defIcon: "local_taxi",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  // Health & Fitness
+  heartRateMonitorCard: {
+    label: "Heart Rate ECG Monitor",
+    noun: "心拍数モニター",
+    category: "health",
+    paletteIcon: "cardiology",
+    w: 280,
+    h: 110,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 80, max: 180, step: 4, icon: "height", presets: [95, 110, 140] },
+    defLabel: "74 BPM",
+    defSupporting: "Normal resting heart rate • 62-85 range",
+    defIcon: "monitor_heart",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  sleepTrackerCard: {
+    label: "Sleep Cycle Tracker",
+    noun: "睡眠トラッカー",
+    category: "health",
+    paletteIcon: "bedtime",
+    w: 280,
+    h: 120,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 90, max: 180, step: 4, icon: "height", presets: [100, 120, 150] },
+    defLabel: "7h 45m Total Sleep",
+    defSupporting: "Sleep Score 88/100 • Deep 2h 15m",
+    defIcon: "hotel",
+    defSize: 280,
+    defVariant: "elevated",
+  },
+  waterIntakeTracker: {
+    label: "Water Hydration Log",
+    noun: "水分補給ログ",
+    category: "health",
+    paletteIcon: "water_drop",
+    w: 280,
+    h: 80,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "1,750 / 2,500 mL (70%)",
+    defSupporting: "Goal: 2.5L daily hydration",
+    defIcon: "water_full",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  medicationReminderTile: {
+    label: "Medication Pill Schedule",
+    noun: "服薬リマインダー",
+    category: "health",
+    paletteIcon: "medication",
+    w: 280,
+    h: 64,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Omega-3 & Vitamin D3",
+    defSupporting: "Take 1 capsule with breakfast • 08:00 AM",
+    defIcon: "pill",
+    defSize: 280,
+    defVariant: "outlined",
+  },
+  stepCounterCard: {
+    label: "Daily Steps Pedometer",
+    noun: "歩数カウンター",
+    category: "health",
+    paletteIcon: "directions_walk",
+    w: 280,
+    h: 110,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 80, max: 180, step: 4, icon: "height", presets: [95, 110, 140] },
+    defLabel: "8,420 Steps",
+    defSupporting: "84% of 10,000 daily goal • 6.2 km",
+    defIcon: "hiking",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  // Productivity & Tasks
+  kanbanCard: {
+    label: "Kanban Task Card",
+    noun: "カンバンタスク",
+    category: "productivity",
+    paletteIcon: "view_kanban",
+    w: 260,
+    h: 110,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 80, max: 180, step: 4, icon: "height", presets: [95, 110, 140] },
+    defLabel: "Implement Dark Mode Theme",
+    defSupporting: "Priority: HIGH • Due Tomorrow • 3/5 tasks",
+    defIcon: "label_important",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  taskChecklistRow: {
+    label: "Interactive Todo Row",
+    noun: "ToDoリスト項目",
+    category: "productivity",
+    paletteIcon: "checklist",
+    w: 280,
+    h: 52,
+    radius: 10,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 280, CONTENT_W] },
+    defLabel: "Finalize mobile responsive layouts",
+    defSupporting: "Design System Sprint • High Priority",
+    defIcon: "check_box",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  calendarEventCard: {
+    label: "Calendar Event Appointment",
+    noun: "カレンダー予定",
+    category: "productivity",
+    paletteIcon: "event",
+    w: 280,
+    h: 84,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Q4 Product Strategy Alignment",
+    defSupporting: "14:00 - 15:30 • Google Meet • 8 attendees",
+    defIcon: "videocam",
+    defSize: 280,
+    defVariant: "elevated",
+  },
+  fileAttachmentCard: {
+    label: "File Document Attachment",
+    noun: "添付ファイルカード",
+    category: "productivity",
+    paletteIcon: "attach_file",
+    w: 280,
+    h: 64,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Design_System_Guidelines_2026.pdf",
+    defSupporting: "4.8 MB • PDF Document",
+    defIcon: "picture_as_pdf",
+    defSize: 280,
+    defVariant: "outlined",
+  },
+  notesSnippetCard: {
+    label: "Sticky Note Pad",
+    noun: "付箋メモカード",
+    category: "productivity",
+    paletteIcon: "note_alt",
+    w: 240,
+    h: 110,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    size2: { min: 80, max: 180, step: 4, icon: "height", presets: [95, 110, 140] },
+    defLabel: "Key Takeaways from Demo",
+    defSupporting: "Add more graph variants & ensure smooth transitions across frames.",
+    defIcon: "push_pin",
+    defSize: 240,
+    defVariant: "tonal",
+  },
+  todoCard: {
+    label: "Todo Task Card (Image & CRUD)",
+    noun: "タスクカード（画像・CRUD）",
+    category: "productivity",
+    paletteIcon: "checklist",
+    w: 380,
+    h: 116,
+    radius: 18,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 90, max: 200, step: 4, icon: "height", presets: [100, 116, 140] },
+    defLabel: "Design Atelier UI System",
+    defSupporting: "Export SVG icons and vector badge components",
+    defIcon: "checklist",
+    defSize: 380,
+    defVariant: "filled",
+  },
+  todoStatsCard: {
+    label: "Todo Sprint Stats",
+    noun: "タスク進捗サマリー",
+    category: "productivity",
+    paletteIcon: "pie_chart",
+    w: 380,
+    h: 88,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 70, max: 140, step: 4, icon: "height", presets: [80, 88, 100] },
+    defLabel: "Daily Sprint Progress",
+    defSupporting: "60% Completed • 3 Active Milestones",
+    defIcon: "pie_chart",
+    defSize: 380,
+    defVariant: "filled",
+  },
+  todoCreateCard: {
+    label: "Cover Image Picker (Create)",
+    noun: "カバー画像選択（作成）",
+    category: "productivity",
+    paletteIcon: "photo_camera",
+    w: 380,
+    h: 148,
+    radius: 18,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 220, max: PHONE_W, step: 4, icon: "width", presets: [260, 280, CONTENT_W] },
+    size2: { min: 120, max: 240, step: 4, icon: "height", presets: [130, 148, 180] },
+    defLabel: "Cover Image & Presets",
+    defSupporting: "Attach cover photo from library or presets",
+    defIcon: "photo_camera",
+    defSize: 380,
+    defVariant: "filled",
+  },
+  todoDetailCard: {
+    label: "Task Hero Inspection (Read)",
+    noun: "タスク詳細バナー（閲覧）",
+    category: "productivity",
+    paletteIcon: "preview",
+    w: 380,
+    h: 210,
+    radius: 20,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 220, max: PHONE_W, step: 4, icon: "width", presets: [260, 280, CONTENT_W] },
+    size2: { min: 180, max: 320, step: 4, icon: "height", presets: [200, 210, 240] },
+    defLabel: "Task Full Details",
+    defSupporting: "Hero cover photo, checklist & notes",
+    defIcon: "preview",
+    defSize: 380,
+    defVariant: "filled",
+  },
+  todoEditCard: {
+    label: "Cover Image Switcher (Edit)",
+    noun: "カバー画像変更（編集）",
+    category: "productivity",
+    paletteIcon: "edit",
+    w: 380,
+    h: 148,
+    radius: 18,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 220, max: PHONE_W, step: 4, icon: "width", presets: [260, 280, CONTENT_W] },
+    size2: { min: 120, max: 240, step: 4, icon: "height", presets: [130, 148, 180] },
+    defLabel: "Edit Cover Image",
+    defSupporting: "Replace active task cover photo",
+    defIcon: "edit",
+    defSize: 380,
+    defVariant: "filled",
+  },
+  todoListInteractive: {
+    label: "Interactive Todo Manager (CRUD)",
+    noun: "インタラクティブ・ToDo管理",
+    category: "productivity",
+    paletteIcon: "task_alt",
+    w: 280,
+    h: 340,
+    radius: 20,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 220, max: PHONE_W, step: 4, icon: "width", presets: [260, 280, CONTENT_W] },
+    size2: { min: 260, max: 500, step: 4, icon: "height", presets: [300, 340, 400] },
+    defLabel: "TaskFlow Interactive Suite",
+    defSupporting: "Full Write, Read, Edit & Delete Operations",
+    defIcon: "task_alt",
+    defSize: 280,
+    defVariant: "filled",
+  },
+  // Smart Home & IoT
+  thermostatDial: {
+    label: "Smart Thermostat Dial",
+    noun: "サーモスタット調温",
+    category: "smarthome",
+    paletteIcon: "thermostat",
+    w: 240,
+    h: 140,
+    radius: 20,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [220, 240, CONTENT_W] },
+    size2: { min: 100, max: 200, step: 4, icon: "height", presets: [120, 140, 170] },
+    defLabel: "72°F / 22°C Target",
+    defSupporting: "Living Room • Eco Cooling Mode Active",
+    defIcon: "ac_unit",
+    defSize: 240,
+    defVariant: "elevated",
+  },
+  smartLightControl: {
+    label: "Smart Bulb Light Dimmer",
+    noun: "スマート照明コントローラ",
+    category: "smarthome",
+    paletteIcon: "lightbulb",
+    w: 280,
+    h: 76,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Bedroom Ambient Light",
+    defSupporting: "85% Brightness • Warm Glow",
+    defIcon: "wb_incandescent",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  deviceStatusTile: {
+    label: "IoT Device Status Tile",
+    noun: "IoT端末ステータス",
+    category: "smarthome",
+    paletteIcon: "sensors",
+    w: 260,
+    h: 72,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Robot Vacuum Cleaner",
+    defSupporting: "Cleaning Living Room • Battery 82%",
+    defIcon: "cleaning_services",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  securityCameraFeed: {
+    label: "Security Camera Stream",
+    noun: "防犯カメラプレビュー",
+    category: "smarthome",
+    paletteIcon: "videocam",
+    w: 280,
+    h: 150,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 100, max: 220, step: 4, icon: "height", presets: [120, 150, 180] },
+    defLabel: "Front Entrance Camera",
+    defSupporting: "● LIVE REC 1080p • Motion detected",
+    defIcon: "videocam",
+    defSize: 280,
+    defVariant: "elevated",
+  },
+  // Education & Learning
+  courseProgressCard: {
+    label: "Course Learning Progress",
+    noun: "コース学習進捗",
+    category: "education",
+    paletteIcon: "school",
+    w: 280,
+    h: 110,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 80, max: 180, step: 4, icon: "height", presets: [95, 110, 140] },
+    defLabel: "Mastering React Native 2026",
+    defSupporting: "Lesson 8: Navigation Stacks • 65% Completed",
+    defIcon: "menu_book",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  quizQuestionCard: {
+    label: "Interactive Quiz Question",
+    noun: "クイズ設問カード",
+    category: "education",
+    paletteIcon: "quiz",
+    w: 280,
+    h: 140,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 100, max: 220, step: 4, icon: "height", presets: [120, 140, 180] },
+    defLabel: "Which CSS property enables Flexbox?",
+    defSupporting: "A) display: flex • Question 3/10",
+    defIcon: "help_outline",
+    defSize: 280,
+    defVariant: "elevated",
+  },
+  flashcardViewer: {
+    label: "Flashcard Memorizer",
+    noun: "単語カード",
+    category: "education",
+    paletteIcon: "style",
+    w: 260,
+    h: 130,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    size2: { min: 90, max: 200, step: 4, icon: "height", presets: [110, 130, 160] },
+    defLabel: "Polymorphism (OOP)",
+    defSupporting: "Tap card to flip definition • Card 14/40",
+    defIcon: "flip",
+    defSize: 260,
+    defVariant: "outlined",
+  },
+  certificateBadgeCard: {
+    label: "Certificate Diploma Seal",
+    noun: "修了証明書バッジ",
+    category: "education",
+    paletteIcon: "verified",
+    w: 280,
+    h: 84,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "UI/UX Architecture Certified",
+    defSupporting: "Awarded to Sophia Chen • Verify ID #9481",
+    defIcon: "workspace_premium",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  // Gaming & Rewards
+  leaderboardRow: {
+    label: "Ranked Leaderboard Row",
+    noun: "ランキング順位行",
+    category: "gaming",
+    paletteIcon: "leaderboard",
+    w: 280,
+    h: 60,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "#1 Champion Alex R.",
+    defSupporting: "14,850 XP • Gold League",
+    defIcon: "military_tech",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  achievementBadge: {
+    label: "Achievement Trophy Card",
+    noun: "実績トロフィー",
+    category: "gaming",
+    paletteIcon: "emoji_events",
+    w: 260,
+    h: 80,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [220, 260, CONTENT_W] },
+    defLabel: "Speed Demon Unlocked!",
+    defSupporting: "Completed 50 challenges under 60s • +500 XP",
+    defIcon: "bolt",
+    defSize: 260,
+    defVariant: "elevated",
+  },
+  rewardStreakCard: {
+    label: "Daily Login Streak Card",
+    noun: "連続ログイン記録",
+    category: "gaming",
+    paletteIcon: "local_fire_department",
+    w: 280,
+    h: 96,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "🔥 14 Days Login Streak!",
+    defSupporting: "Keep it up! 2x XP booster active today",
+    defIcon: "whatshot",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  inventoryItemSlot: {
+    label: "Inventory RPG Item Slot",
+    noun: "インベントリアイテム枠",
+    category: "gaming",
+    paletteIcon: "shield",
+    w: 240,
+    h: 68,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 180, max: PHONE_W, step: 4, icon: "width", presets: [200, 240, CONTENT_W] },
+    defLabel: "Mythic Dragon Sword +9",
+    defSupporting: "Attack +420 • Legendary Item Equipped",
+    defIcon: "swords",
+    defSize: 240,
+    defVariant: "outlined",
+  },
+  // Media & Streaming (Extensions)
+  audioPlaylistRow: {
+    label: "Audio Track Playlist Row",
+    noun: "プレイリスト曲",
+    category: "media",
+    paletteIcon: "queue_music",
+    w: 280,
+    h: 60,
+    radius: 12,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Cyberpunk Resonance",
+    defSupporting: "Synthwave Collective • 03:42",
+    defIcon: "music_note",
+    defSize: 280,
+    defVariant: "tonal",
+  },
+  videoStoryThumbnail: {
+    label: "Short Video Reel Thumbnail",
+    noun: "ショート動画サムネイル",
+    category: "media",
+    paletteIcon: "video_library",
+    w: 200,
+    h: 150,
+    radius: 14,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 140, max: PHONE_W, step: 4, icon: "width", presets: [160, 200, CONTENT_W] },
+    size2: { min: 100, max: 260, step: 4, icon: "height", presets: [130, 150, 180] },
+    defLabel: "Urban Fashion Trends",
+    defSupporting: "24.5K views • 1.2K likes",
+    defIcon: "play_circle",
+    defSize: 200,
+    defVariant: "elevated",
+  },
+  // Navigation & Headers (Extensions)
+  searchFilterHeader: {
+    label: "Search & Filter Top Bar",
+    noun: "検索フィルターヘッダー",
+    category: "navigation",
+    paletteIcon: "manage_search",
+    w: 280,
+    h: 56,
+    radius: 16,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    defLabel: "Search products, tags, brands...",
+    defSupporting: "Filters active (3)",
+    defIcon: "search",
+    defSize: 280,
+    defVariant: "filled",
+  },
+  bottomSheetMenu: {
+    label: "Bottom Action Sheet Menu",
+    noun: "ボトムアクションシート",
+    category: "navigation",
+    paletteIcon: "menu_open",
+    w: 280,
+    h: 130,
+    radius: 20,
+    hasVariant: true,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: true,
+    size: { min: 200, max: PHONE_W, step: 4, icon: "width", presets: [240, 280, CONTENT_W] },
+    size2: { min: 90, max: 200, step: 4, icon: "height", presets: [110, 130, 160] },
+    defLabel: "Quick Actions Menu",
+    defSupporting: "Share • Bookmark • Report",
+    defIcon: "more_horiz",
+    defSize: 280,
+    defVariant: "elevated",
+  },
 };
 
 export const KIND_ORDER: Kind[] = [
@@ -1619,6 +4110,8 @@ export const KIND_ORDER: Kind[] = [
   "navRail",
   "toolbar",
   "tabs",
+  "floatingActionDock",
+  "segmentedTabs",
   "searchBar",
   "card",
   "listItem",
@@ -1626,12 +4119,22 @@ export const KIND_ORDER: Kind[] = [
   "bottomSheet",
   "dialog",
   "snackbar",
+  "stickyBottomBar",
+  "notificationBannerSticky",
+  "segmentedSplitView",
   "textField",
   "select",
   "switch",
   "checkbox",
   "radio",
   "slider",
+  "passwordStrength",
+  "biometricPrompt",
+  "filterChips",
+  "signaturePad",
+  "verificationBadge",
+  "colorPalettePicker",
+  "starRatingInput",
   "datePicker",
   "timePicker",
   "text",
@@ -1643,6 +4146,130 @@ export const KIND_ORDER: Kind[] = [
   "loadingIndicator",
   "linearProgress",
   "circularProgress",
+  // Media & Audio
+  "avatar",
+  "badge",
+  "rating",
+  "audioPlayer",
+  "videoPlayer",
+  "qrCode",
+  "tag",
+  "liveStreamBadge",
+  "podcastEpisodeTile",
+  "waveformPlayer",
+  // Commerce & Sales
+  "stepper",
+  "priceTag",
+  "couponCode",
+  "colorSwatch",
+  "creditCard",
+  "deliveryEstimate",
+  "orderStatus",
+  "sizeSelector",
+  "countdownTimer",
+  "reviewSummary",
+  "addressCard",
+  "paymentMethodSelector",
+  "priceBreakdown",
+  "freeShippingBar",
+  "productComparisonTable",
+  "loyaltyPointsBadge",
+  // Finance & Wallet
+  "balanceCard",
+  "transactionItem",
+  "statMetricCard",
+  "miniChart",
+  "expenseProgress",
+  "cryptoTicker",
+  "loanCalculator",
+  "billReminderCard",
+  "cardStackCarousel",
+  // Charts & Analytics
+  "lineChart",
+  "barChart",
+  "areaChart",
+  "donutChart",
+  "pieChart",
+  "candlestickChart",
+  "radarChart",
+  "gaugeChart",
+  "funnelChart",
+  "heatMapGrid",
+  "scatterPlot",
+  "progressRingGroup",
+  // Social & Community
+  "storyBubble",
+  "chatBubble",
+  "userProfileHeader",
+  "notificationItem",
+  "socialLoginGroup",
+  "commentThread",
+  "pollCard",
+  "audioWaveMessage",
+  "userBadgeGroup",
+  // AI & Smart Assistants
+  "aiPromptInput",
+  "aiMessageBubble",
+  "aiSuggestionsRow",
+  "codeSnippetBlock",
+  // Travel & Food Delivery
+  "boardingPassCard",
+  "foodDeliveryTracker",
+  "restaurantMenuRow",
+  "hotelBookingCard",
+  "rideVehicleSelector",
+  // Health & Fitness
+  "heartRateMonitorCard",
+  "sleepTrackerCard",
+  "waterIntakeTracker",
+  "medicationReminderTile",
+  "stepCounterCard",
+  // Productivity & Tasks
+  "kanbanCard",
+  "taskChecklistRow",
+  "calendarEventCard",
+  "fileAttachmentCard",
+  "notesSnippetCard",
+  "todoCard",
+  "todoStatsCard",
+  "todoCreateCard",
+  "todoDetailCard",
+  "todoEditCard",
+  "todoListInteractive",
+  // Smart Home & IoT
+  "thermostatDial",
+  "smartLightControl",
+  "deviceStatusTile",
+  "securityCameraFeed",
+  // Education & Learning
+  "courseProgressCard",
+  "quizQuestionCard",
+  "flashcardViewer",
+  "certificateBadgeCard",
+  // Gaming & Rewards
+  "leaderboardRow",
+  "achievementBadge",
+  "rewardStreakCard",
+  "inventoryItemSlot",
+  // Media & Streaming (Extensions)
+  "audioPlaylistRow",
+  "videoStoryThumbnail",
+  // Navigation & Headers (Extensions)
+  "searchFilterHeader",
+  "bottomSheetMenu",
+  // Feedback & Overlays
+  "banner",
+  "tooltip",
+  "skeleton",
+  "emptyState",
+  "toast",
+  // Data & Structure
+  "segmentedButton",
+  "timeline",
+  "accordion",
+  "faqAccordion",
+  "otpInput",
+  "fileUpload",
 ];
 
 /* ---------- screen data ---------- */
@@ -1706,6 +4333,7 @@ export type Item = {
   /** height for free-form boxes, and for a button following the M3 size scale */
   size2?: number;
   /** palette token used as background (boxes, list items) */
+  placeholder?: string;
   fill?: ColorToken;
   /** background behind a list item's leading icon; "none" draws the icon bare */
   iconFill?: ColorToken | "none";
@@ -1780,7 +4408,29 @@ export const SLIDE_SPEC: Partial<Record<Transition, { axis: "x" | "y"; enter: nu
 };
 
 export type Transition = "slide" | "slideLeft" | "slideUp" | "slideDown" | "fade" | "expand" | "none";
-export type Action = { to: string; transition: Transition; /** the address a `LINK_TARGET` action opens */ url?: string };
+
+export type ActionTrigger = "tap" | "hover" | "drag" | "delay";
+export type ActionType = "navigate" | "overlay" | "close_overlay" | "back" | "scroll" | "link" | "toggle";
+export type OverlayPosition = "center" | "bottom" | "top" | "fullscreen";
+
+export type Action = {
+  to: string;
+  transition: Transition;
+  /** the address a `LINK_TARGET` action opens */
+  url?: string;
+  /** interaction trigger type */
+  trigger?: ActionTrigger;
+  /** interaction action type (e.g. navigate vs modal overlay) */
+  actionType?: ActionType;
+  /** modal / bottom sheet overlay position */
+  overlayPosition?: OverlayPosition;
+  /** dismiss when clicking backdrop */
+  closeOnOutsideClick?: boolean;
+  /** dim backdrop overlay */
+  dimBackground?: boolean;
+  /** delay in ms for delay trigger */
+  delayMs?: number;
+};
 
 /** the height a button is drawn at: the author's, else M3's medium button. An icon button has
  *  only the one measure -- it is a circle -- so its diameter is its height. */
@@ -1919,16 +4569,16 @@ export function migrateFabMenu(it: Item): Item {
  *  whatever joins the run takes it, so the run reads as one band rather than a staircase.
  *  A button keeps the width it was given unless it is now narrower than it is tall. */
 export function matchRunSize(item: Item, host: Item): Item {
-  const family = KIND_SPEC[item.kind].connect?.family;
-  if (!family || family !== KIND_SPEC[host.kind].connect?.family) return item;
+  const family = KIND_SPEC[item.kind]?.connect?.family;
+  if (!family || family !== KIND_SPEC[host.kind]?.connect?.family) return item;
   if (family === "chip") {
     const h = chipHeightOf(host);
     return chipHeightOf(item) === h ? item : { ...item, size2: h };
   }
   /* list items stack, so the measure they share is their width */
   if (family === "list") {
-    const w = host.size ?? KIND_SPEC[host.kind].defSize ?? KIND_SPEC[host.kind].w;
-    return (item.size ?? KIND_SPEC[item.kind].defSize ?? KIND_SPEC[item.kind].w) === w ? item : { ...item, size: w };
+    const w = host.size ?? KIND_SPEC[host.kind]?.defSize ?? KIND_SPEC[host.kind]?.w ?? 328;
+    return (item.size ?? KIND_SPEC[item.kind]?.defSize ?? KIND_SPEC[item.kind]?.w ?? 328) === w ? item : { ...item, size: w };
   }
   if (family !== "button") return item;
   const h = buttonHeightOf(host);
@@ -1943,7 +4593,7 @@ export function runSizePatch(items: Item[], id: string, patch: Partial<Item>): I
   const at = items.findIndex((it) => it.id === id);
   if (at < 0) return items;
   const next = { ...items[at], ...patch };
-  const stacked = KIND_SPEC[items[at].kind].connect?.family === "list";
+  const stacked = KIND_SPEC[items[at].kind]?.connect?.family === "list";
   const carries = items.length > 1 && ("size2" in patch || ((items[at].kind === "iconButton" || stacked) && "size" in patch));
   if (!carries) return items.map((it, i) => (i === at ? next : it));
   return items.map((it, i) => (i === at ? next : matchRunSize(it, next)));
@@ -1993,7 +4643,134 @@ export function actionsOf(it: Item): { slot: string; action: Action }[] {
 export const RIPPLE_KINDS: Kind[] = ["button", "iconButton", "chip", "fab", "extendedFab", "splitButton"];
 
 /** kinds a user can tap in the preview */
-export const TAPPABLE: Kind[] = ["button", "iconButton", "fab", "extendedFab", "chip", "listItem", "card", "image", "text", "splitButton", "radio", "datePicker", "timePicker"];
+export const TAPPABLE: Kind[] = [
+  "button",
+  "iconButton",
+  "fab",
+  "extendedFab",
+  "chip",
+  "listItem",
+  "card",
+  "image",
+  "text",
+  "splitButton",
+  "radio",
+  "datePicker",
+  "timePicker",
+  "avatar",
+  "badge",
+  "rating",
+  "audioPlayer",
+  "videoPlayer",
+  "qrCode",
+  "tag",
+  "stepper",
+  "priceTag",
+  "couponCode",
+  "colorSwatch",
+  "creditCard",
+  "deliveryEstimate",
+  "orderStatus",
+  "sizeSelector",
+  "countdownTimer",
+  "reviewSummary",
+  "addressCard",
+  "paymentMethodSelector",
+  "balanceCard",
+  "transactionItem",
+  "statMetricCard",
+  "miniChart",
+  "expenseProgress",
+  "storyBubble",
+  "chatBubble",
+  "userProfileHeader",
+  "notificationItem",
+  "socialLoginGroup",
+  "passwordStrength",
+  "biometricPrompt",
+  "filterChips",
+  "signaturePad",
+  "floatingActionDock",
+  "segmentedTabs",
+  "lineChart",
+  "barChart",
+  "areaChart",
+  "donutChart",
+  "pieChart",
+  "candlestickChart",
+  "radarChart",
+  "gaugeChart",
+  "funnelChart",
+  "heatMapGrid",
+  "scatterPlot",
+  "progressRingGroup",
+  "cryptoTicker",
+  "loanCalculator",
+  "billReminderCard",
+  "cardStackCarousel",
+  "priceBreakdown",
+  "freeShippingBar",
+  "productComparisonTable",
+  "loyaltyPointsBadge",
+  "commentThread",
+  "pollCard",
+  "audioWaveMessage",
+  "userBadgeGroup",
+  "liveStreamBadge",
+  "podcastEpisodeTile",
+  "waveformPlayer",
+  "verificationBadge",
+  "colorPalettePicker",
+  "starRatingInput",
+  "stickyBottomBar",
+  "notificationBannerSticky",
+  "segmentedSplitView",
+  "aiPromptInput",
+  "aiMessageBubble",
+  "aiSuggestionsRow",
+  "codeSnippetBlock",
+  "boardingPassCard",
+  "foodDeliveryTracker",
+  "restaurantMenuRow",
+  "hotelBookingCard",
+  "rideVehicleSelector",
+  "heartRateMonitorCard",
+  "sleepTrackerCard",
+  "waterIntakeTracker",
+  "medicationReminderTile",
+  "stepCounterCard",
+  "kanbanCard",
+  "taskChecklistRow",
+  "calendarEventCard",
+  "fileAttachmentCard",
+  "notesSnippetCard",
+  "thermostatDial",
+  "smartLightControl",
+  "deviceStatusTile",
+  "securityCameraFeed",
+  "courseProgressCard",
+  "quizQuestionCard",
+  "flashcardViewer",
+  "certificateBadgeCard",
+  "leaderboardRow",
+  "achievementBadge",
+  "rewardStreakCard",
+  "inventoryItemSlot",
+  "audioPlaylistRow",
+  "videoStoryThumbnail",
+  "searchFilterHeader",
+  "bottomSheetMenu",
+  "banner",
+  "tooltip",
+  "emptyState",
+  "toast",
+  "segmentedButton",
+  "timeline",
+  "accordion",
+  "faqAccordion",
+  "otpInput",
+  "fileUpload",
+];
 
 /** palette roles a user may pick as a background */
 export type ColorToken =
@@ -2006,7 +4783,8 @@ export type ColorToken =
   | "secondaryContainer"
   | "tertiaryContainer"
   | "primary"
-  | "inverseSurface";
+  | "inverseSurface"
+  | (string & {});
 
 export const COLOR_TOKENS: { key: ColorToken; label: string }[] = [
   { key: "surface", label: "Surface" },
@@ -2106,7 +4884,45 @@ export function cardImageSizeOf(it: Item): number {
   return Math.min(size, cardImageMaxOf(it));
 }
 
-export function onToken(t: ColorToken, p: Palette): string {
+/** resolve a ColorToken or hex/rgb color string against the palette */
+export function resolveColor(
+  color: string | undefined,
+  p: Palette,
+  fallbackToken: keyof Palette = "surface"
+): string {
+  if (!color || color === "surface") return p[fallbackToken] ?? "#FFFFFF";
+  if (color.startsWith("#") || color.startsWith("rgb") || color.startsWith("hsl")) {
+    return color;
+  }
+  return (p as any)[color] ?? color;
+}
+
+export function onToken(t: ColorToken | string | undefined, p: Palette): string {
+  if (!t) return p.onSurface;
+  if (typeof t === "string" && (t.startsWith("#") || t.startsWith("rgb"))) {
+    let r = 0, g = 0, b = 0;
+    if (t.startsWith("#")) {
+      const hex = t.replace("#", "");
+      if (hex.length === 3) {
+        r = parseInt(hex[0] + hex[0], 16) || 0;
+        g = parseInt(hex[1] + hex[1], 16) || 0;
+        b = parseInt(hex[2] + hex[2], 16) || 0;
+      } else {
+        r = parseInt(hex.substring(0, 2), 16) || 0;
+        g = parseInt(hex.substring(2, 4), 16) || 0;
+        b = parseInt(hex.substring(4, 6), 16) || 0;
+      }
+    } else if (t.startsWith("rgb")) {
+      const m = t.match(/\d+/g);
+      if (m && m.length >= 3) {
+        r = Number(m[0]);
+        g = Number(m[1]);
+        b = Number(m[2]);
+      }
+    }
+    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return lum > 0.6 ? "#111827" : "#FFFFFF";
+  }
   switch (t) {
     case "primary":
       return p.onPrimary;
@@ -2203,7 +5019,7 @@ export const FULL_WIDTH: Kind[] = ["topAppBar", "bottomNav", "tabs", "carousel"]
 /** a part no taller than the screen it is placed on: a box or a rail sized to a phone shrinks to a shorter screen */
 export function fitHeight(it: Item, screenH: number): Item {
   const spec = KIND_SPEC[it.kind];
-  if (!spec.size2 && it.kind !== "navRail") return it;
+  if (!spec || (!spec.size2 && it.kind !== "navRail")) return it;
   const h = it.size2 ?? spec.h;
   return h > screenH ? { ...it, size2: screenH } : it;
 }
@@ -2215,6 +5031,7 @@ export function fitHeight(it: Item, screenH: number): Item {
  *  content area. */
 export function carryItemSize(it: Item, from: { w: number; h: number }, to: { w: number; h: number }): Item {
   const spec = KIND_SPEC[it.kind];
+  if (!spec) return it;
   const patch: Partial<Item> = {};
   const keepsShape = it.kind === "card" || it.kind === "image" || it.kind === "camera" || it.kind === "map";
   if (spec.size && (spec.size.icon === "width" || keepsShape)) {
@@ -2461,6 +5278,76 @@ export function makeItem(kind: Kind): Item {
   }
   if (kind === "tabs" || kind === "fabMenu" || kind === "select" || kind === "splitButton") it.tabs = defaultTabsFor(kind);
   if (kind === "toolbar") it.tabs = defaultTabsFor(kind).slice(0, 4);
+  if (kind === "videoPlayer" || kind === "creditCard") it.size2 = 160;
+  if (kind === "emptyState") it.size2 = 140;
+  if (kind === "fileUpload") it.size2 = 96;
+  if (kind === "rating") it.value = 4.8;
+  if (kind === "stepper") it.value = 1;
+  if (kind === "segmentedButton") {
+    it.tabs = [
+      { icon: "today", label: "Day" },
+      { icon: "view_week", label: "Week" },
+      { icon: "calendar_month", label: "Month" },
+    ];
+  }
+  if (kind === "sizeSelector") {
+    it.tabs = [
+      { label: "XS", icon: "" },
+      { label: "S", icon: "" },
+      { label: "M", icon: "" },
+      { label: "L", icon: "" },
+      { label: "XL", icon: "" },
+    ];
+  }
+  if (kind === "paymentMethodSelector") {
+    it.tabs = [
+      { label: "Apple Pay", icon: "payments" },
+      { label: "Visa •• 4242", icon: "credit_card" },
+      { label: "PayPal", icon: "account_balance" },
+    ];
+  }
+  if (kind === "segmentedTabs") {
+    it.tabs = [
+      { label: "Overview", icon: "" },
+      { label: "Details", icon: "" },
+      { label: "Reviews", icon: "" },
+    ];
+  }
+  if (kind === "reviewSummary") it.size2 = 88;
+  if (kind === "addressCard") it.size2 = 78;
+  if (kind === "balanceCard") it.size2 = 120;
+  if (kind === "statMetricCard") it.size2 = 96;
+  if (kind === "miniChart") it.size2 = 90;
+  if (kind === "expenseProgress") it.size2 = 68;
+  if (kind === "userProfileHeader") it.size2 = 100;
+  if (kind === "socialLoginGroup") it.size2 = 68;
+  if (kind === "signaturePad") it.size2 = 96;
+  if (kind === "floatingActionDock") it.size2 = 54;
+  if (kind === "faqAccordion") it.size2 = 92;
+  if (kind === "storyBubble") {
+    it.icon2 = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
+  }
+  if (kind === "lineChart" || kind === "barChart" || kind === "candlestickChart") it.size2 = 140;
+  if (kind === "areaChart" || kind === "donutChart" || kind === "pieChart" || kind === "funnelChart" || kind === "scatterPlot" || kind === "productComparisonTable") it.size2 = 130;
+  if (kind === "radarChart") it.size2 = 150;
+  if (kind === "gaugeChart" || kind === "progressRingGroup" || kind === "cardStackCarousel" || kind === "priceBreakdown") it.size2 = 120;
+  if (kind === "loanCalculator") it.size2 = 110;
+  if (kind === "heatMapGrid" || kind === "segmentedSplitView") it.size2 = 100;
+  if (kind === "commentThread") it.size2 = 84;
+  if (kind === "pollCard") it.size2 = 130;
+  if (kind === "stickyBottomBar") it.size2 = 64;
+  if (kind === "aiMessageBubble" || kind === "codeSnippetBlock") it.size2 = 120;
+  if (kind === "boardingPassCard" || kind === "securityCameraFeed" || kind === "videoStoryThumbnail") it.size2 = 150;
+  if (kind === "hotelBookingCard" || kind === "thermostatDial" || kind === "quizQuestionCard") it.size2 = 140;
+  if (kind === "flashcardViewer" || kind === "bottomSheetMenu") it.size2 = 130;
+  if (kind === "sleepTrackerCard") it.size2 = 120;
+  if (kind === "heartRateMonitorCard" || kind === "stepCounterCard" || kind === "kanbanCard" || kind === "notesSnippetCard" || kind === "courseProgressCard") it.size2 = 110;
+  if (kind === "todoCard") it.size2 = 116;
+  if (kind === "todoStatsCard") it.size2 = 88;
+  if (kind === "todoCreateCard") it.size2 = 148;
+  if (kind === "todoDetailCard") it.size2 = 210;
+  if (kind === "todoEditCard") it.size2 = 148;
+  if (kind === "todoListInteractive") it.size2 = 340;
   return it;
 }
 
@@ -2483,7 +5370,7 @@ export const progressThickness = (it: Item): number => {
 };
 
 export function sizeOf(it: Item, widths: Record<string, number>) {
-  const s = KIND_SPEC[it.kind];
+  const s = KIND_SPEC[it.kind] || { w: it.size ?? 328, h: it.size2 ?? 48, defSize: 328, radius: 12 };
   const n = it.size ?? s.defSize ?? s.w;
   switch (it.kind) {
     case "switch":
@@ -2537,7 +5424,130 @@ export function sizeOf(it: Item, widths: Record<string, number>) {
     case "slider":
     case "linearProgress":
     case "divider":
+    case "badge":
+    case "tag":
+    case "rating":
+    case "audioPlayer":
+    case "stepper":
+    case "priceTag":
+    case "couponCode":
+    case "colorSwatch":
+    case "deliveryEstimate":
+    case "orderStatus":
+    case "sizeSelector":
+    case "countdownTimer":
+    case "paymentMethodSelector":
+    case "transactionItem":
+    case "chatBubble":
+    case "notificationItem":
+    case "passwordStrength":
+    case "biometricPrompt":
+    case "filterChips":
+    case "segmentedTabs":
+    case "cryptoTicker":
+    case "billReminderCard":
+    case "freeShippingBar":
+    case "loyaltyPointsBadge":
+    case "audioWaveMessage":
+    case "userBadgeGroup":
+    case "liveStreamBadge":
+    case "podcastEpisodeTile":
+    case "waveformPlayer":
+    case "verificationBadge":
+    case "colorPalettePicker":
+    case "starRatingInput":
+    case "stickyBottomBar":
+    case "notificationBannerSticky":
+    case "aiPromptInput":
+    case "aiSuggestionsRow":
+    case "foodDeliveryTracker":
+    case "restaurantMenuRow":
+    case "rideVehicleSelector":
+    case "waterIntakeTracker":
+    case "medicationReminderTile":
+    case "taskChecklistRow":
+    case "calendarEventCard":
+    case "fileAttachmentCard":
+    case "smartLightControl":
+    case "deviceStatusTile":
+    case "certificateBadgeCard":
+    case "leaderboardRow":
+    case "achievementBadge":
+    case "rewardStreakCard":
+    case "inventoryItemSlot":
+    case "audioPlaylistRow":
+    case "searchFilterHeader":
+    case "banner":
+    case "tooltip":
+    case "skeleton":
+    case "toast":
+    case "segmentedButton":
+    case "timeline":
+    case "accordion":
+    case "otpInput":
       return { w: n, h: s.h };
+    case "videoPlayer":
+    case "creditCard":
+    case "emptyState":
+    case "fileUpload":
+    case "reviewSummary":
+    case "addressCard":
+    case "balanceCard":
+    case "statMetricCard":
+    case "miniChart":
+    case "expenseProgress":
+    case "userProfileHeader":
+    case "socialLoginGroup":
+    case "signaturePad":
+    case "floatingActionDock":
+    case "faqAccordion":
+    case "lineChart":
+    case "barChart":
+    case "areaChart":
+    case "donutChart":
+    case "pieChart":
+    case "candlestickChart":
+    case "radarChart":
+    case "gaugeChart":
+    case "funnelChart":
+    case "heatMapGrid":
+    case "scatterPlot":
+    case "progressRingGroup":
+    case "loanCalculator":
+    case "cardStackCarousel":
+    case "priceBreakdown":
+    case "productComparisonTable":
+    case "commentThread":
+    case "pollCard":
+    case "segmentedSplitView":
+    case "aiMessageBubble":
+    case "codeSnippetBlock":
+    case "boardingPassCard":
+    case "hotelBookingCard":
+    case "heartRateMonitorCard":
+    case "sleepTrackerCard":
+    case "stepCounterCard":
+    case "kanbanCard":
+    case "notesSnippetCard":
+    case "thermostatDial":
+    case "securityCameraFeed":
+    case "courseProgressCard":
+    case "quizQuestionCard":
+    case "flashcardViewer":
+    case "videoStoryThumbnail":
+    case "bottomSheetMenu":
+    case "todoCard":
+    case "todoStatsCard":
+    case "todoCreateCard":
+    case "todoDetailCard":
+    case "todoEditCard":
+    case "todoListInteractive":
+      return { w: n, h: it.size2 ?? s.h };
+    case "avatar":
+    case "qrCode":
+      return { w: n, h: n };
+    case "storyBubble":
+      return { w: n, h: Math.round(n * 1.15) };
     case "carousel":
       return { w: n, h: it.size2 ?? s.h };
     case "datePicker": {
@@ -2560,14 +5570,14 @@ export function sizeOf(it: Item, widths: Record<string, number>) {
     case "navRail":
       return { w: railWidth(it), h: it.size2 ?? s.h };
     default:
-      return { w: s.w, h: s.h };
+      return { w: s?.w ?? (it.size ?? 328), h: s?.h ?? (it.size2 ?? 48) };
   }
 }
 
 /** Corners for a part that is not part of a connected run. Defaults follow the
  *  document's shape scale; a radius the author typed in is kept as is. */
 export function baseRadii(it: Item): Radii {
-  const s = KIND_SPEC[it.kind];
+  const s = KIND_SPEC[it.kind] || { radius: 12 };
   switch (it.kind) {
     /* a button stays fully round whatever height it is given */
     case "button":
@@ -2618,9 +5628,9 @@ export function baseRadii(it: Item): Radii {
     case "splitButton":
       return uniformRadii(scaleR(buttonHeightOf(it) / 2));
     case "radio":
-      return uniformRadii(s.radius);
+      return uniformRadii(s?.radius ?? 12);
     default:
-      return uniformRadii(scaleR(s.radius));
+      return uniformRadii(scaleR(s?.radius ?? 12));
   }
 }
 
@@ -2708,7 +5718,7 @@ export const toolbarWidth = (it: Item) => {
 };
 
 export const connectSpecOf = (it: Item): ConnectSpec | undefined => {
-  const c = KIND_SPEC[it.kind].connect;
+  const c = KIND_SPEC[it.kind]?.connect;
   /* the ends of a run are as round as the part is tall, so a taller button keeps its full corners */
   const outer =
     it.kind === "button" || it.kind === "iconButton"
@@ -2718,7 +5728,7 @@ export const connectSpecOf = (it: Item): ConnectSpec | undefined => {
         : c?.outer ?? 0;
   return c && { ...c, outer: scaleR(outer), inner: scaleR(c.inner) };
 };
-export const connectable = (it: Item) => !!KIND_SPEC[it.kind].connect;
+export const connectable = (it: Item) => !!KIND_SPEC[it.kind]?.connect;
 /** two parts fuse when they share an axis and a family (buttons and icon buttons mix) */
 export const canJoin = (a: Item, b: Item) => {
   const sa = connectSpecOf(a);
@@ -2752,7 +5762,7 @@ export function iconSlotsOf(it: Item): IconSlot[] {
         ...(it.tabs ?? []).map((t, i) => ({ key: `tab:${i}`, label: `${i + 1}`, value: t.icon || null })),
       ];
     default:
-      return KIND_SPEC[it.kind].hasIcon
+      return KIND_SPEC[it.kind]?.hasIcon
         ? [{ key: "icon", label: t("icon"), value: it.icon }]
         : [];
   }

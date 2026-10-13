@@ -104,6 +104,7 @@ import {
   TRANSITIONS,
   uid,
   uniformRadii,
+  resolveColor,
   FULL_WIDTH,
   fitHeight,
   railExpansionSide,
@@ -120,11 +121,23 @@ import { Logo } from "./components/Logo";
 import { PartsPalette } from "./components/PartsPalette";
 import { EcommercePreset } from "./lib/ecommerceComponents";
 import { AddScreenLayoutModal } from "./components/AddScreenLayoutModal";
+import { InteractionPopover } from "./components/InteractionPopover";
 import {
   AddScreenTemplateId,
   ADD_SCREEN_LAYOUT_TEMPLATES,
   buildScreenGroupsForTemplate,
 } from "./lib/screenTemplateBuilders";
+import {
+  findEmptyGridSlots,
+  findFirstEmptyGridSlot,
+  realignAllFramesToGrid,
+  shiftRowHorizontal,
+  GridSlot,
+  GRID_PHONE_W,
+  GRID_PHONE_H,
+  GRID_STRIDE_X,
+  GRID_STRIDE_Y,
+} from "./lib/screenGridUtils";
 import { PromptPanel } from "./components/PromptPanel";
 import { GitHubLink, Mode, Toolbar } from "./components/Toolbar";
 import { LangMenu } from "./components/Menus";
@@ -181,7 +194,8 @@ const GLIDE_TOP = 84;
 const GLIDE_PAD = 40;
 const DOC_KEY = "m3e:doc";
 const DOC_VERSION_KEY = "m3e:doc_version";
-const CURRENT_DOC_VERSION = "cloth_shop_v6_clean_typography";
+const CURRENT_DOC_VERSION = "cloth_shop_v8_premium_ui";
+const HISTORY_MAX = 50;
 /** the design a draft or a link replaced, until the author keeps or undoes it */
 const BEFORE_KEY = "m3e:doc:before";
 const DOC_LOCK = "m3e:doc:editor";
@@ -257,13 +271,63 @@ const HANDLED = new Set<Kind>([
   "linearProgress", "circularProgress", "loadingIndicator", "slider", "carousel",
   "card", "box", "bottomSheet", "image", "camera", "map", "listItem", "searchBar", "textField", "select", "switch", "divider",
   "topAppBar", "bottomNav", "tabs", "navRail",
+  "avatar", "badge", "rating", "audioPlayer", "videoPlayer", "qrCode", "tag",
+  "stepper", "priceTag", "couponCode", "colorSwatch", "creditCard", "deliveryEstimate", "orderStatus",
+  "sizeSelector", "countdownTimer", "reviewSummary", "addressCard", "paymentMethodSelector",
+  "balanceCard", "transactionItem", "statMetricCard", "miniChart", "expenseProgress",
+  "storyBubble", "chatBubble", "userProfileHeader", "notificationItem", "socialLoginGroup",
+  "passwordStrength", "biometricPrompt", "filterChips", "signaturePad",
+  "floatingActionDock", "segmentedTabs",
+  "banner", "tooltip", "skeleton", "emptyState", "toast",
+  "segmentedButton", "timeline", "accordion", "faqAccordion", "otpInput", "fileUpload",
+  "lineChart", "barChart", "areaChart", "donutChart", "pieChart", "candlestickChart",
+  "radarChart", "gaugeChart", "funnelChart", "heatMapGrid", "scatterPlot", "progressRingGroup",
+  "cryptoTicker", "loanCalculator", "billReminderCard", "cardStackCarousel",
+  "priceBreakdown", "freeShippingBar", "productComparisonTable", "loyaltyPointsBadge",
+  "commentThread", "pollCard", "audioWaveMessage", "userBadgeGroup",
+  "liveStreamBadge", "podcastEpisodeTile", "waveformPlayer",
+  "verificationBadge", "colorPalettePicker", "starRatingInput",
+  "stickyBottomBar", "notificationBannerSticky", "segmentedSplitView",
+  "aiPromptInput", "aiMessageBubble", "aiSuggestionsRow", "codeSnippetBlock",
+  "boardingPassCard", "foodDeliveryTracker", "restaurantMenuRow", "hotelBookingCard", "rideVehicleSelector",
+  "heartRateMonitorCard", "sleepTrackerCard", "waterIntakeTracker", "medicationReminderTile", "stepCounterCard",
+  "kanbanCard", "taskChecklistRow", "calendarEventCard", "fileAttachmentCard", "notesSnippetCard",
+  "thermostatDial", "smartLightControl", "deviceStatusTile", "securityCameraFeed",
+  "courseProgressCard", "quizQuestionCard", "flashcardViewer", "certificateBadgeCard",
+  "leaderboardRow", "achievementBadge", "rewardStreakCard", "inventoryItemSlot",
+  "audioPlaylistRow", "videoStoryThumbnail", "searchFilterHeader", "bottomSheetMenu",
 ]);
 /** parts held by the four points around them: a circle's diameter, a label's height */
-const ROUND = new Set<Kind>(["iconButton", "chip", "splitButton", "fab", "extendedFab", "circularProgress", "loadingIndicator"]);
+const ROUND = new Set<Kind>(["iconButton", "chip", "splitButton", "fab", "extendedFab", "circularProgress", "loadingIndicator", "avatar", "qrCode", "storyBubble"]);
 /** the button family: sized on the button scale rather than by the bounds their kind is given */
 const BUTTON_LIKE = new Set<Kind>(["button", "iconButton", "chip", "splitButton", "fab", "extendedFab"]);
 /** these are held by their two ends; they have no height of their own to pull on */
-const WIDE = new Set<Kind>(["linearProgress", "slider", "listItem", "searchBar", "textField", "select", "switch", "divider", "topAppBar", "bottomNav", "tabs"]);
+const WIDE = new Set<Kind>([
+  "linearProgress", "slider", "listItem", "searchBar", "textField", "select", "switch", "divider", "topAppBar", "bottomNav", "tabs",
+  "audioPlayer", "videoPlayer", "stepper", "priceTag", "couponCode", "creditCard", "deliveryEstimate", "orderStatus",
+  "sizeSelector", "countdownTimer", "reviewSummary", "addressCard", "paymentMethodSelector",
+  "balanceCard", "transactionItem", "statMetricCard", "miniChart", "expenseProgress",
+  "chatBubble", "userProfileHeader", "notificationItem", "socialLoginGroup",
+  "passwordStrength", "biometricPrompt", "filterChips", "signaturePad",
+  "floatingActionDock", "segmentedTabs",
+  "banner", "tooltip", "skeleton", "emptyState", "toast", "segmentedButton", "timeline", "accordion", "faqAccordion", "otpInput", "fileUpload",
+  "lineChart", "barChart", "areaChart", "donutChart", "pieChart", "candlestickChart",
+  "radarChart", "gaugeChart", "funnelChart", "heatMapGrid", "scatterPlot", "progressRingGroup",
+  "cryptoTicker", "loanCalculator", "billReminderCard", "cardStackCarousel",
+  "priceBreakdown", "freeShippingBar", "productComparisonTable", "loyaltyPointsBadge",
+  "commentThread", "pollCard", "audioWaveMessage", "userBadgeGroup",
+  "liveStreamBadge", "podcastEpisodeTile", "waveformPlayer",
+  "verificationBadge", "colorPalettePicker", "starRatingInput",
+  "stickyBottomBar", "notificationBannerSticky", "segmentedSplitView",
+  "aiPromptInput", "aiMessageBubble", "aiSuggestionsRow", "codeSnippetBlock",
+  "boardingPassCard", "foodDeliveryTracker", "restaurantMenuRow", "hotelBookingCard", "rideVehicleSelector",
+  "heartRateMonitorCard", "sleepTrackerCard", "waterIntakeTracker", "medicationReminderTile", "stepCounterCard",
+  "kanbanCard", "taskChecklistRow", "calendarEventCard", "fileAttachmentCard", "notesSnippetCard",
+  "thermostatDial", "smartLightControl", "deviceStatusTile", "securityCameraFeed",
+  "courseProgressCard", "quizQuestionCard", "flashcardViewer", "certificateBadgeCard",
+  "leaderboardRow", "achievementBadge", "rewardStreakCard", "inventoryItemSlot",
+  "audioPlaylistRow", "videoStoryThumbnail", "searchFilterHeader", "bottomSheetMenu",
+]);
 const BAR_SIDES = ["left", "right"] as const;
 /** a carousel runs the width of the screen, a rail the height of it: only the other measure is pulled on */
 const TALL = new Set<Kind>(["carousel", "navRail"]);
@@ -564,6 +628,41 @@ export default function Editor({
   const [selectedFrameId, setSelectedFrameId] = useState<string | null>(null);
   const [selectedLinkId, setSelectedLinkId] = useState<string | null>(null);
   const [showFlows, setShowFlows] = useState(false);
+  const [flowStartFrameId, setFlowStartFrameId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("m3e:flow_start_frame");
+    }
+    return null;
+  });
+
+  const handleSetFlowStart = (id: string) => {
+    setFlowStartFrameId(id);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("m3e:flow_start_frame", id);
+    }
+    const f = framesRef.current.find((item) => item.id === id);
+    showToast(`Set "${f?.name || id}" as Flow 1 Starting Point`);
+  };
+  /** Figma-style interactive wire drag from mouse */
+  const [wireDrag, setWireDrag] = useState<{
+    sourceItemId: string;
+    sourceSlot?: string;
+    sx: number;
+    sy: number;
+    currX: number;
+    currY: number;
+    targetFrameId: string | null;
+  } | null>(null);
+  const wireDragRef = useRef(wireDrag);
+  wireDragRef.current = wireDrag;
+
+  /** Figma Interaction Modal popover state */
+  const [interactionPopover, setInteractionPopover] = useState<{
+    itemId: string;
+    slot?: string;
+    action?: Action;
+    position?: { x: number; y: number };
+  } | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [pressedId, setPressedId] = useState<string | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
@@ -1534,7 +1633,7 @@ export default function Editor({
      * bounds its kind is given, and a part as wide as the screen it sits on at most */
     const gauge = !BUTTON_LIKE.has(item.kind);
     /* across, the part's own measure; down, the second one it may have */
-    const gaugeSpec = vertical ? KIND_SPEC[item.kind].size2 : KIND_SPEC[item.kind].size;
+    const gaugeSpec = vertical ? KIND_SPEC[item.kind]?.size2 : KIND_SPEC[item.kind]?.size;
     /* only a button must stay at least as wide as it is tall: it is a circle at its narrowest */
     const grows = item.kind === "button";
     const { w: screenW, h: screenH } = f ? frameSizeOf(f) : { w: PHONE_W, h: PHONE_H };
@@ -2086,6 +2185,27 @@ export default function Editor({
         setGroups((gs) => gs.filter((x) => x.id !== g.id));
         setSelectedIds([]);
       }
+      if (g?.kind === "frame" && g.moved) {
+        const f = framesRef.current.find((item) => item.id === g.id);
+        if (f) {
+          const snapX = Math.round(f.x / GRID_STRIDE_X) * GRID_STRIDE_X;
+          const snapY = Math.round(f.y / GRID_STRIDE_Y) * GRID_STRIDE_Y;
+          if (Math.hypot(f.x - snapX, f.y - snapY) < 85) {
+            const occupied = framesRef.current.some(
+              (other) => other.id !== f.id && Math.abs(other.x - snapX) < 60 && Math.abs(other.y - snapY) < 60
+            );
+            if (!occupied) {
+              const dx = snapX - f.x;
+              const dy = snapY - f.y;
+              setFrames((fs) => fs.map((item) => (item.id === f.id ? { ...item, x: snapX, y: snapY } : item)));
+              const ids = new Set(g.groups.map((o) => o.id));
+              setGroups((gs) =>
+                gs.map((gr) => (ids.has(gr.id) ? { ...gr, x: gr.x + dx, y: gr.y + dy } : gr))
+              );
+            }
+          }
+        }
+      }
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
@@ -2097,6 +2217,106 @@ export default function Editor({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isGesturing]);
+
+  /* ---------- wire drag (Figma-style interactive prototyping) ---------- */
+  useEffect(() => {
+    if (!wireDrag) return;
+    const move = (e: PointerEvent) => {
+      const pt = toWorld(e.clientX, e.clientY);
+      const hit = framesRef.current.find((f) => {
+        const fr = frameRect(f);
+        return pt.x >= fr.l - 20 && pt.x <= fr.r + 20 && pt.y >= fr.t - 20 && pt.y <= fr.b + 20;
+      });
+      setWireDrag((cur) =>
+        cur
+          ? {
+              ...cur,
+              currX: pt.x,
+              currY: pt.y,
+              targetFrameId: hit ? hit.id : null,
+            }
+          : null
+      );
+    };
+
+    const up = (e: PointerEvent) => {
+      const cur = wireDragRef.current;
+      setWireDrag(null);
+      if (!cur) return;
+      const pt = toWorld(e.clientX, e.clientY);
+      const dist = Math.hypot(pt.x - cur.sx, pt.y - cur.sy);
+      if (dist < 10) {
+        // Click on the handle: open InteractionPopover immediately!
+        const item = allItems.find((it) => it.id === cur.sourceItemId);
+        const act = cur.sourceSlot ? item?.actions?.[cur.sourceSlot] : item?.action;
+        setInteractionPopover({
+          itemId: cur.sourceItemId,
+          slot: cur.sourceSlot,
+          action: act,
+          position: { x: e.clientX, y: e.clientY },
+        });
+        return;
+      }
+
+      let hit = framesRef.current.find((f) => {
+        const fr = frameRect(f);
+        return pt.x >= fr.l - 40 && pt.x <= fr.r + 40 && pt.y >= fr.t - 40 && pt.y <= fr.b + 40;
+      });
+      if (!hit) {
+        let bestDist = 200;
+        for (const f of framesRef.current) {
+          const fr = frameRect(f);
+          const cx = (fr.l + fr.r) / 2;
+          const cy = (fr.t + fr.b) / 2;
+          const d = Math.hypot(pt.x - cx, pt.y - cy);
+          if (d < bestDist) {
+            bestDist = d;
+            hit = f;
+          }
+        }
+      }
+      if (hit) {
+        snapshot();
+        const item = allItems.find((it) => it.id === cur.sourceItemId);
+        const existingAction = cur.sourceSlot ? item?.actions?.[cur.sourceSlot] : item?.action;
+        const newAction: Action = {
+          to: hit.id,
+          transition: existingAction?.transition || "slide",
+          trigger: existingAction?.trigger || "tap",
+          actionType: existingAction?.actionType || "navigate",
+          overlayPosition: existingAction?.overlayPosition,
+          closeOnOutsideClick: existingAction?.closeOnOutsideClick,
+          dimBackground: existingAction?.dimBackground,
+        };
+        setGroups((gs) =>
+          gs.map((g) => ({
+            ...g,
+            items: g.items.map((it) => {
+              if (it.id !== cur.sourceItemId) return it;
+              if (!cur.sourceSlot) return { ...it, action: newAction };
+              const actions = { ...(it.actions ?? {}), [cur.sourceSlot]: newAction };
+              return { ...it, actions };
+            }),
+          }))
+        );
+        setInteractionPopover({
+          itemId: cur.sourceItemId,
+          slot: cur.sourceSlot,
+          action: newAction,
+          position: { x: e.clientX, y: e.clientY },
+        });
+      }
+    };
+
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+    return () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+    };
+  }, [wireDrag]);
 
   /* ---------- panel resize ---------- */
   useEffect(() => {
@@ -2915,19 +3135,46 @@ export default function Editor({
   };
 
   const [isAddScreenModalOpen, setIsAddScreenModalOpen] = useState(false);
+  const [addScreenTargetSlot, setAddScreenTargetSlot] = useState<
+    GridSlot | { x: number; y: number; label?: string } | null
+  >(null);
 
-  const addFrame = () => {
+  const emptyGridSlots = useMemo(() => {
+    if (frame !== "phone") return [];
+    return findEmptyGridSlots(frames);
+  }, [frame, frames]);
+
+  const addFrame = (
+    slot?: GridSlot | { x: number; y: number; label?: string }
+  ) => {
+    setAddScreenTargetSlot(slot ?? null);
     setIsAddScreenModalOpen(true);
   };
 
   const handleCreateScreenFromTemplate = (
     templateId: AddScreenTemplateId,
-    screenName: string
+    screenName: string,
+    targetPosition?: { x: number; y: number }
   ) => {
     snapshot();
     const base = framesRef.current[0];
-    const newX = nextFrameX();
-    const newY = base?.y ?? 0;
+    let newX: number;
+    let newY: number;
+
+    if (targetPosition) {
+      newX = targetPosition.x;
+      newY = targetPosition.y;
+    } else {
+      const firstEmpty = findFirstEmptyGridSlot(framesRef.current);
+      if (firstEmpty) {
+        newX = firstEmpty.x;
+        newY = firstEmpty.y;
+      } else {
+        newX = nextFrameX();
+        newY = base?.y ?? 0;
+      }
+    }
+
     const f: Frame = {
       id: uid(),
       name: screenName || `${t("screenN")} ${framesRef.current.length + 1}`,
@@ -2956,6 +3203,34 @@ export default function Editor({
 
     const tplMeta = ADD_SCREEN_LAYOUT_TEMPLATES.find((t) => t.id === templateId);
     showToast(`Created screen "${f.name}" (${tplMeta?.title || templateId})`);
+  };
+
+  const handleRealignScreensGrid = () => {
+    snapshot();
+    const res = realignAllFramesToGrid(
+      framesRef.current,
+      groupsRef.current,
+      widthsRef.current,
+      5
+    );
+    setFrames(res.frames);
+    setGroups(res.groups);
+    showToast("Realigned all screens into uniform 5-column grid");
+  };
+
+  const handleShiftRowLeft = (rowY: number) => {
+    snapshot();
+    const res = shiftRowHorizontal(
+      framesRef.current,
+      groupsRef.current,
+      rowY,
+      -1
+    );
+    if (res.affectedCount > 0) {
+      setFrames(res.frames);
+      setGroups(res.groups);
+      showToast(`Shifted ${res.affectedCount} screen(s) left by 1 column`);
+    }
   };
 
   const patchFrame = (id: string, patch: Partial<Frame>) => {
@@ -3317,7 +3592,7 @@ export default function Editor({
           position: "relative",
           width: w,
           height: h,
-          background: p[f.bg ?? "surface"],
+          background: resolveColor(f.bg, p),
           overflow: "hidden",
         }}
       >
@@ -3419,7 +3694,11 @@ export default function Editor({
       changeFrame("phone");
     }
     queueMicrotask(() => {
-      const id = startId ?? selectedFrameId ?? framesRef.current[0]?.id ?? null;
+      const effectiveStart =
+        flowStartFrameId && framesRef.current.some((x) => x.id === flowStartFrameId)
+          ? flowStartFrameId
+          : framesRef.current[0]?.id ?? null;
+      const id = startId ?? selectedFrameId ?? effectiveStart;
       const f = framesRef.current.find((x) => x.id === id);
       const r = canvasRect();
       if (f && r) {
@@ -3660,6 +3939,7 @@ export default function Editor({
       ty: number;
       ang: number;
       t: Transition;
+      action: Action;
     }[] = [];
     for (const g of groups) {
       for (const it of g.items) {
@@ -3690,6 +3970,7 @@ export default function Editor({
           ty,
           ang: rightward ? 0 : 180,
           t: action.transition,
+          action,
         });
         }
       }
@@ -4403,9 +4684,149 @@ export default function Editor({
               }}
             >
               {frame === "phone" &&
+                emptyGridSlots.map((slot) => {
+                  const hasScreensToRight = frames.some(
+                    (f) => Math.abs(f.y - slot.y) < 100 && f.x > slot.x
+                  );
+                  return (
+                    <div
+                      key={`empty-slot-${slot.x}-${slot.y}`}
+                      data-empty-slot={`${slot.col}-${slot.row}`}
+                      style={{
+                        position: "absolute",
+                        left: slot.x,
+                        top: slot.y,
+                        width: PHONE_W,
+                        height: PHONE_H,
+                        borderRadius: 32,
+                        border: "2px dashed rgba(255, 255, 255, 0.28)",
+                        background: "rgba(255, 255, 255, 0.02)",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: 24,
+                        boxSizing: "border-box",
+                        gap: 16,
+                        userSelect: "none",
+                        transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
+                        zIndex: 2,
+                      }}
+                      className="group/emptyslot hover:border-[#3574F0] hover:bg-[#3574F0]/10"
+                    >
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          letterSpacing: "0.5px",
+                          textTransform: "uppercase",
+                          padding: "4px 10px",
+                          borderRadius: 20,
+                          background: "rgba(53, 116, 240, 0.2)",
+                          color: "#60A5FA",
+                          border: "1px solid rgba(96, 165, 250, 0.4)",
+                        }}
+                      >
+                        {slot.label}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => addFrame(slot)}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 10,
+                          padding: "20px 24px",
+                          borderRadius: 20,
+                          border: "1px solid rgba(255, 255, 255, 0.15)",
+                          background: "rgba(30, 31, 34, 0.85)",
+                          cursor: "pointer",
+                          color: "#fff",
+                          width: "86%",
+                          transition: "all 0.18s ease",
+                        }}
+                        className="hover:scale-[1.03] hover:border-[#3574F0] hover:shadow-lg shadow-black/40"
+                      >
+                        <div
+                          style={{
+                            width: 52,
+                            height: 52,
+                            borderRadius: "50%",
+                            background: "#3574F0",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#fff",
+                            boxShadow: "0 4px 14px rgba(53, 116, 240, 0.4)",
+                          }}
+                        >
+                          <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                          </svg>
+                        </div>
+                        <span style={{ fontSize: 15, fontWeight: 700 }}>
+                          + Add Screen Here
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            color: "rgba(255, 255, 255, 0.6)",
+                            textAlign: "center",
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          Choose template or blank canvas to fill this slot
+                        </span>
+                      </button>
+
+                      {hasScreensToRight && slot.col === 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleShiftRowLeft(slot.y);
+                          }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "8px 14px",
+                            borderRadius: 12,
+                            border: "1px solid rgba(255, 255, 255, 0.18)",
+                            background: "rgba(255, 255, 255, 0.06)",
+                            color: "#E2E8F0",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                          }}
+                          className="hover:bg-white/15 hover:text-white"
+                          title="Shift this entire row to the left by 1 column to eliminate the empty gap"
+                        >
+                          <span>⬅ Shift Row Left (Close Gap)</span>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              {frame === "phone" &&
                 frames.map((f) => {
                   const on = f.id === selectedFrameId;
-                  const bg = p[f.bg ?? "surface"];
+                  const isWireTarget = wireDrag?.targetFrameId === f.id;
+                  const bg = resolveColor(f.bg, p);
                   const { w, h: fold } = frameSizeOf(f);
                   const h = frameLengthOf(f);
                   const radius = frameRadius(f);
@@ -4415,6 +4836,39 @@ export default function Editor({
                       data-frame={f.id}
                       style={{ position: "absolute", left: f.x, top: f.y, transition: easing ? `left ${SETTLE_MS}ms cubic-bezier(0.2, 0, 0, 1)` : undefined }}
                     >
+                      {((flowStartFrameId && frames.some((x) => x.id === flowStartFrameId) ? flowStartFrameId : frames[0]?.id) === f.id) && (
+                        <div
+                          onPointerDown={(e) => {
+                            e.stopPropagation();
+                            openPreview(f.id);
+                          }}
+                          style={{
+                            position: "absolute",
+                            left: -BEZEL,
+                            top: -BEZEL - FRAME_LABEL_H - 26,
+                            height: 22,
+                            padding: "0 9px",
+                            borderRadius: 6,
+                            backgroundColor: "#3574F0",
+                            color: "#FFFFFF",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 5,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            boxShadow: "0 2px 8px rgba(53, 116, 240, 0.45)",
+                            zIndex: 10,
+                            userSelect: "none",
+                            transform: `scale(${clamp(1 / view.z, 0.7, 1.4)})`,
+                            transformOrigin: "left bottom",
+                          }}
+                          title={`Flow 1 Starting Point (${f.name}) — Click to play prototype preview from here`}
+                        >
+                          <span className="msr" style={{ fontSize: 14 }}>play_arrow</span>
+                          <span>Flow 1</span>
+                        </div>
+                      )}
                       <div
                         onPointerDown={(e) => onFramePointerDown(e, f)}
                         style={{
@@ -4431,7 +4885,7 @@ export default function Editor({
                           padding: "0 8px",
                           fontSize: 20,
                           fontWeight: 600,
-                          color: on ? p.primary : p.onSurfaceVariant,
+                          color: isWireTarget ? "#3574F0" : on ? p.primary : p.onSurfaceVariant,
                           transition: "color 160ms",
                           cursor: handMode ? "grab" : "move",
                           userSelect: "none",
@@ -4455,11 +4909,15 @@ export default function Editor({
                           height: h + BEZEL * 2,
                           borderRadius: radius + BEZEL,
                           /* the chosen screen's bezel is painted in the theme's primary; the others stay dark */
-                          backgroundColor: on ? p.primary : p.inverseSurface,
+                          backgroundColor: isWireTarget ? "#3574F0" : on ? p.primary : p.inverseSurface,
                           backgroundImage: draftBusy ? draftGradient(p) : undefined,
                           backgroundSize: draftBusy ? "300% 300%" : undefined,
                           animation: draftBusy ? "m3e-drift 3s ease-in-out infinite" : undefined,
-                          boxShadow: on ? "0 18px 50px rgba(0,0,0,0.16)" : "0 18px 50px rgba(0,0,0,0.14)",
+                          boxShadow: isWireTarget
+                            ? "0 0 0 4px #3574F0, 0 20px 60px rgba(53, 116, 240, 0.45)"
+                            : on
+                            ? "0 18px 50px rgba(0,0,0,0.16)"
+                            : "0 18px 50px rgba(0,0,0,0.14)",
                           cursor: handMode ? "grab" : "move",
                           transition: lengthDragId === f.id ? "background-color 160ms, box-shadow 120ms" : `background-color 160ms, box-shadow 120ms, ${SIZE_TRANSITION}`,
                         }}
@@ -4566,8 +5024,64 @@ export default function Editor({
                 );
               })()}
 
+              {/* Figma Prototyping Connector Node Handle */}
+              {primaryId && frame === "phone" && !wireDrag && (() => {
+                const selRect = itemRects().find((r) => r.id === primaryId);
+                if (!selRect) return null;
+                const hx = selRect.r;
+                const hy = (selRect.t + selRect.b) / 2;
+                return (
+                  <div
+                    key={"proto-handle-" + primaryId}
+                    data-proto-handle
+                    title="Drag to connect prototype route (Figma style)"
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      const pt = toWorld(e.clientX, e.clientY);
+                      setWireDrag({
+                        sourceItemId: primaryId,
+                        sourceSlot: undefined,
+                        sx: hx,
+                        sy: hy,
+                        currX: pt.x,
+                        currY: pt.y,
+                        targetFrameId: null,
+                      });
+                    }}
+                    style={{
+                      position: "absolute",
+                      left: hx,
+                      top: hy,
+                      transform: `translate(4px, -50%) scale(${clamp(1 / view.z, 0.75, 1.4)})`,
+                      transformOrigin: "left center",
+                      width: 18,
+                      height: 18,
+                      borderRadius: "50%",
+                      backgroundColor: "#3574F0",
+                      border: "2px solid #FFFFFF",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.45), 0 0 0 1px rgba(53,116,240,0.6)",
+                      cursor: "crosshair",
+                      zIndex: 85,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "transform 100ms ease, box-shadow 100ms ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        backgroundColor: "#FFFFFF",
+                      }}
+                    />
+                  </div>
+                );
+              })()}
 
-              {links.length > 0 && (
+              {(links.length > 0 || wireDrag !== null) && (
                 <svg
                   style={{
                     position: "absolute",
@@ -4591,14 +5105,87 @@ export default function Editor({
                     >
                       <path d="M0 0 L10 5 L0 10 z" fill={p.primary} />
                     </marker>
+                    <marker
+                      id="m3e-overlay-arrow"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="8"
+                      markerHeight="8"
+                      orient="auto"
+                    >
+                      <path d="M0 0 L10 5 L0 10 z" fill="#8B5CF6" />
+                    </marker>
+                    <marker
+                      id="m3e-proto-arrow"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="8"
+                      markerHeight="8"
+                      orient="auto"
+                    >
+                      <path d="M0 0 L10 5 L0 10 z" fill="#3574F0" />
+                    </marker>
                   </defs>
+
+                  {/* Live dragging wire */}
+                  {wireDrag && (() => {
+                    const sx = wireDrag.sx;
+                    const sy = wireDrag.sy;
+                    const tx = wireDrag.currX;
+                    const ty = wireDrag.currY;
+                    const rightward = tx >= sx;
+                    const dx = Math.max(50, Math.abs(tx - sx) * 0.45);
+                    const c1x = sx + (rightward ? dx : -dx);
+                    const c2x = tx + (rightward ? -dx : dx);
+                    const d = `M${sx} ${sy} C${c1x} ${sy} ${c2x} ${ty} ${tx} ${ty}`;
+                    return (
+                      <g>
+                        <path
+                          d={d}
+                          fill="none"
+                          stroke="rgba(53, 116, 240, 0.3)"
+                          strokeWidth={10 / view.z}
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d={d}
+                          fill="none"
+                          stroke="#3574F0"
+                          strokeWidth={3.5 / view.z}
+                          strokeLinecap="round"
+                          markerEnd="url(#m3e-proto-arrow)"
+                        />
+                        <circle
+                          cx={sx}
+                          cy={sy}
+                          r={5 / view.z}
+                          fill="#3574F0"
+                          stroke="#FFFFFF"
+                          strokeWidth={1.5 / view.z}
+                        />
+                      </g>
+                    );
+                  })()}
+
                   {!draftBusy && links.map((l) => {
                     const isLinkOn = l.id === selectedLinkId;
                     const isItemOn = selectedIds.some((id) => l.id.startsWith(id + "|"));
-                    const isFrameOn = selectedFrameId !== null && l.id.includes(selectedFrameId);
+                    const isFrameOn =
+                      selectedFrameId !== null &&
+                      (l.action.to === selectedFrameId ||
+                        groups.some(
+                          (g) =>
+                            g.items.some((it) => it.id === l.id.split("|")[0]) &&
+                            frameOfGroup(g, frames, widths)?.id === selectedFrameId
+                        ));
                     const show = showFlows || isLinkOn || isItemOn || isFrameOn;
                     if (!show) return null;
-                    const on = isLinkOn || isItemOn;
+                    const on = isLinkOn || isItemOn || isFrameOn;
+                    const isOverlayLink = l.action.actionType === "overlay";
+                    const strokeColor = isOverlayLink ? "#8B5CF6" : p.primary;
+
                     return (
                       <g key={l.id}>
                         <path
@@ -4612,23 +5199,82 @@ export default function Editor({
                             setSelectedLinkId(l.id);
                             setSelectedIds([]);
                             setSelectedFrameId(null);
+                            const [itemId, slot] = l.id.split("|");
+                            setInteractionPopover({
+                              itemId,
+                              slot: slot || undefined,
+                              action: l.action,
+                              position: { x: e.clientX, y: e.clientY },
+                            });
                           }}
                         />
                         <path
                           d={l.d}
                           fill="none"
-                          stroke={p.primary}
+                          stroke={strokeColor}
                           strokeWidth={on ? 3 : 2}
-                          strokeDasharray={on ? undefined : "6 6"}
+                          strokeDasharray={isOverlayLink ? "8 4" : on ? undefined : "6 6"}
                           strokeLinecap="round"
-                          markerEnd="url(#m3e-arrow)"
-                          opacity={on ? 1 : 0.7}
+                          markerEnd={isOverlayLink ? "url(#m3e-overlay-arrow)" : "url(#m3e-arrow)"}
+                          opacity={on ? 1 : 0.75}
                         />
                       </g>
                     );
                   })}
                 </svg>
               )}
+
+              {/* Figma Flow Interaction Badges along wires */}
+              {showFlows &&
+                !draftBusy &&
+                links
+                  .filter((l) => l.id !== selectedLinkId)
+                  .map((l) => {
+                    const isOverlay = l.action.actionType === "overlay";
+                    return (
+                      <div
+                        key={"flow-badge-" + l.id}
+                        onPointerDown={(e) => {
+                          e.stopPropagation();
+                          setSelectedLinkId(l.id);
+                          setSelectedIds([]);
+                          setSelectedFrameId(null);
+                          const [itemId, slot] = l.id.split("|");
+                          setInteractionPopover({
+                            itemId,
+                            slot: slot || undefined,
+                            action: l.action,
+                            position: { x: e.clientX, y: e.clientY },
+                          });
+                        }}
+                        style={{
+                          position: "absolute",
+                          left: l.mx,
+                          top: l.my,
+                          transform: `translate(-50%, -50%) scale(${clamp(1 / view.z, 0.7, 1.25)})`,
+                          transformOrigin: "center center",
+                          padding: "3px 9px",
+                          borderRadius: 14,
+                          backgroundColor: isOverlay ? "#8B5CF6" : "#3574F0",
+                          color: "#FFFFFF",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                          cursor: "pointer",
+                          boxShadow: "0 2px 10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.2)",
+                          zIndex: 55,
+                          whiteSpace: "nowrap",
+                          userSelect: "none",
+                        }}
+                        title="Click to configure interaction (Figma mode)"
+                      >
+                        <span>{isOverlay ? "🪟" : l.action.trigger === "delay" ? "⏱️" : "⚡"}</span>
+                        <span>{isOverlay ? (l.action.overlayPosition || "sheet") : l.action.trigger === "delay" ? `${l.action.delayMs || 1500}ms` : l.t}</span>
+                      </div>
+                    );
+                  })}
 
               {links
                 .filter((l) => l.id === selectedLinkId)
@@ -4652,6 +5298,22 @@ export default function Editor({
                       zIndex: 60,
                     }}
                   >
+                    {l.action.actionType === "overlay" && (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 12,
+                          background: "rgba(139, 92, 246, 0.15)",
+                          color: "#8B5CF6",
+                          border: "1px solid rgba(139, 92, 246, 0.4)",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        🪟 {l.action.overlayPosition || "modal"}
+                      </span>
+                    )}
                     <Segmented<Transition>
                       options={TRANSITIONS.map((t) => ({
                         key: t.key,
@@ -4663,6 +5325,21 @@ export default function Editor({
                       p={p}
                       height={36}
                       grow={false}
+                    />
+                    <IconBtn
+                      icon="tune"
+                      p={p}
+                      onClick={(e) => {
+                        const [itemId, slot] = l.id.split("|");
+                        setInteractionPopover({
+                          itemId,
+                          slot: slot || undefined,
+                          action: l.action,
+                          position: { x: (e as any).clientX || 300, y: (e as any).clientY || 200 },
+                        });
+                      }}
+                      title="Edit interaction modal"
+                      size={36}
                     />
                     <IconBtn
                       icon="link_off"
@@ -4734,6 +5411,49 @@ export default function Editor({
               </svg>
             </div>
           )}
+          {showFlows && (
+            <div
+              style={{
+                position: "absolute",
+                top: 20,
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 14px",
+                borderRadius: 20,
+                backgroundColor: "rgba(30, 31, 34, 0.94)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(53, 116, 240, 0.5)",
+                color: "#FFFFFF",
+                fontSize: 12,
+                fontWeight: 600,
+                boxShadow: "0 4px 18px rgba(0,0,0,0.35)",
+                zIndex: 44,
+              }}
+            >
+              <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#3574F0", boxShadow: "0 0 8px #3574F0" }} />
+              <span>Figma Prototype Mode ({links.length} routes connected)</span>
+              <button
+                type="button"
+                onClick={() => setShowFlows(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "rgba(255,255,255,0.6)",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  padding: "0 2px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                title="Hide flows"
+              >
+                ×
+              </button>
+            </div>
+          )}
           <Toolbar
             p={p}
             mode={mode}
@@ -4751,6 +5471,9 @@ export default function Editor({
               if (groupsRef.current.length || framesRef.current.length) setConfirmClear(true);
             }}
             onAddFrame={addFrame}
+            onRealignGrid={handleRealignScreensGrid}
+            showFlows={showFlows}
+            onToggleFlows={() => setShowFlows((v) => !v)}
             onPreview={() => openPreview()}
             tidy={selectedIds.length > 1 ? undefined : tidyState ?? undefined}
             onTidy={tidyTarget ? () => tidy(tidyTarget) : undefined}
@@ -4994,6 +5717,8 @@ export default function Editor({
                   minLength={selectedMinLength}
                   onLength={(length) => setFrameLength(selectedFrame.id, length)}
                   ai={{ ready: aiReady, reason: aiReason, busy: aiBusy && aiFrameId === selectedFrame.id, onRun: () => runAi("describe", selectedFrame), onCancel: cancelAi }}
+                  isFlowStart={flowStartFrameId ? selectedFrame.id === flowStartFrameId : selectedFrame.id === frames[0]?.id}
+                  onSetFlowStart={() => handleSetFlowStart(selectedFrame.id)}
                 />
               ) : rightTab === "edit" ? (
                 <Inspector
@@ -5102,9 +5827,59 @@ export default function Editor({
 
         <AddScreenLayoutModal
           isOpen={isAddScreenModalOpen}
-          onClose={() => setIsAddScreenModalOpen(false)}
+          onClose={() => {
+            setIsAddScreenModalOpen(false);
+            setAddScreenTargetSlot(null);
+          }}
           onCreateScreen={handleCreateScreenFromTemplate}
+          suggestedSlots={emptyGridSlots}
+          preselectedSlot={addScreenTargetSlot}
         />
+
+        {interactionPopover && (() => {
+          const item = allItems.find((it) => it.id === interactionPopover.itemId);
+          if (!item) return null;
+          const currentAction = interactionPopover.slot
+            ? item.actions?.[interactionPopover.slot]
+            : item.action;
+          const group = groups.find((g) => g.items.some((it) => it.id === item.id));
+          const sourceFrame = group ? frameOfGroup(group, frames, widths) : null;
+
+          return (
+            <InteractionPopover
+              item={item}
+              sourceFrame={sourceFrame}
+              allFrames={frames}
+              action={currentAction}
+              position={interactionPopover.position}
+              slot={interactionPopover.slot}
+              palette={p}
+              onSaveAction={(savedAction) => {
+                snapshot();
+                setGroups((gs) =>
+                  gs.map((g) => ({
+                    ...g,
+                    items: g.items.map((it) => {
+                      if (it.id !== item.id) return it;
+                      if (!interactionPopover.slot) {
+                        return { ...it, action: savedAction };
+                      }
+                      const actions = { ...(it.actions ?? {}) };
+                      if (savedAction) actions[interactionPopover.slot!] = savedAction;
+                      else delete actions[interactionPopover.slot!];
+                      return {
+                        ...it,
+                        actions: Object.keys(actions).length ? actions : undefined,
+                      };
+                    }),
+                  }))
+                );
+                setInteractionPopover(null);
+              }}
+              onClose={() => setInteractionPopover(null)}
+            />
+          );
+        })()}
       </div>
 
       <AnimatePresence>

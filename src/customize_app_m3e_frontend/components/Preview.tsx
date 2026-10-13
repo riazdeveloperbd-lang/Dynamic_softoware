@@ -54,6 +54,7 @@ import {
   normalizeTheme,
   toggleIcon,
   uniformRadii,
+  resolveColor,
   RAIL_TOP,
   isWideRail,
   railMetrics,
@@ -908,7 +909,7 @@ function Screen({
       /* the scrim and the pointer guard follow the rail itself, so a peek shows the modal
        * state as authored; the root's inert keeps a non-interactive screen from acting on it */
       onPointerDown={(e) => { if (hasModal) e.stopPropagation(); }}
-      style={{ position: "absolute", inset: 0, background: p[frame.bg ?? "surface"], overflow: "hidden", outline: "none" }}
+      style={{ position: "absolute", inset: 0, background: resolveColor(frame.bg, p), overflow: "hidden", outline: "none" }}
     >
       <AnimatePresence>
         {hasModal && <motion.button
@@ -1175,18 +1176,38 @@ export function Preview({
     [frames],
   );
 
+  const [overlay, setOverlay] = useState<{ frame: Frame; action: Action } | null>(null);
+
   const back = useCallback(() => {
+    if (overlay) {
+      setOverlay(null);
+      return;
+    }
     const s = stackRef.current;
     if (s.length < 2 || peekRef.current) return;
     const from = s[s.length - 1];
     const to = s[s.length - 2];
     setAnim({ t: sameSize(from.id, to.id) ? from.t : "fade", back: true, spring });
     setStack(s.slice(0, -1));
-  }, [spring, sameSize]);
+  }, [overlay, spring, sameSize]);
 
   const go = useCallback(
     (a: Action) => {
       if (swiped.current) return;
+      if (a.actionType === "close_overlay") {
+        setOverlay(null);
+        return;
+      }
+      if (a.actionType === "overlay") {
+        const target = frames.find((f) => f.id === a.to);
+        if (target) {
+          setOverlay({ frame: target, action: a });
+          return;
+        }
+      }
+      if (overlay) {
+        setOverlay(null);
+      }
       if (a.to === BACK_TARGET) {
         back();
         return;
@@ -1211,15 +1232,26 @@ export function Preview({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        /* an open menu is the thing Escape dismisses */
+        /* an open overlay or menu is dismissed */
+        if (overlay) {
+          setOverlay(null);
+          return;
+        }
         if (picker) setPicker(false);
         else onClose();
       }
       if (e.key === "Backspace" || e.key === "ArrowLeft") back();
+      if (e.key === "r" || e.key === "R") {
+        setOverlay(null);
+        setAnim({ t: "fade", back: false, spring });
+        setStack([{ id: startId ?? frames[0]?.id ?? "", t: "fade" }]);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [back, onClose, picker]);
+  }, [overlay, back, onClose, picker, startId, frames, spring]);
+
+
   /* The control that opened the preview gets the keyboard back when it closes, whichever
    * screens were shown in between; a screen's own restore only covers its modal rail. Read
    * during the first render, before a screen's effect moves focus onto its rail. */
@@ -1229,6 +1261,22 @@ export function Preview({
   const groupsFor = useCallback((f: Frame) => groupsInFrame(doc.groups, f, frames, widths), [doc.groups, frames, widths]);
   const groups = useMemo(() => (current ? groupsFor(current) : []), [current, groupsFor]);
   const peekGroups = useMemo(() => (peekFrame ? groupsFor(peekFrame) : []), [peekFrame, groupsFor]);
+
+  /* automated timer delay trigger (Figma After delay) */
+  useEffect(() => {
+    if (!current || overlay) return;
+    const delayAction = groups
+      .flatMap((g) => g.items)
+      .map((it) => it.action)
+      .find((a) => a?.trigger === "delay" && a.to && a.to !== "none");
+
+    if (delayAction) {
+      const timer = setTimeout(() => {
+        go(delayAction);
+      }, delayAction.delayMs || 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [current, overlay, groups, go]);
 
   /* ---- finger-tracked swipes: only the swipes the author set on the frame ---- */
   const axisMV = useMotionValue(0); // 0 = x, 1 = y
@@ -1444,7 +1492,7 @@ export function Preview({
               height: screenH,
               borderRadius: screenRadius,
               overflow: "hidden",
-              background: p[current.bg ?? "surface"],
+              background: resolveColor(current.bg, p),
               fontFamily: fontFamilyOf(theme.font, lang),
               touchAction: "none",
             }}
@@ -1486,6 +1534,90 @@ export function Preview({
               >
                 <Screen {...screenProps} active={false} frame={peekFrame} groups={peekGroups} />
               </motion.div>
+            )}
+
+            {overlay && (
+              <AnimatePresence>
+                <motion.div
+                  key="preview-modal-overlay"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                  onClick={() => {
+                    if (overlay.action.closeOnOutsideClick !== false) setOverlay(null);
+                  }}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    zIndex: 60,
+                    backgroundColor:
+                      overlay.action.dimBackground !== false ? "rgba(0, 0, 0, 0.65)" : "transparent",
+                    backdropFilter: overlay.action.dimBackground !== false ? "blur(2.5px)" : undefined,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent:
+                      overlay.action.overlayPosition === "bottom"
+                        ? "flex-end"
+                        : overlay.action.overlayPosition === "top"
+                        ? "flex-start"
+                        : "center",
+                    alignItems: "center",
+                    padding: overlay.action.overlayPosition === "bottom" ? "0" : "16px",
+                  }}
+                >
+                  <motion.div
+                    onClick={(e) => e.stopPropagation()}
+                    initial={
+                      overlay.action.overlayPosition === "bottom"
+                        ? { y: "100%", opacity: 0 }
+                        : overlay.action.overlayPosition === "top"
+                        ? { y: "-100%", opacity: 0 }
+                        : { scale: 0.88, opacity: 0 }
+                    }
+                    animate={{ y: 0, scale: 1, opacity: 1 }}
+                    exit={
+                      overlay.action.overlayPosition === "bottom"
+                        ? { y: "100%", opacity: 0 }
+                        : overlay.action.overlayPosition === "top"
+                        ? { y: "-100%", opacity: 0 }
+                        : { scale: 0.88, opacity: 0 }
+                    }
+                    transition={{ type: "spring", damping: 28, stiffness: 360 }}
+                    style={{
+                      width: overlay.action.overlayPosition === "bottom" ? "100%" : "92%",
+                      maxHeight: overlay.action.overlayPosition === "bottom" ? "88%" : "82%",
+                      height: overlay.action.overlayPosition === "fullscreen" ? "100%" : "auto",
+                      borderRadius:
+                        overlay.action.overlayPosition === "bottom"
+                          ? "28px 28px 0 0"
+                          : overlay.action.overlayPosition === "top"
+                          ? "0 0 24px 24px"
+                          : 24,
+                      background: resolveColor(overlay.frame.bg, p),
+                      boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
+                      overflow: "hidden",
+                      position: "relative",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    {overlay.action.overlayPosition === "bottom" && (
+                      <div style={{ display: "flex", justifyContent: "center", padding: "8px 0 4px" }}>
+                        <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.3)" }} />
+                      </div>
+                    )}
+                    <div style={{ position: "relative", flex: 1, overflow: "auto" }}>
+                      <Screen
+                        {...screenProps}
+                        active={true}
+                        frame={overlay.frame}
+                        groups={groupsFor(overlay.frame)}
+                      />
+                    </div>
+                  </motion.div>
+                </motion.div>
+              </AnimatePresence>
             )}
           </motion.div>
         </motion.div>
@@ -1611,6 +1743,19 @@ export function Preview({
               )}
             </AnimatePresence>
           </div>
+          <button
+            onClick={() => {
+              setOverlay(null);
+              setAnim({ t: "fade", back: false, spring });
+              setStack([{ id: startId ?? frames[0]?.id ?? "", t: "fade" }]);
+            }}
+            title="Restart Prototype Flow (Hot-key: R)"
+            className="m3-press"
+            style={{ ...barBtn, color: p.onSurfaceVariant }}
+          >
+            <Icon name="replay" size={20} />
+            <span style={label}>Restart</span>
+          </button>
           <button onClick={onClose} title={t("close", lang)} className="m3-press" style={{ ...barBtn, color: p.onSurfaceVariant }}>
             <Icon name="close" size={20} />
             <span style={label}>{t("closeBtn", lang)}</span>

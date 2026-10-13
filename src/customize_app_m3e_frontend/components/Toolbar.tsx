@@ -34,6 +34,7 @@ export function StudioProjectMenu({
   const projects = [
     { id: "customize_app", title: "Customize App (M3E Canvas)", icon: "palette", current: true },
     { id: "custom_ecommerce", title: "Custom E-commerce", icon: "shopping_bag" },
+    { id: "todo_app", title: "Todo List with Images (CRUD)", icon: "checklist" },
     { id: "food_grocery_delivery", title: "FreshPulse Food & Grocery", icon: "restaurant" },
     { id: "book_store", title: "Book Store", icon: "menu_book" },
     { id: "super_vpn", title: "Super VPN", icon: "shield" },
@@ -198,6 +199,9 @@ export function Toolbar({
   onRedo,
   onClear,
   onAddFrame,
+  onRealignGrid,
+  showFlows,
+  onToggleFlows,
   onPreview,
   rightInset,
   mobile,
@@ -234,6 +238,9 @@ export function Toolbar({
   onRedo: () => void;
   onClear: () => void;
   onAddFrame: () => void;
+  onRealignGrid?: () => void;
+  showFlows?: boolean;
+  onToggleFlows?: () => void;
   onPreview: () => void;
   /** width of the open right panel, so the zoom pill slides out of its way */
   rightInset: number;
@@ -496,13 +503,34 @@ export function Toolbar({
 
         <Pill p={p}>
           {frame === "phone" && (
-            <IconBtn
-              icon="add_to_photos"
-              p={p}
-              onClick={onAddFrame}
-              title={t("addFrame", lang)}
-              size={40}
-            />
+            <>
+              <IconBtn
+                icon="add_to_photos"
+                p={p}
+                onClick={onAddFrame}
+                title={t("addFrame", lang)}
+                size={40}
+              />
+              {onRealignGrid && (
+                <IconBtn
+                  icon="grid_view"
+                  p={p}
+                  onClick={onRealignGrid}
+                  title="Realign all screens into uniform 5-column grid (Fix/Tidy Grid)"
+                  size={40}
+                />
+              )}
+              {onToggleFlows && (
+                <IconBtn
+                  icon="alt_route"
+                  p={p}
+                  on={showFlows}
+                  onClick={onToggleFlows}
+                  title={showFlows ? "Hide Prototype Flows" : "Show All Prototype Flows & Connections (Figma Mode)"}
+                  size={40}
+                />
+              )}
+            </>
           )}
           <IconBtn
             icon="play_arrow"

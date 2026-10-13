@@ -5,23 +5,44 @@ import {
   AddScreenTemplateId,
   AddScreenTemplateMeta,
 } from "../lib/screenTemplateBuilders";
+import { GridSlot } from "../lib/screenGridUtils";
 
 interface AddScreenLayoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateScreen: (templateId: AddScreenTemplateId, screenName: string) => void;
+  onCreateScreen: (
+    templateId: AddScreenTemplateId,
+    screenName: string,
+    targetPosition?: { x: number; y: number }
+  ) => void;
+  suggestedSlots?: GridSlot[];
+  preselectedSlot?: GridSlot | { x: number; y: number; label?: string } | null;
 }
 
 export const AddScreenLayoutModal: React.FC<AddScreenLayoutModalProps> = ({
   isOpen,
   onClose,
   onCreateScreen,
+  suggestedSlots,
+  preselectedSlot,
 }) => {
   const [selectedTemplateId, setSelectedTemplateId] =
     useState<AddScreenTemplateId>("empty_activity");
   const [searchQuery, setSearchQuery] = useState("");
   const [columns, setColumns] = useState<2 | 3 | 4 | 5 | 6>(3);
   const [screenNameInput, setScreenNameInput] = useState("");
+  const [selectedSlotKey, setSelectedSlotKey] = useState<string>("auto");
+
+  React.useEffect(() => {
+    if (preselectedSlot) {
+      setSelectedSlotKey(`${preselectedSlot.x},${preselectedSlot.y}`);
+    } else if (suggestedSlots && suggestedSlots.length > 0) {
+      const def = suggestedSlots.find((s) => s.isDefault) || suggestedSlots[0];
+      setSelectedSlotKey(`${def.x},${def.y}`);
+    } else {
+      setSelectedSlotKey("auto");
+    }
+  }, [isOpen, preselectedSlot, suggestedSlots]);
 
   if (!isOpen) return null;
 
@@ -44,7 +65,21 @@ export const AddScreenLayoutModal: React.FC<AddScreenLayoutModalProps> = ({
     const targetMeta =
       ADD_SCREEN_LAYOUT_TEMPLATES.find((t) => t.id === idToUse) || selectedTemplate;
     const finalName = screenNameInput.trim() || targetMeta.title;
-    onCreateScreen(idToUse, finalName);
+
+    let targetPos: { x: number; y: number } | undefined = undefined;
+    if (selectedSlotKey !== "auto") {
+      const parts = selectedSlotKey.split(",");
+      const x = Number(parts[0]);
+      const y = Number(parts[1]);
+      if (!Number.isNaN(x) && !Number.isNaN(y)) {
+        targetPos = { x, y };
+      }
+    } else if (suggestedSlots && suggestedSlots.length > 0) {
+      const def = suggestedSlots.find((s) => s.isDefault) || suggestedSlots[0];
+      targetPos = { x: def.x, y: def.y };
+    }
+
+    onCreateScreen(idToUse, finalName, targetPos);
     onClose();
   };
 
@@ -813,9 +848,30 @@ export const AddScreenLayoutModal: React.FC<AddScreenLayoutModalProps> = ({
                 value={screenNameInput}
                 onChange={(e) => setScreenNameInput(e.target.value)}
                 placeholder={selectedTemplate.title}
-                className="px-3 py-1.5 rounded-lg bg-[#1E1F22] border border-white/15 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#3574F0] w-64"
+                className="px-3 py-1.5 rounded-lg bg-[#1E1F22] border border-white/15 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#3574F0] w-56"
               />
             </div>
+
+            {suggestedSlots && suggestedSlots.length > 0 && (
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-bold text-blue-400 whitespace-nowrap">
+                  Place At:
+                </label>
+                <select
+                  value={selectedSlotKey}
+                  onChange={(e) => setSelectedSlotKey(e.target.value)}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#1E1F22] border border-blue-500/40 text-xs text-blue-200 font-semibold focus:outline-none focus:border-[#3574F0]"
+                >
+                  {suggestedSlots.map((slot, idx) => (
+                    <option key={idx} value={`${slot.x},${slot.y}`}>
+                      ✨ {slot.label} {slot.isDefault ? "★ (Fill Gap)" : ""}
+                    </option>
+                  ))}
+                  <option value="auto">➡️ Append to End</option>
+                </select>
+              </div>
+            )}
+
             <span className="text-[11px] text-neutral-400">
               Selected:{" "}
               <strong className="text-white">{selectedTemplate.title}</strong>

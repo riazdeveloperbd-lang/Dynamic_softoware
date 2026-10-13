@@ -18,15 +18,79 @@ import {
   EcommercePreset,
   buildEcommerceAppDoc,
   buildMoneyManagementAppDoc,
+  buildTodoListAppDoc,
 } from "../lib/ecommerceComponents";
 import { Icon } from "./M3Node";
 import { KIND_TEXT, t, useLang } from "../lib/i18n";
 import { Field, Section, Tile } from "./ui";
 
 const CATEGORY_TEXT = {
-  ja: { actions: "操作", navigation: "ナビゲーション", containment: "コンテナ", inputs: "入力", content: "コンテンツ", progress: "進捗" },
-  zh: { actions: "操作", navigation: "导航", containment: "容器", inputs: "输入", content: "内容", progress: "进度" },
-  ko: { actions: "동작", navigation: "내비게이션", containment: "컨테이너", inputs: "입력", content: "콘텐츠", progress: "진행 상태" },
+  ja: {
+    actions: "操作",
+    navigation: "ナビゲーション",
+    containment: "コンテナ",
+    inputs: "入力",
+    content: "コンテンツ",
+    progress: "進捗",
+    media: "メディア・音声",
+    commerce: "コマース・決済",
+    finance: "金融・ウォレット",
+    charts: "グラフ・分析",
+    social: "ソーシャル・チャット",
+    ai: "AI・アシスタント",
+    travel: "旅行・フード配達",
+    health: "ヘルス・フィットネス",
+    productivity: "仕事効率・タスク",
+    smarthome: "スマートホーム・IoT",
+    education: "教育・学習",
+    gaming: "ゲーム・リワード",
+    feedback: "フィードバック・通知",
+    data: "データ・構成",
+  },
+  zh: {
+    actions: "操作",
+    navigation: "导航",
+    containment: "容器",
+    inputs: "输入",
+    content: "内容",
+    progress: "进度",
+    media: "媒体与音频",
+    commerce: "电商与销售",
+    finance: "金融与钱包",
+    charts: "图表与分析",
+    social: "社交与互动",
+    ai: "AI与智能助理",
+    travel: "出行与外卖预订",
+    health: "健康与运动",
+    productivity: "效率办公与任务",
+    smarthome: "智能家居与IoT",
+    education: "教育与在线学习",
+    gaming: "游戏与成就激励",
+    feedback: "反馈与通知",
+    data: "数据与结构",
+  },
+  ko: {
+    actions: "동작",
+    navigation: "내비게이션",
+    containment: "컨테이너",
+    inputs: "입력",
+    content: "콘텐츠",
+    progress: "진행 상태",
+    media: "미디어 및 오디오",
+    commerce: "커머스 및 결제",
+    finance: "금융 및 지갑",
+    charts: "차트 및 분석",
+    social: "소셜 및 커뮤니티",
+    ai: "AI 및 스마트 비서",
+    travel: "여행 및 음식 배달",
+    health: "건강 및 피트니스",
+    productivity: "생산성 및 업무",
+    smarthome: "스마트홈 및 IoT",
+    education: "교육 및 학습",
+    gaming: "게임 및 리워드",
+    feedback: "피드백 및 알림",
+    data: "데이터 및 구조",
+  },
 } satisfies Record<string, Record<Category, string>>;
 
 export type PaletteTabMode = "current" | "ecommerce";
@@ -309,37 +373,37 @@ export function PartsPalette({
       {/* Quick Full-App Template Launchers */}
       <div
         style={{
-          padding: "4px 12px 8px",
+          padding: "6px 12px 10px",
           display: "flex",
           gap: 6,
-          overflowX: "auto",
+          flexWrap: "wrap",
         }}
-        className="no-scrollbar"
       >
         <button
           type="button"
           onClick={() => onLoadTemplateDoc?.(buildMoneyManagementAppDoc())}
           className="m3-press"
           style={{
-            flex: "0 0 auto",
-            height: 30,
-            padding: "0 10px",
-            borderRadius: 15,
+            flex: "1 1 calc(50% - 3px)",
+            height: 32,
+            padding: "0 8px",
+            borderRadius: 16,
             border: `1px solid ${p.outlineVariant}`,
             background: p.surfaceContainerLow,
-            color: p.primary,
+            color: p.onSurface,
             fontSize: 11,
             fontWeight: 700,
             cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: 5,
             whiteSpace: "nowrap",
           }}
           title="Load complete 4-screen Personal Money Management App (Dashboard, Analytics, Transfer, Goals)"
         >
-          <Icon name="account_balance_wallet" size={15} />
-          <span>💰 Money App</span>
+          <Icon name="account_balance_wallet" size={15} color={p.primary} />
+          <span>💰 Money</span>
         </button>
 
         <button
@@ -347,25 +411,54 @@ export function PartsPalette({
           onClick={() => onLoadTemplateDoc?.(buildEcommerceAppDoc())}
           className="m3-press"
           style={{
-            flex: "0 0 auto",
-            height: 30,
-            padding: "0 10px",
-            borderRadius: 15,
+            flex: "1 1 calc(50% - 3px)",
+            height: 32,
+            padding: "0 8px",
+            borderRadius: 16,
             border: `1px solid ${p.outlineVariant}`,
             background: p.surfaceContainerLow,
-            color: p.primary,
+            color: p.onSurface,
             fontSize: 11,
             fontWeight: 700,
             cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: 5,
             whiteSpace: "nowrap",
           }}
           title="Load complete 27-screen Cloth Shop Application (Define Atelier: Shop, Search, Details, Reviews, Cart, Checkout, Profile, Orders, Live Tracking, Cards, Auth)"
         >
-          <Icon name="storefront" size={15} />
-          <span>🛍️ E-Commerce App</span>
+          <Icon name="storefront" size={15} color={p.primary} />
+          <span>🛍️ E-Commerce</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onLoadTemplateDoc?.(buildTodoListAppDoc())}
+          className="m3-press"
+          style={{
+            flex: "1 1 100%",
+            height: 32,
+            padding: "0 12px",
+            borderRadius: 16,
+            border: `1.5px solid ${p.primary}`,
+            background: `${p.primaryContainer}90`,
+            color: p.onPrimaryContainer,
+            fontSize: 11.5,
+            fontWeight: 800,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            whiteSpace: "nowrap",
+            boxShadow: `0 2px 8px ${p.primary}20`,
+          }}
+          title="Load complete 4-screen Todo List App with Images & Full CRUD Operations (Write, Read, Edit, Delete)"
+        >
+          <Icon name="checklist" size={16} color={p.primary} />
+          <span>✅ Todo App (Full CRUD & Images)</span>
         </button>
       </div>
 
@@ -444,9 +537,9 @@ export function PartsPalette({
               >
                 <Icon name="auto_awesome" size={18} />
                 <div>
-                  <div style={{ fontWeight: 700, marginBottom: 2 }}>Professional E-Commerce Library</div>
+                  <div style={{ fontWeight: 700, marginBottom: 2 }}>Universal Multi-App Component Library</div>
                   <div style={{ fontSize: 11, opacity: 0.9 }}>
-                    Click or drag any component to drop it onto your selected screen with real prices, photos & styling.
+                    Click or drag ready-to-use components for AI, E-Commerce, Travel, Health, Productivity, Smart Home, Education & Gaming onto your screen.
                   </div>
                 </div>
               </div>

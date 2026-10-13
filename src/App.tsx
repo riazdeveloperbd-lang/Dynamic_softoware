@@ -8,6 +8,7 @@ import BookStoreApp from './book_store_frontend/BookStoreApp';
 import FoodGroceryDeliveryApp from './food_grocery_delivery_frontend/FoodGroceryDeliveryApp';
 import CustomEcommerceApp from './custom_ecommerce_frontend/CustomEcommerceApp';
 import CustomizeAppM3ECanvas from './customize_app_m3e_frontend/CustomizeAppM3ECanvas';
+import TodoListApp from './todo_list_frontend/TodoListApp';
 import WebsiteLandingStudio from './website_builder_frontend/WebsiteLandingStudio';
 import CustomProjectApp from './components/CustomProjectApp';
 import FullWebsitePreloader from './components/FullWebsitePreloader';
@@ -43,6 +44,7 @@ export default function App() {
         saved &&
         (saved === 'customize_app' ||
           saved === 'custom_ecommerce' ||
+          saved === 'todo_app' ||
           saved === 'food_grocery_delivery' ||
           saved === 'book_store' ||
           saved === 'website_landing' ||
@@ -136,6 +138,9 @@ export default function App() {
     }
     if (activeProject === 'custom_ecommerce') {
       return <CustomEcommerceApp onSwitchProject={handleSwitchProject} />;
+    }
+    if (activeProject === 'todo_app') {
+      return <TodoListApp onSwitchProject={handleSwitchProject} />;
     }
     if (activeProject === 'food_grocery_delivery') {
       return <FoodGroceryDeliveryApp onSwitchProject={handleSwitchProject} />;

@@ -9,6 +9,7 @@ import { shareLink } from "../lib/share";
 import {
   buildEcommerceAppDoc,
   buildMoneyManagementAppDoc,
+  buildTodoListAppDoc,
 } from "../lib/ecommerceComponents";
 
 const appUrl = () => (typeof window !== "undefined" ? window.location.href.split("#")[0] : "");
@@ -184,6 +185,11 @@ export function ShareDialog({
       templateFn: buildMoneyManagementAppDoc,
     },
     {
+      label: "✅ TaskFlow (Todo List with Images & CRUD)",
+      prompt: "Full 4-screen Todo List and task management app with cover images, checklist subtasks, priority pills, and write, read, edit & delete CRUD operations",
+      templateFn: buildTodoListAppDoc,
+    },
+    {
       label: "🛍️ Define Atelier (27-Screen Cloth Shop App)",
       prompt: "Production-ready 27-screen luxury fashion and streetwear cloth shop app with full shopping feed, search, product details, reviews, cart, checkout, live tracking, addresses, payment cards, and complete auth",
       templateFn: buildEcommerceAppDoc,
@@ -336,6 +342,28 @@ export function ShareDialog({
                     title="Instantly replace canvas with 4-screen Personal Money Management App"
                   >
                     💰 Load Money App
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onLoadTemplate(buildTodoListAppDoc());
+                      onClose();
+                    }}
+                    className="m3-press"
+                    style={{
+                      height: 32,
+                      padding: "0 12px",
+                      borderRadius: 16,
+                      border: "none",
+                      background: p.tertiaryContainer || p.secondaryContainer,
+                      color: p.onTertiaryContainer || p.onSecondaryContainer,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                    title="Instantly load complete 4-screen Todo List App with Images & Full CRUD Operations"
+                  >
+                    ✅ Load Todo App
                   </button>
                   <button
                     type="button"

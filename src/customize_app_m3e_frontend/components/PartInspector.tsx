@@ -462,14 +462,63 @@ export function PartInspector({
       )}
 
       {/* ---------- words and icons ---------- */}
-      {(kind === "topAppBar" || kind === "searchBar" || kind === "listItem") && (
+      {(kind === "topAppBar" ||
+        kind === "searchBar" ||
+        kind === "listItem" ||
+        (!["dialog", "card", "snackbar", "text"].includes(kind) &&
+          !isField(kind) &&
+          !isChoice(kind) &&
+          spec.hasLabel)) && (
         <Section id="part-text" icon="short_text" title={t("text", lang)} p={p}>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {/* the words stand between the two icons they stand between on the part */}
-            <IconRow slots={iconSlots} onPick={pickIcon} p={p}>
-              <Field value={item.label} onChange={(label) => onChange({ label })} placeholder={t(kind === "searchBar" ? "placeholder" : kind === "topAppBar" ? "title" : "label", lang)} p={p} />
-            </IconRow>
-            {spec.hasSupporting && <Field value={item.supporting ?? ""} onChange={(supporting) => onChange({ supporting })} placeholder={t("supporting", lang)} p={p} />}
+            {spec.hasIcon ? (
+              <IconRow slots={iconSlots} onPick={pickIcon} p={p}>
+                <Field
+                  value={item.label}
+                  onChange={(label) => onChange({ label })}
+                  placeholder={t(
+                    kind === "searchBar"
+                      ? "placeholder"
+                      : kind === "topAppBar"
+                      ? "title"
+                      : "label",
+                    lang,
+                  )}
+                  p={p}
+                />
+              </IconRow>
+            ) : (
+              <Field
+                value={item.label}
+                onChange={(label) => onChange({ label })}
+                placeholder={t(
+                  kind === "searchBar"
+                    ? "placeholder"
+                    : kind === "topAppBar"
+                    ? "title"
+                    : "label",
+                  lang,
+                )}
+                p={p}
+              />
+            )}
+            {spec.hasSupporting && (
+              <Field
+                value={item.supporting ?? ""}
+                onChange={(supporting) => onChange({ supporting })}
+                placeholder={t("supporting", lang)}
+                p={p}
+              />
+            )}
+            {(kind === "avatar" || kind === "storyBubble" || kind === "userProfileHeader" || kind === "commentThread") && (
+              <Field
+                value={item.icon2 ?? ""}
+                onChange={(icon2) => onChange({ icon2 })}
+                placeholder="Image URL (optional)"
+                p={p}
+              />
+            )}
           </div>
         </Section>
       )}
@@ -513,6 +562,11 @@ export function PartInspector({
       {(kind === "bottomNav" || kind === "navRail" || kind === "tabs" || kind === "select") && (
         <Section id="part-entries" icon={kind === "select" ? "list" : "view_column"} title={t(kind === "select" ? "options" : "tabs", lang)} p={p}>
           <EntryList item={item} onChange={onChange} p={p} icons={kind !== "tabs" && kind !== "select"} selectable clearable={kind === "select"} />
+        </Section>
+      )}
+      {kind === "segmentedButton" && (
+        <Section id="part-entries" icon="splitscreen" title="Segments" p={p}>
+          <EntryList item={item} onChange={onChange} p={p} icons selectable={false} clearable={false} />
         </Section>
       )}
       {kind === "toolbar" && (
@@ -615,7 +669,7 @@ export function PartInspector({
       )}
 
       {/* ---------- style and colour ---------- */}
-      {(kind === "card" || isField(kind) || kind === "toolbar" || kind === "searchBar") && (
+      {(kind === "card" || isField(kind) || kind === "toolbar" || kind === "searchBar" || spec.hasVariant) && (
         <Section id="part-style" icon="palette" title={t("style", lang)} p={p}>
           <StyleRun kind={kind} value={item.variant} onChange={(variant) => onChange({ variant })} p={p} />
         </Section>
@@ -627,14 +681,24 @@ export function PartInspector({
           <ListStyleRun item={item} onChange={onChange} p={p} />
         </Section>
       )}
-      {(kind === "box" || kind === "bottomSheet") && (
+      {(kind === "box" || kind === "bottomSheet" || kind === "avatar" || spec.hasFill) && (
         /* a box's style is the theme role it is painted in */
-        <Section id="part-style" icon="palette" title={t("style", lang)} p={p}>
+        <Section id="part-fill" icon="format_color_fill" title="Fill Color" p={p}>
           <FillRun value={item.fill ?? "surfaceContainerLow"} onChange={(fill) => onChange({ fill })} p={p} />
         </Section>
       )}
 
       {/* ---------- state ---------- */}
+      {kind === "rating" && (
+        <Section id="part-rating-val" icon="star" title="Rating Score" p={p}>
+          <Slider icon="star" title="Score" value={typeof item.value === "number" ? item.value : 4.8} min={1} max={5} step={0.1} onChange={(value) => onChange({ value, label: `${value.toFixed(1)} (120)` })} p={p} />
+        </Section>
+      )}
+      {kind === "stepper" && (
+        <Section id="part-stepper-val" icon="exposure" title="Quantity" p={p}>
+          <Slider icon="pin" title="Quantity" value={typeof item.value === "number" ? item.value : 1} min={1} max={99} step={1} onChange={(value) => onChange({ value, label: String(value) })} p={p} />
+        </Section>
+      )}
       {kind === "navRail" && (
         <Section id="part-rail" icon="side_navigation" title={t("railState", lang)} p={p}>
           <RailRows item={item} onChange={onChange} p={p} standalone={railStandalone} />
@@ -764,6 +828,34 @@ export function PartInspector({
               <NamedSizes steps={bar ? barWidths(frameW) : RING_SIZES} value={item.size ?? spec.w} onChange={(size) => onChange({ size })} p={p} />
             </div>
           </>,
+        )}
+
+      {spec.size && !["text", "topAppBar", "bottomNav", "tabs", "navRail", "searchBar", "listItem", "divider", "switch", "card", "box", "bottomSheet", "carousel", "datePicker", "timePicker", "slider", "loadingIndicator", "linearProgress", "circularProgress"].includes(kind) && !isField(kind) && !isPicture(kind) &&
+        sizeSection(
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <Slider
+                icon={spec.size.icon ?? "width"}
+                title={spec.size.icon === "open_in_full" ? t("size", lang) : t("width", lang)}
+                value={item.size ?? spec.w}
+                min={spec.size.min}
+                max={Math.max(frameW, spec.size.max)}
+                step={spec.size.step}
+                onChange={(size) => onChange({ size })}
+                p={p}
+              />
+              {spec.size.presets && (
+                <NamedSizes
+                  steps={spec.size.presets.map((v) => ({ key: String(v), value: v }))}
+                  value={item.size ?? spec.w}
+                  onChange={(size) => onChange({ size })}
+                  p={p}
+                  label={spec.size.icon === "open_in_full" ? t("size", lang) : t("width", lang)}
+                />
+              )}
+            </div>
+            {spec.size2 && heightRow(spec.size2.presets?.map((v) => ({ key: String(v), value: v })))}
+          </>
         )}
 
       {onPlace && (

@@ -30,6 +30,7 @@ import { AiHooks, FrameSizePicker } from "./Inspector";
 import { AiIconBtn, PartTabs, Tab } from "./PartPanel";
 import { COLOR_TOKEN_TEXT, t, useLang } from "../lib/i18n";
 import { maxFrameLength } from "../lib/tidy";
+import { ColorPickerBar } from "./ColorPickerBar";
 
 /* The panel for a screen. It wears the same chrome a part's panel does -- the title row with
  * what can be done to the screen, then short sections -- and keeps to what a screen actually
@@ -40,48 +41,22 @@ import { maxFrameLength } from "../lib/tidy";
 const lengthSteps = (deviceH: number) =>
   [1, 1.5, 2, 3].map((n) => ({ key: `${n}×`, value: n === 1 ? deviceH : Math.round((deviceH * n) / 4) * 4 }));
 
-/** the few colours a screen is painted in, offered the way a part's looks are */
-const SCREEN_FILLS: ColorToken[] = [
-  "surface",
-  "surfaceContainerLow",
-  "surfaceContainerHigh",
-  "primaryContainer",
-  "secondaryContainer",
-];
-
-/** the screen's colour as one connected run: each cell is the colour, and the one worn carries a check */
+/** the screen's colour: M3 roles + arbitrary custom color picker + saved colors palette */
 function ScreenFillRun({
   value,
   onChange,
   p,
 }: {
-  value: ColorToken;
-  onChange: (bg: ColorToken | undefined) => void;
+  value: ColorToken | string | undefined;
+  onChange: (bg: ColorToken | string | undefined) => void;
   p: Palette;
 }) {
-  const lang = useLang();
-  /* a sketch painted in a role the run does not offer keeps it, as one more cell, until another is picked */
-  const fills = SCREEN_FILLS.includes(value) ? SCREEN_FILLS : [...SCREEN_FILLS, value];
   return (
-    <Segmented<ColorToken>
-      options={fills.map((tk) => ({
-        key: tk,
-        title: lang === "en" ? tk : COLOR_TOKEN_TEXT[lang][tk],
-        node: tk === value ? <Icon name="check" size={20} /> : <span />,
-        style: {
-          background: p[tk],
-          color: onToken(tk, p),
-          border: `1px solid ${p.outlineVariant}`,
-          minWidth: 0,
-          padding: 0,
-        },
-      }))}
+    <ColorPickerBar
       value={value}
-      onChange={(bg) => onChange(bg === "surface" ? undefined : bg)}
+      onChange={onChange}
       p={p}
-      height={44}
-      label={t("screenLook", lang)}
-      tight
+      label="Screen Background"
     />
   );
 }
@@ -174,6 +149,8 @@ export function FrameInspector({
   onLength,
   ai,
   onSize,
+  isFlowStart,
+  onSetFlowStart,
 }: {
   frame: Frame;
   palette: Palette;
@@ -195,6 +172,8 @@ export function FrameInspector({
   onLength: (length: number) => void;
   ai: AiHooks;
   onSize: (preset: FramePreset) => void;
+  isFlowStart?: boolean;
+  onSetFlowStart?: () => void;
 }) {
   const lang = useLang();
   const [copied, setCopied] = useState(false);
@@ -318,6 +297,73 @@ export function FrameInspector({
         aria-labelledby="frame-tab-behavior"
         hidden={tab !== "behavior"}
       >
+        <Section
+          id="frame-prototype"
+          icon="alt_route"
+          title="Prototype Flow (Figma)"
+          p={p}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div
+              style={{
+                padding: "10px 12px",
+                borderRadius: 12,
+                backgroundColor: isFlowStart ? "rgba(53, 116, 240, 0.12)" : p.surfaceContainerHigh,
+                border: `1px solid ${isFlowStart ? "#3574F0" : p.outlineVariant}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 24,
+                    height: 24,
+                    borderRadius: 6,
+                    background: isFlowStart ? "#3574F0" : p.surfaceContainerHighest,
+                    color: isFlowStart ? "#FFF" : p.onSurfaceVariant,
+                  }}
+                >
+                  <Icon name="play_arrow" size={16} />
+                </span>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: isFlowStart ? "#3574F0" : p.onSurface }}>
+                    {isFlowStart ? "Flow 1 Starting Point" : "Standard Screen"}
+                  </div>
+                  <div style={{ fontSize: 10, color: p.onSurfaceVariant }}>
+                    {isFlowStart ? "Prototype preview opens at this screen" : "Click below to make this the start"}
+                  </div>
+                </div>
+              </div>
+
+              {onSetFlowStart && (
+                <button
+                  type="button"
+                  onClick={onSetFlowStart}
+                  disabled={isFlowStart}
+                  className="m3-press"
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 8,
+                    border: "none",
+                    background: isFlowStart ? "transparent" : "#3574F0",
+                    color: isFlowStart ? "#3574F0" : "#FFF",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: isFlowStart ? "default" : "pointer",
+                  }}
+                >
+                  {isFlowStart ? "★ Active" : "Set as Start"}
+                </button>
+              )}
+            </div>
+          </div>
+        </Section>
+
         <Section
           id="frame-note"
           icon="notes"

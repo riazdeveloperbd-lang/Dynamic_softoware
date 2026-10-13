@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Action,
+  OverlayPosition,
   BUTTON_H_MAX,
   BUTTON_H_MIN,
   CHIP_H_MAX,
@@ -216,13 +217,48 @@ export function ButtonInspector({
   const isExtended = item.kind === "extendedFab";
   /* the parts with no words of their own: their text section is the icon alone */
   const iconOnly = isIcon || item.kind === "fab";
+  const [pageSearch, setPageSearch] = useState("");
   const isToggle = !!item.toggle;
   const isLink = item.action?.to === LINK_TARGET;
+  const isScreenTarget = Boolean(
+    item.action?.to &&
+      item.action.to !== "none" &&
+      item.action.to !== "back" &&
+      item.action.to !== LINK_TARGET &&
+      item.action.to !== MENU_TARGET &&
+      item.action.to !== "toggle"
+  );
+  const isOverlay = item.action?.actionType === "overlay";
+
   const setToggle = (patch: Partial<NonNullable<Item["toggle"]>>) => onChange({ toggle: { ...(item.toggle ?? {}), ...patch } });
 
   /** what a tap does: nothing, flip the button's own look, go back, or open one of the screens */
   const actionValue = isToggle ? "toggle" : (item.action?.to ?? "none");
-  const actionOptions: SelectOption[] = actionOptionsOf(item, frame, allFrames, lang);
+  const actionOptions: SelectOption[] = actionOptionsOf(item, frame, allFrames, lang, pageSearch);
+
+  const setOverlayMode = (enabled: boolean) => {
+    if (!item.action) return;
+    onChange({
+      action: {
+        ...item.action,
+        actionType: enabled ? "overlay" : "navigate",
+        overlayPosition: enabled ? (item.action.overlayPosition || "bottom") : undefined,
+        closeOnOutsideClick: enabled ? (item.action.closeOnOutsideClick ?? true) : undefined,
+        dimBackground: enabled ? (item.action.dimBackground ?? true) : undefined,
+      },
+    });
+  };
+
+  const setOverlayPosition = (pos: OverlayPosition) => {
+    if (!item.action) return;
+    onChange({ action: { ...item.action, overlayPosition: pos } });
+  };
+
+  const setOverlayOption = (key: "closeOnOutsideClick" | "dimBackground", val: boolean) => {
+    if (!item.action) return;
+    onChange({ action: { ...item.action, [key]: val } });
+  };
+
   const pickAction = (k: string) => {
     if (k === MENU_TARGET) {
       onChange({ toggle: undefined, ...menuPatch(item, true) });
@@ -239,11 +275,24 @@ export function ButtonInspector({
     setPicker("none");
     if (k === LINK_TARGET) {
       /* a link leaves the sketch for the browser, so no screen transition plays with it */
-      onChange({ toggle: undefined, action: { to: LINK_TARGET, transition: "none", url: item.action?.url } });
+      onChange({ toggle: undefined, action: { to: LINK_TARGET, transition: "none", url: item.action?.url, actionType: "link" } });
       return;
     }
     const transition = item.action && item.action.to !== LINK_TARGET ? item.action.transition : "slide";
-    onChange({ toggle: undefined, action: k === "none" ? undefined : { to: k, transition } });
+    onChange({
+      toggle: undefined,
+      action:
+        k === "none"
+          ? undefined
+          : {
+              to: k,
+              transition,
+              actionType: item.action?.actionType || "navigate",
+              overlayPosition: item.action?.overlayPosition,
+              closeOnOutsideClick: item.action?.closeOnOutsideClick,
+              dimBackground: item.action?.dimBackground,
+            },
+    });
   };
 
   const frameW = frame ? frameSizeOf(frame).w : PHONE_W;
@@ -438,13 +487,194 @@ export function ButtonInspector({
             )}
             {/* the arrow is the menu itself, so there is no destination to pick for it */}
             {!(split && seg === SPLIT_MENU_SLOT) && (
-              <Select
-                options={actionOptions}
-                value={split ? (segAction?.to ?? "none") : isMenu ? MENU_TARGET : actionValue}
-                onChange={split ? pickSegAction : pickAction}
-                p={p}
-                label={t("tapTo", lang)}
-              />
+              <>
+                {/* Search pages box */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 10px",
+                    borderRadius: 8,
+                    backgroundColor: p.surfaceContainerHigh,
+                    border: `1px solid ${p.outlineVariant}`,
+                  }}
+                >
+                  <Icon name="search" size={16} />
+                  <input
+                    type="text"
+                    value={pageSearch}
+                    onChange={(e) => setPageSearch(e.target.value)}
+                    placeholder="Search pages (e.g. Home, Cart, #8)..."
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      color: p.onSurface,
+                      fontSize: 12,
+                      width: "100%",
+                    }}
+                  />
+                  {pageSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setPageSearch("")}
+                      style={{ background: "transparent", border: "none", cursor: "pointer", color: p.onSurfaceVariant, padding: 0 }}
+                    >
+                      <Icon name="close" size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Quick-pick chips for filtered screens */}
+                {pageSearch.trim() && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4, maxHeight: 110, overflowY: "auto", padding: "2px 0" }}>
+                    {actionOptions
+                      .filter((o) => o.key !== "none" && o.key !== "toggle")
+                      .map((opt) => (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          onClick={() => (split ? pickSegAction(opt.key) : pickAction(opt.key))}
+                          style={{
+                            padding: "4px 8px",
+                            borderRadius: 6,
+                            border: `1px solid ${actionValue === opt.key ? "#3574F0" : p.outlineVariant}`,
+                            background: actionValue === opt.key ? "rgba(53, 116, 240, 0.15)" : p.surfaceContainerLow,
+                            color: actionValue === opt.key ? "#3574F0" : p.onSurface,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                        >
+                          <Icon name={opt.icon || "smartphone"} size={13} />
+                          <span>{opt.label}</span>
+                        </button>
+                      ))}
+                  </div>
+                )}
+
+                <Select
+                  options={actionOptions}
+                  value={split ? (segAction?.to ?? "none") : isMenu ? MENU_TARGET : actionValue}
+                  onChange={split ? pickSegAction : pickAction}
+                  p={p}
+                  label={t("tapTo", lang)}
+                />
+
+                {/* Mode Selector: Navigate vs Overlap for Modal */}
+                {isScreenTarget && (
+                  <div
+                    style={{
+                      padding: "10px",
+                      borderRadius: 10,
+                      backgroundColor: isOverlay ? "rgba(53, 116, 240, 0.08)" : p.surfaceContainerLow,
+                      border: `1px solid ${isOverlay ? "#3574F0" : p.outlineVariant}`,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 8,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: isOverlay ? "#3574F0" : p.onSurfaceVariant }}>
+                        PRESENTATION STYLE
+                      </span>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <button
+                          type="button"
+                          onClick={() => setOverlayMode(false)}
+                          style={{
+                            padding: "4px 8px",
+                            borderRadius: 6,
+                            border: "none",
+                            backgroundColor: !isOverlay ? p.primary : "transparent",
+                            color: !isOverlay ? p.onPrimary : p.onSurfaceVariant,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Navigate
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setOverlayMode(true)}
+                          style={{
+                            padding: "4px 8px",
+                            borderRadius: 6,
+                            border: "none",
+                            backgroundColor: isOverlay ? "#3574F0" : "transparent",
+                            color: isOverlay ? "#FFF" : p.onSurfaceVariant,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                          }}
+                        >
+                          🪟 Overlap Modal
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Overlap Modal Settings */}
+                    {isOverlay && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
+                        <div style={{ fontSize: 11, color: p.onSurfaceVariant }}>Modal Position:</div>
+                        <div style={{ display: "flex", gap: 4 }}>
+                          {(["bottom", "center", "top"] as OverlayPosition[]).map((pos) => {
+                            const sel = (item.action?.overlayPosition || "bottom") === pos;
+                            return (
+                              <button
+                                key={pos}
+                                type="button"
+                                onClick={() => setOverlayPosition(pos)}
+                                style={{
+                                  flex: 1,
+                                  padding: "6px 4px",
+                                  borderRadius: 6,
+                                  border: `1px solid ${sel ? "#3574F0" : p.outlineVariant}`,
+                                  backgroundColor: sel ? "rgba(53, 116, 240, 0.15)" : "transparent",
+                                  color: sel ? "#3574F0" : p.onSurface,
+                                  fontSize: 11,
+                                  fontWeight: sel ? 700 : 500,
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  gap: 2,
+                                }}
+                              >
+                                <span>{pos === "bottom" ? "Bottom Sheet" : pos === "center" ? "Center Dialog" : "Top Banner"}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, cursor: "pointer", color: p.onSurface }}>
+                            <input
+                              type="checkbox"
+                              checked={item.action?.closeOnOutsideClick !== false}
+                              onChange={(e) => setOverlayOption("closeOnOutsideClick", e.target.checked)}
+                            />
+                            Close when clicking outside
+                          </label>
+                          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, cursor: "pointer", color: p.onSurface }}>
+                            <input
+                              type="checkbox"
+                              checked={item.action?.dimBackground !== false}
+                              onChange={(e) => setOverlayOption("dimBackground", e.target.checked)}
+                            />
+                            Dim & blur background
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
             {menuEditor && (
               <>

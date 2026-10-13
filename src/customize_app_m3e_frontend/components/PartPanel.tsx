@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Reorder, useDragControls } from "motion/react";
 import {
   Action,
+  ActionType,
   BACK_TARGET,
   COLOR_TOKENS,
   ColorToken,
@@ -16,6 +17,7 @@ import {
   ListStyle,
   MENU_TARGET,
   NavTab,
+  OverlayPosition,
   Palette,
   Radii,
   TAPPABLE,
@@ -36,6 +38,7 @@ import {
   variantStyle,
 } from "../lib/tokens";
 import { Lang } from "../lib/i18n";
+import { ColorPickerBar } from "./ColorPickerBar";
 import { Icon, boxStyle } from "./M3Node";
 import { IconPicker } from "./IconPicker";
 import { CornerIcon, Field, IconBtn, RUN_CELL, Section, Segmented, Select, SelectOption, Slider } from "./ui";
@@ -369,7 +372,14 @@ export function PartHeader({
 }
 
 /** what a tap can be sent to: nothing, the screen it came from, a web page, or another screen */
-export function actionOptionsOf(item: Item, frame: Frame | null, frames: Frame[], lang: Lang): SelectOption[] {
+export function actionOptionsOf(item: Item, frame: Frame | null, frames: Frame[], lang: Lang, searchQuery = ""): SelectOption[] {
+  const q = searchQuery.toLowerCase().trim();
+  const screenOpts = [...frames]
+    .sort((a, b) => a.x - b.x || a.y - b.y)
+    .filter((f) => f.id !== frame?.id)
+    .filter((f) => !q || f.name.toLowerCase().includes(q) || f.id.toLowerCase().includes(q))
+    .map((f) => ({ key: f.id, label: f.name || t("screen", lang), icon: isPhoneFrame(f) ? "smartphone" : "desktop_windows" }));
+
   return [
     { key: "none", label: t("none", lang), icon: "block" },
     /* a FAB opens a menu where another part would flip its own look */
@@ -377,10 +387,7 @@ export function actionOptionsOf(item: Item, frame: Frame | null, frames: Frame[]
     ...(TOGGLEABLE.includes(item.kind) && !isFab(item.kind) ? [{ key: "toggle", label: t("toggleTitle", lang), icon: "swap_horiz" }] : []),
     { key: BACK_TARGET, label: t("back", lang), icon: "arrow_back" },
     { key: LINK_TARGET, label: t("openLink", lang), icon: "open_in_new" },
-    ...[...frames]
-      .sort((a, b) => a.x - b.x || a.y - b.y)
-      .filter((f) => f.id !== frame?.id)
-      .map((f) => ({ key: f.id, label: f.name || t("screen", lang), icon: isPhoneFrame(f) ? "smartphone" : "desktop_windows" })),
+    ...screenOpts,
   ];
 }
 
@@ -404,13 +411,13 @@ export function TriggerSection({
   selfRect: { x: number; y: number; w: number; h: number } | null;
   onChange: (patch: Partial<Item>) => void;
   p: Palette;
-  /** the one place inside the part this is about; the part itself when left out */
   slot?: string;
-  /** shown above the controls: which of those places is being set */
   head?: React.ReactNode;
 }) {
   const lang = useLang();
+  const [pageSearch, setPageSearch] = useState("");
   const action = slot ? item.actions?.[slot] : item.action;
+
   const set = (next: Action | undefined) => {
     if (!slot) {
       onChange({ action: next });
@@ -421,20 +428,233 @@ export function TriggerSection({
     else delete actions[slot];
     onChange({ actions: Object.keys(actions).length ? actions : undefined });
   };
+
   const isLink = action?.to === LINK_TARGET;
+  const isScreenTarget = Boolean(action?.to && action.to !== "none" && action.to !== BACK_TARGET && action.to !== LINK_TARGET && action.to !== MENU_TARGET && action.to !== "toggle");
+  const isOverlay = action?.actionType === "overlay";
+
   const pick = (k: string) => {
     if (k === LINK_TARGET) {
-      set({ to: LINK_TARGET, transition: "none", url: action?.url });
+      set({ to: LINK_TARGET, transition: "none", url: action?.url, actionType: "link" });
       return;
     }
     const transition = action && action.to !== LINK_TARGET ? action.transition : "slide";
-    set(k === "none" ? undefined : { to: k, transition });
+    set(k === "none" ? undefined : {
+      to: k,
+      transition,
+      actionType: action?.actionType || "navigate",
+      overlayPosition: action?.overlayPosition,
+      closeOnOutsideClick: action?.closeOnOutsideClick,
+      dimBackground: action?.dimBackground,
+    });
   };
+
+  const setOverlayMode = (enabled: boolean) => {
+    if (!action) return;
+    set({
+      ...action,
+      actionType: enabled ? "overlay" : "navigate",
+      overlayPosition: enabled ? (action.overlayPosition || "bottom") : undefined,
+      closeOnOutsideClick: enabled ? (action.closeOnOutsideClick ?? true) : undefined,
+      dimBackground: enabled ? (action.dimBackground ?? true) : undefined,
+    });
+  };
+
+  const setOverlayPosition = (pos: OverlayPosition) => {
+    if (!action) return;
+    set({ ...action, overlayPosition: pos });
+  };
+
   return (
     <Section id="part-action" icon="ads_click" title={t("tapTo", lang)} p={p}>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {head}
-        <Select options={actionOptionsOf(item, frame, allFrames, lang)} value={action?.to ?? "none"} onChange={pick} p={p} label={t("tapTo", lang)} />
+
+        {/* Page Search Box */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "6px 10px",
+            borderRadius: 8,
+            backgroundColor: p.surfaceContainerHigh,
+            border: `1px solid ${p.outlineVariant}`,
+          }}
+        >
+          <Icon name="search" size={16} />
+          <input
+            type="text"
+            value={pageSearch}
+            onChange={(e) => setPageSearch(e.target.value)}
+            placeholder="Search pages (e.g. Home, Cart, #8)..."
+            style={{
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              color: p.onSurface,
+              fontSize: 12,
+              width: "100%",
+            }}
+          />
+          {pageSearch && (
+            <button
+              type="button"
+              onClick={() => setPageSearch("")}
+              style={{ background: "transparent", border: "none", cursor: "pointer", color: p.onSurfaceVariant, padding: 0 }}
+            >
+              <Icon name="close" size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Quick-pick chips for filtered screens */}
+        {pageSearch.trim() && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, maxHeight: 110, overflowY: "auto", padding: "2px 0" }}>
+            {actionOptionsOf(item, frame, allFrames, lang, pageSearch)
+              .filter((o) => o.key !== "none" && o.key !== "toggle")
+              .map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => pick(opt.key)}
+                  style={{
+                    padding: "4px 8px",
+                    borderRadius: 6,
+                    border: `1px solid ${action?.to === opt.key ? "#3574F0" : p.outlineVariant}`,
+                    background: action?.to === opt.key ? "rgba(53, 116, 240, 0.15)" : p.surfaceContainerLow,
+                    color: action?.to === opt.key ? "#3574F0" : p.onSurface,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  <Icon name={opt.icon || "smartphone"} size={13} />
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+          </div>
+        )}
+
+        {/* Action Destination Select */}
+        <Select
+          options={actionOptionsOf(item, frame, allFrames, lang, pageSearch)}
+          value={action?.to ?? "none"}
+          onChange={pick}
+          p={p}
+          label={t("tapTo", lang)}
+        />
+
+        {/* Mode Selector: Navigate vs Overlap for Modal */}
+        {isScreenTarget && (
+          <div
+            style={{
+              padding: "10px",
+              borderRadius: 10,
+              backgroundColor: isOverlay ? "rgba(53, 116, 240, 0.08)" : p.surfaceContainerLow,
+              border: `1px solid ${isOverlay ? "#3574F0" : p.outlineVariant}`,
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: isOverlay ? "#3574F0" : p.onSurfaceVariant }}>
+                PRESENTATION STYLE
+              </span>
+              <div style={{ display: "flex", gap: 4 }}>
+                <button
+                  type="button"
+                  onClick={() => setOverlayMode(false)}
+                  style={{
+                    padding: "4px 8px",
+                    borderRadius: 6,
+                    border: "none",
+                    backgroundColor: !isOverlay ? p.primary : "transparent",
+                    color: !isOverlay ? p.onPrimary : p.onSurfaceVariant,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  Navigate
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOverlayMode(true)}
+                  style={{
+                    padding: "4px 8px",
+                    borderRadius: 6,
+                    border: "none",
+                    backgroundColor: isOverlay ? "#3574F0" : "transparent",
+                    color: isOverlay ? "#FFF" : p.onSurfaceVariant,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  🪟 Overlap Modal
+                </button>
+              </div>
+            </div>
+
+            {/* Overlap Modal Settings */}
+            {isOverlay && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
+                <div style={{ fontSize: 11, color: p.onSurfaceVariant }}>Modal Position:</div>
+                <div style={{ display: "flex", gap: 4 }}>
+                  {(["bottom", "center", "top"] as OverlayPosition[]).map((pos) => {
+                    const sel = (action.overlayPosition || "bottom") === pos;
+                    return (
+                      <button
+                        key={pos}
+                        type="button"
+                        onClick={() => setOverlayPosition(pos)}
+                        style={{
+                          flex: 1,
+                          padding: "6px 4px",
+                          borderRadius: 6,
+                          border: sel ? "1px solid #3574F0" : `1px solid ${p.outlineVariant}`,
+                          backgroundColor: sel ? "#3574F0" : p.surfaceContainerHigh,
+                          color: sel ? "#FFF" : p.onSurface,
+                          fontSize: 10,
+                          fontWeight: sel ? 700 : 500,
+                          cursor: "pointer",
+                          textAlign: "center",
+                        }}
+                      >
+                        {pos === "bottom" ? "Bottom Sheet" : pos === "center" ? "Centered" : "Top Banner"}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, cursor: "pointer", marginTop: 2 }}>
+                  <input
+                    type="checkbox"
+                    checked={action.closeOnOutsideClick !== false}
+                    onChange={(e) => set({ ...action, closeOnOutsideClick: e.target.checked })}
+                    style={{ accentColor: "#3574F0" }}
+                  />
+                  <span>Close on backdrop tap</span>
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={action.dimBackground !== false}
+                    onChange={(e) => set({ ...action, dimBackground: e.target.checked })}
+                    style={{ accentColor: "#3574F0" }}
+                  />
+                  <span>Dim background overlay</span>
+                </label>
+              </div>
+            )}
+          </div>
+        )}
+
         {isLink ? (
           <LinkStage self={frame} selfRect={selfRect} action={action} onChange={set} p={p} />
         ) : (
@@ -509,28 +729,14 @@ const BLANK: Item = { id: "", kind: "box", label: "", icon: null, variant: "fill
 /** The colours a box can be, as one connected run of the theme's own roles: each cell is
  *  painted in the role, and the chosen one carries a check mark in the colour that reads on it.
  *  The run wraps onto a second row, since ten roles are more than one row holds. */
-export function FillRun({ value, onChange, p }: { value: ColorToken; onChange: (fill: ColorToken) => void; p: Palette }) {
-  const lang = useLang();
-  const rows = [COLOR_TOKENS.slice(0, 5), COLOR_TOKENS.slice(5)];
+export function FillRun({ value, onChange, p }: { value: ColorToken | string; onChange: (fill: ColorToken | string) => void; p: Palette }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      {rows.map((row, r) => (
-        <Segmented<ColorToken>
-          key={r}
-          options={row.map((tk) => ({
-            key: tk.key,
-            title: lang === "en" ? tk.label : COLOR_TOKEN_TEXT[lang][tk.key],
-            node: tk.key === value ? <Icon name="check" size={20} /> : <span />,
-            style: { background: p[tk.key], color: onToken(tk.key, p), border: `1px solid ${p.outlineVariant}`, minWidth: 0, padding: 0 },
-          }))}
-          value={value}
-          onChange={onChange}
-          p={p}
-          label={`${t("style", lang)} ${r + 1}/${rows.length}`}
-          tight
-        />
-      ))}
-    </div>
+    <ColorPickerBar
+      value={value}
+      onChange={(c) => onChange(c || "surfaceContainerLow")}
+      p={p}
+      label="Element Fill"
+    />
   );
 }
 
