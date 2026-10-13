@@ -189,6 +189,23 @@ export function saveTodos(todos: TodoItem[]): void {
   }
 }
 
+// Async sync with backend REST API
+export async function syncTodosWithServer(): Promise<TodoItem[]> {
+  try {
+    const res = await fetch("/api/todos");
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.todos) && data.todos.length > 0) {
+        saveTodos(data.todos);
+        return data.todos;
+      }
+    }
+  } catch {
+    // Silently fall back to local store
+  }
+  return getTodos();
+}
+
 // ================= CRUD: WRITE (CREATE) =================
 export function addTodo(item: Omit<TodoItem, "id" | "createdAt">): TodoItem {
   const current = getTodos();
@@ -200,6 +217,14 @@ export function addTodo(item: Omit<TodoItem, "id" | "createdAt">): TodoItem {
   };
   const updated = [newTodo, ...current];
   saveTodos(updated);
+
+  // Real HTTP POST request visible in DevTools Network tab
+  fetch("/api/todos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newTodo),
+  }).catch((err) => console.warn("[API Sync] POST /api/todos failed:", err));
+
   return newTodo;
 }
 
@@ -220,6 +245,14 @@ export function updateTodo(id: string, updates: Partial<TodoItem>): TodoItem | n
   };
   current[idx] = updatedItem;
   saveTodos([...current]);
+
+  // Real HTTP PUT request visible in DevTools Network tab
+  fetch(`/api/todos/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  }).catch((err) => console.warn("[API Sync] PUT /api/todos failed:", err));
+
   return updatedItem;
 }
 
@@ -229,6 +262,12 @@ export function deleteTodo(id: string): boolean {
   const next = current.filter((t) => t.id !== id);
   if (next.length === current.length) return false;
   saveTodos(next);
+
+  // Real HTTP DELETE request visible in DevTools Network tab
+  fetch(`/api/todos/${id}`, {
+    method: "DELETE",
+  }).catch((err) => console.warn("[API Sync] DELETE /api/todos failed:", err));
+
   return true;
 }
 
@@ -238,6 +277,14 @@ export function toggleTodoComplete(id: string): boolean {
   if (!item) return false;
   item.completed = !item.completed;
   saveTodos([...current]);
+
+  // Real HTTP PATCH request visible in DevTools Network tab
+  fetch(`/api/todos/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ completed: item.completed }),
+  }).catch((err) => console.warn("[API Sync] PATCH /api/todos failed:", err));
+
   return true;
 }
 

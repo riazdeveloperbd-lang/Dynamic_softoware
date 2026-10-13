@@ -76,6 +76,7 @@ import { t, useLang } from "../lib/i18n";
 import { constrainModalRails, modalRailOf, updateRail } from "../lib/rail";
 import { pinOf } from "../lib/tidy";
 import { railMotionTargets } from "../lib/railView";
+import { MobileLiveAppSimulator } from "./MobileLiveAppSimulator";
 
 const EASE = [0.2, 0, 0, 1] as const;
 const SLIDE_MS = 0.42;
@@ -1084,6 +1085,7 @@ export function Preview({
   const [scale, setScale] = useState(1);
   const [flipped, setFlipped] = useState<Set<string>>(() => new Set());
   const [values, setValues] = useState<Record<string, number>>({});
+  const [simMode, setSimMode] = useState<"live" | "canvas">("live");
   const [peek, setPeek] = useState<Peek | null>(null);
   const stackRef = useRef(stack);
   stackRef.current = stack;
@@ -1507,19 +1509,23 @@ export function Preview({
                 opacity: curOp,
               }}
             >
-              <AnimatePresence initial={false} mode="popLayout" custom={anim}>
-                <motion.div
-                  key={current.id}
-                  custom={anim}
-                  variants={screenVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  style={{ position: "absolute", inset: 0 }}
-                >
-                  <Screen frame={current} groups={groups} {...screenProps} />
-                </motion.div>
-              </AnimatePresence>
+              {simMode === "live" ? (
+                <MobileLiveAppSimulator palette={p} onClose={onClose} />
+              ) : (
+                <AnimatePresence initial={false} mode="popLayout" custom={anim}>
+                  <motion.div
+                    key={current.id}
+                    custom={anim}
+                    variants={screenVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    style={{ position: "absolute", inset: 0 }}
+                  >
+                    <Screen frame={current} groups={groups} {...screenProps} />
+                  </motion.div>
+                </AnimatePresence>
+              )}
             </motion.div>
             {peek && peekFrame && (
               <motion.div
@@ -1645,15 +1651,73 @@ export function Preview({
             maxWidth: "calc(100vw - 24px)",
           }}
         >
+          {/* Mode Switcher */}
+          <div
+            style={{
+              display: "flex",
+              borderRadius: 14,
+              padding: 3,
+              background: p.surfaceContainerHigh || "#1F2937",
+              marginBottom: wide ? 4 : 0,
+            }}
+          >
+            <button
+              onClick={() => setSimMode("live")}
+              style={{
+                flex: 1,
+                padding: "6px 8px",
+                borderRadius: 11,
+                border: "none",
+                background: simMode === "live" ? "#4F46E5" : "transparent",
+                color: simMode === "live" ? "#FFFFFF" : p.onSurfaceVariant,
+                fontSize: 11,
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 4,
+                whiteSpace: "nowrap",
+              }}
+              title="Full working app with live CRUD state, forms, and network requests"
+            >
+              <Icon name="bolt" size={14} />
+              <span>⚡ Live App</span>
+            </button>
+            <button
+              onClick={() => setSimMode("canvas")}
+              style={{
+                flex: 1,
+                padding: "6px 8px",
+                borderRadius: 11,
+                border: "none",
+                background: simMode === "canvas" ? "#4F46E5" : "transparent",
+                color: simMode === "canvas" ? "#FFFFFF" : p.onSurfaceVariant,
+                fontSize: 11,
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 4,
+                whiteSpace: "nowrap",
+              }}
+              title="Canvas wireframe screen transition mode"
+            >
+              <Icon name="dashboard" size={14} />
+              <span>Canvas</span>
+            </button>
+          </div>
+
           <button
             onClick={back}
-            disabled={stack.length < 2}
+            disabled={stack.length < 2 || simMode === "live"}
             title={t("back", lang)}
             className="m3-press"
             style={{
               ...barBtn,
-              color: stack.length < 2 ? p.outlineVariant : p.onSurfaceVariant,
-              cursor: stack.length < 2 ? "default" : "pointer",
+              color: stack.length < 2 || simMode === "live" ? p.outlineVariant : p.onSurfaceVariant,
+              cursor: stack.length < 2 || simMode === "live" ? "default" : "pointer",
             }}
           >
             <Icon name="arrow_back" size={20} />

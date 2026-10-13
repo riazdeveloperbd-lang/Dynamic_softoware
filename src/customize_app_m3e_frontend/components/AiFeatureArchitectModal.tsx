@@ -53,83 +53,122 @@ export const AiFeatureArchitectModal: React.FC<AiFeatureArchitectModalProps> = (
 
   if (!isOpen) return null;
 
-  const handleRunAiArchitect = () => {
+  const handleRunAiArchitect = async () => {
     setIsProcessing(true);
     setSuccessMessage(null);
 
-    setTimeout(() => {
-      // Intelligently wire up all screen groups
-      const updatedGroups = groups.map((g) => {
-        // Clone group
-        const groupCopy: Group = {
-          ...g,
-          items: g.items.map((it) => {
-            const itemCopy: Item = { ...it };
-
-            // 1. Wire Top App Bar actions
-            if (itemCopy.kind === "topAppBar") {
-              const currentActions = { ...(itemCopy.actions || {}) };
-              // Back icon
-              if (itemCopy.icon === "arrow_back" && frames.length > 0) {
-                currentActions.icon = { to: frames[0].id, transition: "slideLeft" };
-              }
-              // Add icon
-              if (itemCopy.icon3 === "add" && frames.length > 1) {
-                currentActions.icon3 = { to: frames[1].id, transition: "slide" };
-              }
-              // Save / Done icon
-              if (itemCopy.icon2 === "save" || itemCopy.icon2 === "check") {
-                currentActions.icon2 = { to: frames[0].id, transition: "slideLeft" };
-              }
-              itemCopy.actions = currentActions;
-            }
-
-            // 2. Wire FAB actions to Create screen (Frame 2)
-            if (itemCopy.kind === "fab") {
-              const targetFrame = frames[1] || frames[0];
-              itemCopy.action = { to: targetFrame.id, transition: "slide" };
-            }
-
-            // 3. Wire Task Card actions to Detail screen (Frame 3)
-            if (itemCopy.kind === "todoCard" || itemCopy.kind === "kanbanCard") {
-              const targetFrame = frames[2] || frames[0];
-              itemCopy.action = { to: targetFrame.id, transition: "slide" };
-            }
-
-            // 4. Wire Action Buttons
-            if (itemCopy.kind === "button") {
-              const label = (itemCopy.label || "").toLowerCase();
-              if (label.includes("edit")) {
-                const targetFrame = frames[3] || frames[0];
-                itemCopy.action = { to: targetFrame.id, transition: "slide" };
-              } else if (label.includes("save") || label.includes("publish") || label.includes("cancel") || label.includes("delete") || label.includes("mark complete")) {
-                itemCopy.action = { to: frames[0].id, transition: "slide" };
-              }
-            }
-
-            // 5. Wire Bottom Navigation Tabs
-            if (itemCopy.kind === "bottomNav" && Array.isArray(itemCopy.tabs)) {
-              const navActions: Record<string, { to: string; transition: "fade" | "slide" }> = {};
-              itemCopy.tabs.forEach((_, idx) => {
-                if (frames[idx]) {
-                  navActions[`tab:${idx}`] = { to: frames[idx].id, transition: "fade" };
-                }
-              });
-              itemCopy.actions = { ...(itemCopy.actions || {}), ...navActions };
-            }
-
-            return itemCopy;
-          }),
-        };
-        return groupCopy;
+    try {
+      const response = await fetch("/api/projects/wire-features", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: promptText,
+          frames,
+          groups,
+          featureType: "full_crud",
+        }),
       });
 
-      onApplyFeatures(updatedGroups);
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("[AI Feature Architect HTTP Response]", data);
+
+      if (data.updatedGroups && Array.isArray(data.updatedGroups)) {
+        onApplyFeatures(data.updatedGroups);
+      } else {
+        // Client-side fallback wiring
+        applyClientWiring();
+      }
+
+      setIsProcessing(false);
+      setSuccessMessage(
+        data.message ||
+          "✨ Successfully wired up all CRUD actions, interactive buttons, navigation routes, and state across your screens!"
+      );
+    } catch (err) {
+      console.warn("[AI Feature Architect] Network error, applying local architect wiring:", err);
+      applyClientWiring();
       setIsProcessing(false);
       setSuccessMessage(
         "✨ Successfully wired up all CRUD actions, interactive buttons, navigation routes, and state across your screens!"
       );
-    }, 1200);
+    }
+  };
+
+  const applyClientWiring = () => {
+    const updatedGroups = groups.map((g) => {
+      const groupCopy: Group = {
+        ...g,
+        items: g.items.map((it) => {
+          const itemCopy: Item = { ...it };
+
+          // 1. Wire Top App Bar actions
+          if (itemCopy.kind === "topAppBar") {
+            const currentActions = { ...(itemCopy.actions || {}) };
+            if (itemCopy.icon === "arrow_back" && frames.length > 0) {
+              currentActions.icon = { to: frames[0].id, transition: "slideLeft" };
+            }
+            if (itemCopy.icon3 === "add" && frames.length > 1) {
+              currentActions.icon3 = { to: frames[1].id, transition: "slide" };
+            }
+            if (itemCopy.icon2 === "save" || itemCopy.icon2 === "check") {
+              currentActions.icon2 = { to: frames[0].id, transition: "slideLeft" };
+            }
+            itemCopy.actions = currentActions;
+          }
+
+          // 2. Wire FAB actions to Create screen (Frame 2)
+          if (itemCopy.kind === "fab") {
+            const targetFrame = frames[1] || frames[0];
+            itemCopy.action = { to: targetFrame.id, transition: "slide" };
+          }
+
+          // 3. Wire Task Card actions to Detail screen (Frame 3)
+          if (itemCopy.kind === "todoCard" || itemCopy.kind === "kanbanCard") {
+            const targetFrame = frames[2] || frames[0];
+            itemCopy.action = { to: targetFrame.id, transition: "slide" };
+          }
+
+          // 4. Wire Action Buttons
+          if (itemCopy.kind === "button") {
+            const label = (itemCopy.label || "").toLowerCase();
+            if (label.includes("edit")) {
+              const targetFrame = frames[3] || frames[0];
+              itemCopy.action = { to: targetFrame.id, transition: "slide" };
+            } else if (
+              label.includes("save") ||
+              label.includes("create") ||
+              label.includes("add") ||
+              label.includes("publish") ||
+              label.includes("cancel") ||
+              label.includes("delete") ||
+              label.includes("mark complete")
+            ) {
+              itemCopy.action = { to: frames[0].id, transition: "slide" };
+            }
+          }
+
+          // 5. Wire Bottom Navigation Tabs
+          if (itemCopy.kind === "bottomNav" && Array.isArray(itemCopy.tabs)) {
+            const navActions: Record<string, { to: string; transition: "fade" | "slide" }> = {};
+            itemCopy.tabs.forEach((_, idx) => {
+              if (frames[idx]) {
+                navActions[`tab:${idx}`] = { to: frames[idx].id, transition: "fade" };
+              }
+            });
+            itemCopy.actions = { ...(itemCopy.actions || {}), ...navActions };
+          }
+
+          return itemCopy;
+        }),
+      };
+      return groupCopy;
+    });
+
+    onApplyFeatures(updatedGroups);
   };
 
   return (

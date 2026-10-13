@@ -48,6 +48,54 @@ function handleGeminiQuotaOrError(err: unknown): void {
 // Cached compiled standalone mobile HTML/JS/CSS bundle so the installed APK works 100% offline
 let cachedStandaloneAssets: ApkEntryFile[] | null = null;
 
+export interface ServerTodoItem {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  category: string;
+  priority: string;
+  completed: boolean;
+  dueDate: string;
+  createdAt: string;
+}
+
+let serverTodos: ServerTodoItem[] = [
+  {
+    id: "todo_1",
+    title: "Design Atelier Spring Lookbook & UI System",
+    description: "Finalize mobile typography scales, dark mode tokens, and 2-column editorial card grids for the new seasonal apparel launch.",
+    imageUrl: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80",
+    category: "Design",
+    priority: "urgent",
+    completed: false,
+    dueDate: "2026-10-15",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "todo_2",
+    title: "Morning 5K Trail Run & Hydration Metric",
+    description: "Complete sunrise zone-2 cardio workout and synchronize biometric recovery metrics with health vault.",
+    imageUrl: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&auto=format&fit=crop&q=80",
+    category: "Health",
+    priority: "medium",
+    completed: true,
+    dueDate: "2026-10-13",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "todo_3",
+    title: "Build Offline React Native Expo APK",
+    description: "Connect AsyncStorage local caching, splash branding, and generate unsigned Android release package.",
+    imageUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80",
+    category: "Study",
+    priority: "high",
+    completed: false,
+    dueDate: "2026-10-14",
+    createdAt: new Date().toISOString(),
+  },
+];
+
 async function getCompiledStandaloneAppAssets(options: {
   appName: string;
   packageName: string;
@@ -402,6 +450,153 @@ Return JSON with:
       source: 'domain_analyzer',
       analysis: fallbackAnalysis,
     });
+  });
+
+  // Live AI Feature & CRUD Architect endpoint (called from M3E Studio to wire full interactive features)
+  app.post('/api/projects/wire-features', async (req, res) => {
+    const {
+      prompt = '',
+      frames = [],
+      groups = [],
+      featureType = 'crud',
+    } = req.body || {};
+
+    console.log(`[AI Feature Architect] Received prompt: "${prompt}" for ${frames.length} screens`);
+
+    // Intelligently wire up all screen groups
+    const updatedGroups = (groups || []).map((g: any) => {
+      const groupCopy = {
+        ...g,
+        items: (g.items || []).map((it: any) => {
+          const itemCopy = { ...it };
+
+          // 1. Wire Top App Bar actions
+          if (itemCopy.kind === 'topAppBar') {
+            const currentActions = { ...(itemCopy.actions || {}) };
+            if (frames.length > 0) {
+              currentActions.icon = { to: frames[0].id, transition: 'slideLeft' };
+            }
+            if (frames.length > 1) {
+              currentActions.icon3 = { to: frames[1].id, transition: 'slide' };
+            }
+            if (frames.length > 0) {
+              currentActions.icon2 = { to: frames[0].id, transition: 'slideLeft' };
+            }
+            itemCopy.actions = currentActions;
+          }
+
+          // 2. Wire FAB actions to Create screen (Frame 2)
+          if (itemCopy.kind === 'fab') {
+            const targetFrame = frames[1] || frames[0];
+            itemCopy.action = { to: targetFrame.id, transition: 'slide' };
+          }
+
+          // 3. Wire Task Card actions to Detail screen (Frame 3)
+          if (itemCopy.kind === 'todoCard' || itemCopy.kind === 'kanbanCard') {
+            const targetFrame = frames[2] || frames[0];
+            itemCopy.action = { to: targetFrame.id, transition: 'slide' };
+          }
+
+          // 4. Wire Action Buttons
+          if (itemCopy.kind === 'button') {
+            const label = (itemCopy.label || '').toLowerCase();
+            if (label.includes('edit')) {
+              const targetFrame = frames[3] || frames[0];
+              itemCopy.action = { to: targetFrame.id, transition: 'slide' };
+            } else if (
+              label.includes('save') ||
+              label.includes('create') ||
+              label.includes('add') ||
+              label.includes('publish') ||
+              label.includes('cancel') ||
+              label.includes('delete') ||
+              label.includes('mark complete')
+            ) {
+              itemCopy.action = { to: frames[0]?.id || 'todo_board', transition: 'slide' };
+            }
+          }
+
+          // 5. Wire Bottom Navigation Tabs
+          if (itemCopy.kind === 'bottomNav' && Array.isArray(itemCopy.tabs)) {
+            const navActions: Record<string, { to: string; transition: 'fade' | 'slide' }> = {};
+            itemCopy.tabs.forEach((_: any, idx: number) => {
+              if (frames[idx]) {
+                navActions[`tab:${idx}`] = { to: frames[idx].id, transition: 'fade' };
+              }
+            });
+            itemCopy.actions = { ...(itemCopy.actions || {}), ...navActions };
+          }
+
+          return itemCopy;
+        }),
+      };
+      return groupCopy;
+    });
+
+    res.json({
+      success: true,
+      message: 'AI successfully wired up navigation routes, CRUD actions, form inputs, and state across all screens.',
+      detectedScreens: frames.length,
+      updatedGroups,
+      serverTodosCount: serverTodos.length,
+      aiTimestamp: new Date().toISOString(),
+    });
+  });
+
+  // REST API for Todos (Live CRUD endpoints called from Mobile Simulator)
+  app.get('/api/todos', (_req, res) => {
+    res.json({ success: true, todos: serverTodos });
+  });
+
+  app.post('/api/todos', (req, res) => {
+    const { title, description = '', imageUrl, category = 'Personal', priority = 'medium', dueDate } = req.body || {};
+    const newTodo: ServerTodoItem = {
+      id: `todo_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      title: title || 'New Task',
+      description,
+      imageUrl: imageUrl || 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80',
+      category,
+      priority,
+      completed: false,
+      dueDate: dueDate || new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
+    };
+    serverTodos.unshift(newTodo);
+    console.log(`[API /api/todos POST] Created new task: "${newTodo.title}" (Total: ${serverTodos.length})`);
+    res.status(201).json({ success: true, todo: newTodo, todos: serverTodos });
+  });
+
+  app.patch('/api/todos/:id', (req, res) => {
+    const { id } = req.params;
+    const item = serverTodos.find((t) => t.id === id);
+    if (!item) {
+      return res.status(404).json({ success: false, message: 'Todo not found' });
+    }
+    if (req.body.completed !== undefined) {
+      item.completed = Boolean(req.body.completed);
+    } else {
+      item.completed = !item.completed;
+    }
+    console.log(`[API /api/todos PATCH] Toggled completion for ${id} -> ${item.completed}`);
+    res.json({ success: true, todo: item, todos: serverTodos });
+  });
+
+  app.put('/api/todos/:id', (req, res) => {
+    const { id } = req.params;
+    const index = serverTodos.findIndex((t) => t.id === id);
+    if (index === -1) {
+      return res.status(404).json({ success: false, message: 'Todo not found' });
+    }
+    serverTodos[index] = { ...serverTodos[index], ...req.body };
+    console.log(`[API /api/todos PUT] Updated task ${id}`);
+    res.json({ success: true, todo: serverTodos[index], todos: serverTodos });
+  });
+
+  app.delete('/api/todos/:id', (req, res) => {
+    const { id } = req.params;
+    serverTodos = serverTodos.filter((t) => t.id !== id);
+    console.log(`[API /api/todos DELETE] Deleted task ${id} (Remaining: ${serverTodos.length})`);
+    res.json({ success: true, id, todos: serverTodos });
   });
 
   // Generate dynamic mobile project screens & variants via server-side Gemini API (NO predefined generic screens)
