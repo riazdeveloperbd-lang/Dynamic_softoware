@@ -223,6 +223,9 @@ export function Toolbar({
   quickUndo,
   onSwitchProject,
   onExportExpo,
+  onOpenAiArchitect,
+  onOpenExpoModal,
+  onAddBlankExpoScreen,
 }: {
   p: Palette;
   mode: Mode;
@@ -270,6 +273,9 @@ export function Toolbar({
   quickUndo?: boolean;
   onSwitchProject?: (projectId: string) => void;
   onExportExpo?: () => void;
+  onOpenAiArchitect?: () => void;
+  onOpenExpoModal?: () => void;
+  onAddBlankExpoScreen?: () => void;
 }) {
   const lang = useLang();
   if (mobile) {
@@ -504,11 +510,35 @@ export function Toolbar({
         <Pill p={p}>
           {frame === "phone" && (
             <>
+              {onAddBlankExpoScreen && (
+                <button
+                  onClick={onAddBlankExpoScreen}
+                  title="Add Blank Expo Screen (<SafeAreaView>)"
+                  className="m3-press"
+                  style={{
+                    height: 40,
+                    padding: "0 12px",
+                    borderRadius: 20,
+                    border: "none",
+                    background: "transparent",
+                    color: p.onSurface,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                  }}
+                >
+                  <Icon name="add" size={16} color={p.primary} />
+                  <span>+ Blank Screen</span>
+                </button>
+              )}
               <IconBtn
                 icon="add_to_photos"
                 p={p}
                 onClick={onAddFrame}
-                title={t("addFrame", lang)}
+                title="Choose Screen Layout from Library"
                 size={40}
               />
               {onRealignGrid && (
@@ -532,14 +562,66 @@ export function Toolbar({
               )}
             </>
           )}
+
+          {onOpenAiArchitect && (
+            <button
+              onClick={onOpenAiArchitect}
+              title="AI App Feature Architect: Auto-wire CRUD state, actions, and screen navigation"
+              className="m3-press"
+              style={{
+                height: 40,
+                padding: "0 14px 0 10px",
+                borderRadius: 20,
+                border: "none",
+                background: `linear-gradient(135deg, ${p.primary} 0%, #8B5CF6 100%)`,
+                color: "#FFFFFF",
+                fontSize: 12.5,
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                boxShadow: "0 2px 8px rgba(139, 92, 246, 0.35)",
+              }}
+            >
+              <Icon name="auto_awesome" size={18} />
+              <span>Prompt AI</span>
+            </button>
+          )}
+
           <IconBtn
             icon="play_arrow"
             p={p}
             onClick={onPreview}
-            title={t("preview", lang)}
+            title="Run in Live Mobile Simulator"
             size={40}
             fill
           />
+
+          {onOpenExpoModal && (
+            <button
+              onClick={onOpenExpoModal}
+              title="View Expo React Native Source Code & Build Android APK"
+              className="m3-press"
+              style={{
+                height: 40,
+                padding: "0 14px 0 10px",
+                borderRadius: 20,
+                border: "none",
+                background: p.surfaceContainerHigh || "#F1F5F9",
+                color: p.onSurface,
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+              }}
+            >
+              <Icon name="smartphone" size={17} color="#10B981" />
+              <span>Expo & APK</span>
+            </button>
+          )}
         </Pill>
 
         <Pill p={p}>

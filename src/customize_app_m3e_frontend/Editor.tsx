@@ -121,6 +121,8 @@ import { Logo } from "./components/Logo";
 import { PartsPalette } from "./components/PartsPalette";
 import { EcommercePreset } from "./lib/ecommerceComponents";
 import { AddScreenLayoutModal } from "./components/AddScreenLayoutModal";
+import { AiFeatureArchitectModal } from "./components/AiFeatureArchitectModal";
+import { ExpoProjectExportModal } from "./components/ExpoProjectExportModal";
 import { InteractionPopover } from "./components/InteractionPopover";
 import {
   AddScreenTemplateId,
@@ -1524,10 +1526,53 @@ export default function Editor({
     const placedItem = targetFrame && slot ? (isBar ? carryItemSize(item, { w: PHONE_W, h: PHONE_H }, { w: slot.w, h: frameSizeOf(targetFrame).h }) : fitHeight(item, frameSizeOf(targetFrame).h)) : item;
     const origin = targetFrame ?? { x: 0, y: 0 };
     const settle = (axis: "x" | "y", pos: number) => (held(axis) ? Math.round(pos) : onGrid(pos, origin[axis]));
+
+    let targetX = isBar && slot ? Math.round(slot.x) : settle("x", rawX);
+    let targetY = settle("y", rawY);
+
+    if (targetFrame && !held("y")) {
+      const fW = frameSizeOf(targetFrame).w;
+      const fH = frameLengthOf(targetFrame);
+      const existingInFrame = groupsRef.current.filter((g) => {
+        return (
+          g.x >= targetFrame.x - 10 &&
+          g.x <= targetFrame.x + fW + 10 &&
+          g.y >= targetFrame.y - 10 &&
+          g.y <= targetFrame.y + fH + 120
+        );
+      });
+
+      if (item.kind === "topAppBar") {
+        targetX = targetFrame.x;
+        targetY = targetFrame.y;
+      } else if (item.kind === "bottomNav") {
+        targetX = targetFrame.x;
+        targetY = targetFrame.y + PHONE_H - 80;
+      } else if (item.kind === "fab") {
+        targetX = targetFrame.x + PHONE_W - 76;
+        targetY = targetFrame.y + PHONE_H - 146;
+      } else {
+        const bodyGroups = existingInFrame.filter(
+          (g) => !g.items.some((it) => it.kind === "bottomNav" || it.kind === "fab")
+        );
+        const overlaps = bodyGroups.some((g) => {
+          const gb = groupBounds(g, widthsRef.current);
+          return !(targetY + sz.h < gb.t || targetY > gb.b);
+        });
+        if (overlaps) {
+          const maxBottom = Math.max(
+            ...bodyGroups.map((g) => groupBounds(g, widthsRef.current).b)
+          );
+          targetY = maxBottom + 12;
+          targetX = targetFrame.x + PHONE_MARGIN;
+        }
+      }
+    }
+
     const landed: Group = {
       id: uid(),
-      x: isBar && slot ? Math.round(slot.x) : settle("x", rawX),
-      y: settle("y", rawY),
+      x: targetX,
+      y: targetY,
       axis: connectSpecOf(item)?.axis ?? "x",
       items: [placedItem],
     };
@@ -2972,13 +3017,78 @@ export default function Editor({
   const ensureFrameRef = useRef(() => {});
   ensureFrameRef.current = ensureFrame;
 
-  /** A palette tile chosen without a pointer, and the phone's plus button, drop a part where
-   *  the view is looking, landing as a drop there would. Over a screen it is kept inside it and
-   *  nudged down when that spot is already taken; over empty canvas it stays at the centre of
-   *  the view, so the new part is always in sight */
+  /** Adds a part to a specific frame, automatically stacking it cleanly without overlapping */
+  const addPartToTargetFrame = (targetFrame: Frame, kind: Kind) => {
+    if (pendingRef.current) flushSync(flushPending);
+    const item = makeItem(kind);
+    const sz = sizeOf(item, widthsRef.current);
+    const { w } = frameSizeOf(targetFrame);
+    const h = frameLengthOf(targetFrame);
+    let x = targetFrame.x + PHONE_MARGIN;
+    let y = targetFrame.y + 68;
+
+    const existingInFrame = groupsRef.current.filter((g) => {
+      return (
+        g.x >= targetFrame.x - 10 &&
+        g.x <= targetFrame.x + w + 10 &&
+        g.y >= targetFrame.y &&
+        g.y <= targetFrame.y + h + 120
+      );
+    });
+
+    if (kind === "topAppBar") {
+      x = targetFrame.x;
+      y = targetFrame.y;
+    } else if (kind === "bottomNav") {
+      x = targetFrame.x;
+      y = targetFrame.y + PHONE_H - 80;
+    } else if (kind === "fab") {
+      x = targetFrame.x + PHONE_W - 76;
+      y = targetFrame.y + PHONE_H - 146;
+    } else {
+      const bodyGroups = existingInFrame.filter((g) => {
+        return !g.items.some((it) => it.kind === "bottomNav" || it.kind === "fab");
+      });
+      if (bodyGroups.length === 0) {
+        const hasTopBar = existingInFrame.some((g) =>
+          g.items.some((it) => it.kind === "topAppBar")
+        );
+        y = targetFrame.y + (hasTopBar ? 68 : 16);
+      } else {
+        const maxBottom = Math.max(
+          ...bodyGroups.map((g) => groupBounds(g, widthsRef.current).b)
+        );
+        y = maxBottom + 12;
+      }
+    }
+
+    snapshot();
+    const ng = landNewPart(item, x, y, () => false);
+    setGroups((gs) => [...gs, ng]);
+    setSelectedIds([item.id]);
+    setSelectedFrameId(targetFrame.id);
+    showToast(`Added ${KIND_SPEC[kind]?.label || kind} to ${targetFrame.name}`);
+  };
+
+  /** Adds a new blank Expo screen frame representing an Expo <SafeAreaView> */
+  const handleAddBlankExpoScreen = () => {
+    snapshot();
+    const newX = nextFrameX();
+    const newY = framesRef.current[0]?.y ?? 0;
+    const f: Frame = {
+      id: uid(),
+      name: `Screen ${framesRef.current.length + 1} (Expo Screen)`,
+      x: newX,
+      y: newY,
+    };
+    setFrames((fs) => [...fs, f]);
+    setSelectedFrameId(f.id);
+    setSelectedIds([]);
+    showToast(`Created Blank Expo Screen: "${f.name}"`);
+  };
+
+  /** A palette tile chosen without a pointer drops a part into the active frame or canvas center */
   const addPart = (kind: Kind) => {
-    /* a snapped drop still settling is committed and rendered first, so the undo step taken
-     * below sees it and the free-spot search counts it */
     if (pendingRef.current) flushSync(flushPending);
     const r = canvasRect();
     const v = viewRef.current;
@@ -2986,29 +3096,27 @@ export default function Editor({
     const sz = sizeOf(item, widthsRef.current);
     const cx = ((r?.width ?? 0) / 2 - v.x) / v.z;
     const cy = ((r?.height ?? 0) / 2 - v.y) / v.z;
-    /* screens are hidden on a blank canvas; the phone shows one screen at a time, so its plus
-     * button always means that screen */
+
+    // Prioritize selected frame!
     const f =
       frameRef.current !== "phone"
         ? undefined
-        : framesRef.current.find((fr) => {
+        : (selectedFrameId
+            ? framesRef.current.find((fr) => fr.id === selectedFrameId)
+            : undefined) ??
+          framesRef.current.find((fr) => {
             const fr2 = frameRect(fr);
             return cx >= fr2.l && cx <= fr2.r && cy >= fr2.t && cy <= fr2.b;
-          }) ?? (mobileRef.current ? framesRef.current[0] : undefined);
+          }) ??
+          (mobileRef.current ? framesRef.current[0] : undefined);
+
+    if (f) {
+      addPartToTargetFrame(f, kind);
+      return;
+    }
+
     let x = cx - sz.w / 2;
     let y = cy - sz.h / 2;
-    if (f) {
-      const { w } = frameSizeOf(f);
-      const h = frameLengthOf(f);
-      const lx = f.x + Math.min(FRAME_MARGIN, (w - sz.w) / 2);
-      const ly = f.y + Math.min(FRAME_MARGIN, (h - sz.h) / 2);
-      x = clamp(x, lx, Math.max(lx, f.x + w - FRAME_MARGIN - sz.w));
-      y = clamp(y, ly, Math.max(ly, f.y + h - FRAME_MARGIN - sz.h));
-      const taken = (yy: number) =>
-        itemRects().some((o) => o.l < x + sz.w && o.r > x && o.t < yy + sz.h && o.b > yy);
-      let tries = 0;
-      while (taken(y) && y + sz.h * 2 < f.y + h && tries++ < 12) y += sz.h + 12;
-    }
     snapshot();
     const ng = landNewPart(item, x, y, () => false);
     setGroups((gs) => [...gs, ng]);
@@ -3135,6 +3243,8 @@ export default function Editor({
   };
 
   const [isAddScreenModalOpen, setIsAddScreenModalOpen] = useState(false);
+  const [isAiArchitectOpen, setIsAiArchitectOpen] = useState(false);
+  const [isExpoModalOpen, setIsExpoModalOpen] = useState(false);
   const [addScreenTargetSlot, setAddScreenTargetSlot] = useState<
     GridSlot | { x: number; y: number; label?: string } | null
   >(null);
@@ -4940,6 +5050,94 @@ export default function Editor({
                           {groups
                             .filter((g) => frameOf.get(g.id) === f.id)
                             .map((g) => renderGroup(g, f.x, f.y))}
+                          {groups.filter((g) => frameOf.get(g.id) === f.id).length === 0 && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: 20,
+                                borderRadius: 28,
+                                border: `2px dashed ${p.primary}80`,
+                                backgroundColor: `${p.primaryContainer}18`,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: 20,
+                                textAlign: "center",
+                                gap: 14,
+                                userSelect: "none",
+                                zIndex: 5,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                  padding: "6px 14px",
+                                  borderRadius: 20,
+                                  background: p.primaryContainer,
+                                  color: p.onPrimaryContainer,
+                                  fontSize: 12,
+                                  fontWeight: 800,
+                                }}
+                              >
+                                <Icon name="smartphone" size={16} />
+                                <span>Expo &lt;SafeAreaView&gt; Screen</span>
+                              </div>
+                              <div style={{ fontSize: 16, fontWeight: 900, color: p.onSurface }}>
+                                Empty Screen Canvas
+                              </div>
+                              <div style={{ fontSize: 12, color: p.onSurfaceVariant, maxWidth: 260, lineHeight: 1.5 }}>
+                                Drag components from the left palette or click any quick component below to add to this screen
+                              </div>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexWrap: "wrap",
+                                  gap: 8,
+                                  justifyContent: "center",
+                                  marginTop: 6,
+                                  maxWidth: 320,
+                                }}
+                              >
+                                {[
+                                  { label: "+ Top App Bar", kind: "topAppBar" as Kind, icon: "web_asset" },
+                                  { label: "+ Text Input", kind: "textField" as Kind, icon: "edit" },
+                                  { label: "+ Button", kind: "button" as Kind, icon: "smart_button" },
+                                  { label: "+ Task Card", kind: "todoCard" as Kind, icon: "checklist" },
+                                  { label: "+ Checkbox", kind: "checkbox" as Kind, icon: "check_box" },
+                                  { label: "+ Bottom Nav", kind: "bottomNav" as Kind, icon: "navigation" },
+                                ].map((btn) => (
+                                  <button
+                                    key={btn.kind}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      addPartToTargetFrame(f, btn.kind);
+                                    }}
+                                    className="m3-press"
+                                    style={{
+                                      padding: "6px 12px",
+                                      borderRadius: 12,
+                                      border: `1px solid ${p.outlineVariant}60`,
+                                      background: p.surface || "#FFFFFF",
+                                      color: p.onSurface,
+                                      fontSize: 11.5,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 4,
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
+                                    }}
+                                  >
+                                    <Icon name={btn.icon} size={14} color={p.primary} />
+                                    <span>{btn.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           {groups.some((g) => frameOf.get(g.id) === f.id && modalRailOf(g)) && (
                             <div aria-hidden style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.32)", pointerEvents: "none", zIndex: 1 }} />
                           )}
@@ -5500,6 +5698,9 @@ export default function Editor({
             }}
             onSwitchProject={onSwitchProject}
             onExportExpo={handleExportExpo}
+            onOpenAiArchitect={() => setIsAiArchitectOpen(true)}
+            onOpenExpoModal={() => setIsExpoModalOpen(true)}
+            onAddBlankExpoScreen={handleAddBlankExpoScreen}
           />
 
           {isMobile && (
@@ -5834,6 +6035,28 @@ export default function Editor({
           onCreateScreen={handleCreateScreenFromTemplate}
           suggestedSlots={emptyGridSlots}
           preselectedSlot={addScreenTargetSlot}
+        />
+
+        <AiFeatureArchitectModal
+          isOpen={isAiArchitectOpen}
+          onClose={() => setIsAiArchitectOpen(false)}
+          palette={p}
+          frames={frames}
+          groups={groups}
+          onApplyFeatures={(updatedGroups) => {
+            snapshot();
+            setGroups(updatedGroups);
+            showToast("✨ AI wired up all navigation, actions & interactive features across your screens!");
+          }}
+          onOpenSimulator={() => openPreview()}
+        />
+
+        <ExpoProjectExportModal
+          isOpen={isExpoModalOpen}
+          onClose={() => setIsExpoModalOpen(false)}
+          palette={p}
+          frames={frames}
+          groups={groups}
         />
 
         {interactionPopover && (() => {
