@@ -4430,6 +4430,10 @@ export type Action = {
   dimBackground?: boolean;
   /** delay in ms for delay trigger */
   delayMs?: number;
+  /** custom command identifier for CRUD operations (e.g. save_task, update_task, delete_task, complete_task) */
+  command?: string;
+  /** target modal group ID if triggering or closing an in-screen modal dialog */
+  modalTarget?: string;
 };
 
 /** the height a button is drawn at: the author's, else M3's medium button. An icon button has
@@ -4770,6 +4774,11 @@ export const TAPPABLE: Kind[] = [
   "faqAccordion",
   "otpInput",
   "fileUpload",
+  "todoCard",
+  "todoCreateCard",
+  "todoDetailCard",
+  "todoEditCard",
+  "todoStatsCard",
 ];
 
 /** palette roles a user may pick as a background */
@@ -5154,14 +5163,19 @@ export function freeRadii(g: Group, widths: Record<string, number>): Map<string,
   return radiiOfRuns(explodeGroup(g, widths));
 }
 
-/** a run belongs to the frame that contains its centre */
+/** a run belongs to the frame that contains its centre, or horizontally within and starting inside the frame */
 export function frameOfGroup(g: Group, frames: Frame[], widths: Record<string, number>): Frame | undefined {
   const bb = groupBounds(g, widths);
   const cx = (bb.l + bb.r) / 2;
   const cy = (bb.t + bb.b) / 2;
-  return frames.find((f) => {
+  const exact = frames.find((f) => {
     const fr = frameRect(f);
     return cx >= fr.l && cx <= fr.r && cy >= fr.t && cy <= fr.b;
+  });
+  if (exact) return exact;
+  return frames.find((f) => {
+    const fr = frameRect(f);
+    return cx >= fr.l - 4 && cx <= fr.r + 4 && bb.t >= fr.t - 4 && bb.t < fr.b;
   });
 }
 
@@ -5179,6 +5193,9 @@ export type Group = {
   /** a hand-made group: parts keep their own offsets (in `pos`) and move as one layer */
   free?: boolean;
   pos?: Record<string, { x: number; y: number }>;
+  /** indicates this group acts as an in-screen overlay modal / dialog / bottom-sheet */
+  isModal?: boolean;
+  role?: string;
 };
 
 export type FrameMode = "blank" | "phone";

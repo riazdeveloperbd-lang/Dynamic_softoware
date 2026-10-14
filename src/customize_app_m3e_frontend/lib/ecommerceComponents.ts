@@ -2972,7 +2972,7 @@ export function buildMoneyManagementAppDoc(): Doc {
         variant: "filled",
         size: 380,
         size2: 54,
-        action: { to: "money_dashboard", transition: "fade" },
+        action: { to: "money_dashboard", transition: "fade", command: "transfer_money" },
       },
     ],
   });

@@ -74,9 +74,20 @@ import type { Ripple } from "./M3Node";
 import { IconBtn } from "./ui";
 import { t, useLang } from "../lib/i18n";
 import { constrainModalRails, modalRailOf, updateRail } from "../lib/rail";
-import { pinOf } from "../lib/tidy";
 import { railMotionTargets } from "../lib/railView";
-import { MobileLiveAppSimulator } from "./MobileLiveAppSimulator";
+import { pinOf } from "../lib/tidy";
+import {
+  detectAppDomain,
+  getDomainMockRecords,
+  bindSelectedRecordToDetailScreens,
+  appendRecordToCollection,
+  updateRecordInCollection,
+  deleteRecordFromCollection,
+  toggleRecordInCollection,
+  synchronizeAllScreensState,
+  populateDomainMockData,
+  type MockItemRecord,
+} from "../lib/universalDataEngine";
 
 const EASE = [0.2, 0, 0, 1] as const;
 const SLIDE_MS = 0.42;
@@ -749,6 +760,9 @@ function Screen({
   onFlip,
   values,
   onValue,
+  allFrames,
+  activeModalId,
+  setActiveModalId,
 }: {
   active?: boolean;
   frame: Frame;
@@ -761,6 +775,9 @@ function Screen({
   onFlip: (id: string) => void;
   values: Record<string, number>;
   onValue: (id: string, v: number) => void;
+  allFrames?: Frame[];
+  activeModalId?: string | null;
+  setActiveModalId?: (id: string | null) => void;
 }) {
   /* the dropdown whose menu is open, if any; its group is lifted above the rest */
   const [menuId, setMenuId] = useState<string | null>(null);
@@ -777,6 +794,37 @@ function Screen({
     (current, [id, railExpanded]) => updateRail(current, [frame], widths, id, { railExpanded }), constrainModalRails(groups),
   ), [groups, frame, widths, railStates]);
   const modalIds = new Set(shownGroups.flatMap((g) => { const rail = modalRailOf(g); return rail ? [rail.id] : []; }));
+
+  // Check if a group is an in-screen modal dialog
+  const isGroupInScreenModal = useCallback(
+    (g: Group) => {
+      if ((g as any).isModal) return true;
+      const isTargeted = groups.some((grp) =>
+        grp.items.some(
+          (it) => it.action?.command === "open_modal" && (it.action.modalTarget === g.id || it.action.to === g.id)
+        )
+      );
+      if (isTargeted) return true;
+      const hasInput = g.items.some((it) => it.kind === "textField" || it.kind === "select" || it.kind === "otpInput");
+      const hasSubmitOrClose = g.items.some(
+        (it) =>
+          (it.kind === "button" && /(submit|save|add|create|confirm|done)/i.test(it.label || "")) ||
+          (it.kind === "iconButton" && /(close|clear|cancel)/i.test(it.icon || ""))
+      );
+      const hasTriggerOnScreen = groups.some(
+        (grp) =>
+          grp.id !== g.id &&
+          grp.items.some((it) => it.kind === "fab" || it.kind === "extendedFab" || it.action?.command === "open_modal")
+      );
+      return hasInput && hasSubmitOrClose && hasTriggerOnScreen;
+    },
+    [groups]
+  );
+
+  const activeModalGroup = useMemo(() => {
+    if (!activeModalId) return null;
+    return shownGroups.find((g) => g.id === activeModalId || (isGroupInScreenModal(g) && (activeModalId === "modal" || activeModalId === "true")));
+  }, [shownGroups, activeModalId, isGroupInScreenModal]);
   /* A screen longer than the device scrolls its body under what stays put. Which end a part
    * stays with is the same rule a change of length goes by (`pinOf`): one at the head keeps its
    * place on the glass, one at the foot keeps its distance from the foot, so a navigation bar at
@@ -881,7 +929,7 @@ function Screen({
   });
   /* the body scrolls in a layer of its own, the length of the screen; what stays put is laid
    * over it, in the order the screen draws them */
-  const inBody = (nodes: React.ReactElement[]) =>
+  const inBody = (nodes: (React.ReactElement | null)[]) =>
     scrolls ? (
       <>
         <div
@@ -889,12 +937,12 @@ function Screen({
           className="m3-hidden-scrollbar"
           style={{ position: "absolute", inset: 0, overflowX: "hidden", overflowY: "auto", overscrollBehavior: "contain", touchAction: "pan-y" }}
         >
-          <div style={{ position: "relative", height: length }}>{nodes.filter((_, i) => !pins.has(shownGroups[i].id))}</div>
+          <div style={{ position: "relative", height: length }}>{nodes.filter((n, i) => n !== null && !pins.has(shownGroups[i].id))}</div>
         </div>
-        {nodes.filter((_, i) => pins.has(shownGroups[i].id))}
+        {nodes.filter((n, i) => n !== null && pins.has(shownGroups[i].id))}
       </>
     ) : (
-      nodes
+      (nodes.filter(Boolean) as React.ReactElement[])
     );
 
   return (
@@ -925,6 +973,9 @@ function Screen({
         />}
       </AnimatePresence>
       {inBody(shownGroups.map((g) => {
+        if (isGroupInScreenModal(g)) {
+          return null;
+        }
         /* a FAB opens its menu out of itself: the run hangs from the button's own bottom right,
          * so the entries rise above it and the button stays where the author put it */
         const fabCorner = g.items.length === 1 && hasMenu(g.items[0]) ? sizeOf({ ...g.items[0], [fabOpen]: undefined }, widths) : null;
@@ -991,11 +1042,22 @@ function Screen({
             if (navKind && values[navKey] !== undefined && values[navKey] >= 0) shown = { ...shown, selected: values[navKey] };
             /* a row whose selection the author never set shows the destination the visitor tapped to open this screen */
             else if (navKind && it.selected === undefined && values[`${navKey}:opened:${frame.id}`] !== undefined) shown = { ...shown, selected: values[`${navKey}:opened:${frame.id}`] };
+            const isFab = it.kind === "fab" || it.kind === "extendedFab";
+            const candidateModal = groups.find(isGroupInScreenModal);
             const tap =
-              act || flips(it)
+              act || flips(it) || (isFab && candidateModal)
                 ? () => {
                     if (flips(it)) onFlip(it.id);
-                    if (act) onAction(act);
+                    if (act) {
+                      onAction(act);
+                    } else if (isFab && candidateModal) {
+                      onAction({
+                        to: frame.id,
+                        transition: "fade",
+                        command: "open_modal",
+                        modalTarget: candidateModal.id,
+                      });
+                    }
                   }
                 : undefined;
             const slotActions = it.actions;
@@ -1033,7 +1095,30 @@ function Screen({
                           if (a) onValue(`${navKey}:opened:${a.to}`, Number(slot.slice(4)));
                         }
                         if (modalIds.has(it.id)) closeRails(animate);
-                        if (a) onAction(a);
+                        if (a) {
+                          onAction(a);
+                        } else if (navKind && slot.startsWith("tab:")) {
+                          const tabIdx = Number(slot.slice(4));
+                          const tabLabel = (it.tabs?.[tabIdx]?.label || "").toLowerCase();
+                          const matched = (allFrames || []).find((f) => {
+                            const n = `${f.id} ${f.name || ""}`.toLowerCase();
+                            return (
+                              (tabLabel.includes("analytic") && n.includes("analytic")) ||
+                              (tabLabel.includes("transfer") && n.includes("transfer")) ||
+                              (tabLabel.includes("goal") && (n.includes("goal") || n.includes("saving"))) ||
+                              (tabLabel.includes("card") && (n.includes("card") || n.includes("transfer"))) ||
+                              (tabLabel.includes("dash") && (n.includes("dash") || n.includes("wallet") || n.includes("home")))
+                            );
+                          }) || allFrames?.[tabIdx];
+                          if (matched) {
+                            onAction({ to: matched.id, transition: "fade" });
+                          }
+                        } else if (
+                          slot === "icon" &&
+                          (it.icon === "arrow_back" || it.icon === "chevron_left" || it.icon === "close")
+                        ) {
+                          onAction({ to: BACK_TARGET, transition: "slideLeft" });
+                        }
                       }
                     : undefined
                 }
@@ -1056,6 +1141,108 @@ function Screen({
         </div>
         );
       }))}
+
+      {/* In-Screen Modal Dialog Overlay */}
+      <AnimatePresence>
+        {activeModalGroup && (
+          <motion.div
+            key="in-screen-modal-dialog-scrim"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={() => onAction({ to: frame.id, transition: "fade", command: "close_modal" })}
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 90,
+              backgroundColor: "rgba(0, 0, 0, 0.55)",
+              backdropFilter: "blur(3.5px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+              boxSizing: "border-box",
+            }}
+          >
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.88, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 14 }}
+              transition={{ type: "spring", damping: 28, stiffness: 380 }}
+              style={{
+                width: "100%",
+                maxWidth: 340,
+                backgroundColor: p.surfaceContainerHigh || "#FFFFFF",
+                borderRadius: 24,
+                boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+                overflow: "hidden",
+                padding: 18,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "stretch",
+                gap: GAP,
+                border: `1px solid ${p.outlineVariant}60`,
+              }}
+            >
+              {activeModalGroup.items.map((it) => {
+                const shown = flipped.has(it.id) ? flippedLook(it) : it;
+                const act = it.action;
+                const isClose =
+                  (it.kind === "iconButton" && /(close|clear|cancel)/i.test(it.icon || "")) ||
+                  (it.kind === "button" && /(cancel|close|discard)/i.test(it.label || ""));
+                const isSubmit =
+                  it.kind === "button" && /(submit|save|add|create|confirm|done)/i.test(it.label || "");
+                const tap = () => {
+                  if (act) onAction(act);
+                  else if (isClose)
+                    onAction({
+                      to: frame.id,
+                      transition: "fade",
+                      command: "close_modal",
+                      modalTarget: activeModalGroup.id,
+                    });
+                  else if (isSubmit)
+                    onAction({
+                      to: frame.id,
+                      transition: "fade",
+                      command: "submit_modal",
+                      modalTarget: activeModalGroup.id,
+                    });
+                };
+                return (
+                  <div
+                    key={it.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: isClose ? "flex-end" : undefined,
+                      width: isClose ? undefined : "100%",
+                      alignSelf: isClose ? "flex-end" : undefined,
+                    }}
+                  >
+                    <Tappable
+                      item={shown}
+                      p={p}
+                      radii={baseRadii(it)}
+                      widths={widths}
+                      onTap={tap}
+                      onSlot={
+                        it.actions
+                          ? (slot) => {
+                              const a = it.actions?.[slot];
+                              if (a) onAction(a);
+                            }
+                          : undefined
+                      }
+                    />
+                  </div>
+                );
+              })}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1085,7 +1272,35 @@ export function Preview({
   const [scale, setScale] = useState(1);
   const [flipped, setFlipped] = useState<Set<string>>(() => new Set());
   const [values, setValues] = useState<Record<string, number>>({});
-  const [simMode, setSimMode] = useState<"live" | "canvas">("live");
+  const [liveGroups, setLiveGroups] = useState<Group[]>(() => synchronizeAllScreensState(doc.groups));
+  const [activeModalId, setActiveModalId] = useState<string | null>(null);
+  const lastTypedInputRef = useRef<string>("");
+  const domain = useMemo(() => detectAppDomain(doc), [doc]);
+  const domainPresets = useMemo(() => getDomainMockRecords(domain), [domain]);
+  const defaultRecord: MockItemRecord = domainPresets[0] || {
+    id: "item_default",
+    title: "New Item",
+    description: "Detailed description",
+    imageUrl: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800",
+    badge: "Active",
+    category: "General",
+  };
+  const selectedRecordRef = useRef<MockItemRecord>(defaultRecord);
+  const [selectedTaskId, setSelectedTaskId] = useState<string>(defaultRecord.id);
+  const formStateRef = useRef({
+    createTitle: defaultRecord.title,
+    createDesc: defaultRecord.description,
+    createDueDate: defaultRecord.dueDate || "Oct 15, 2026 • 09:00 AM",
+    createCover: defaultRecord.imageUrl || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800",
+    createPriority: defaultRecord.badge || "Urgent",
+    createCategory: defaultRecord.category || "Design",
+    editTitle: defaultRecord.title,
+    editDesc: defaultRecord.description,
+    editDueDate: defaultRecord.dueDate || "Oct 15, 2026 • 09:00 AM",
+    editCover: defaultRecord.imageUrl || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800",
+    editPriority: defaultRecord.badge || "Urgent",
+    editCategory: defaultRecord.category || "Design",
+  });
   const [peek, setPeek] = useState<Peek | null>(null);
   const stackRef = useRef(stack);
   stackRef.current = stack;
@@ -1093,13 +1308,47 @@ export function Preview({
   peekRef.current = peek;
   const swiped = useRef(false);
 
-  const flip = (id: string) =>
+  const moneyTransferAmtRef = useRef(250);
+  const moneyRecipientRef = useRef("Sarah Miller (@sarahm)");
+
+  const flip = (id: string) => {
     setFlipped((s) => {
       const n = new Set(s);
       if (n.has(id)) n.delete(id);
       else n.add(id);
       return n;
     });
+
+    // Check if clicked item is an amount chip ($50, $100, $250, $500)
+    for (const g of liveGroups) {
+      const it = g.items.find((item) => item.id === id);
+      if (it && it.kind === "chip" && (it.label || "").startsWith("$")) {
+        const amt = Number(it.label.replace(/[^0-9.]/g, "")) || 250;
+        moneyTransferAmtRef.current = amt;
+        setLiveGroups((prev) =>
+          prev.map((group) => {
+            let mod = false;
+            const nextItems = group.items.map((item) => {
+              if (item.kind === "chip" && (item.label || "").startsWith("$")) {
+                mod = true;
+                return { ...item, checked: item.id === id };
+              }
+              if (
+                item.kind === "button" &&
+                (item.label?.includes("Authorize & Send") || item.action?.command === "transfer_money")
+              ) {
+                mod = true;
+                return { ...item, label: `Authorize & Send $${amt.toFixed(2)} Now` };
+              }
+              return item;
+            });
+            return mod ? { ...group, items: nextItems } : group;
+          })
+        );
+        break;
+      }
+    }
+  };
 
   const top = stack[stack.length - 1];
   const current = frames.find((f) => f.id === top?.id) ?? frames[0];
@@ -1221,14 +1470,449 @@ export function Preview({
         if (href) window.open(href, "_blank", "noopener,noreferrer");
         return;
       }
+
+      // ================= IN-SCREEN MODAL DIALOG HANDLERS =================
+      if (a.command === "open_modal") {
+        const curScreenGroups = groupsFor(current);
+        const modalGrp = a.modalTarget
+          ? curScreenGroups.find((g) => g.id === a.modalTarget)
+          : curScreenGroups.find(
+              (g) =>
+                (g as any).isModal ||
+                (g.items.some((it) => it.kind === "textField" || it.kind === "select" || it.kind === "otpInput") &&
+                  g.items.some(
+                    (it) =>
+                      (it.kind === "button" && /(submit|save|add|create)/i.test(it.label || "")) ||
+                      (it.kind === "iconButton" && /(close|cancel)/i.test(it.icon || ""))
+                  ))
+            );
+        if (modalGrp) {
+          setActiveModalId(modalGrp.id);
+          return;
+        }
+      }
+
+      if (a.command === "close_modal") {
+        setActiveModalId(null);
+        return;
+      }
+
+      // Universal Submit Modal / Add To List Handler
+      if (a.command === "submit_modal" || (a.command === "save_task" && frames.length === 1)) {
+        let title = lastTypedInputRef.current?.trim() || "";
+        if (!title) {
+          for (const g of liveGroups) {
+            const tf = g.items.find((it) => it.kind === "textField");
+            if (tf && tf.value !== undefined && String(tf.value).trim()) {
+              title = String(tf.value).trim();
+              break;
+            }
+          }
+        }
+        if (!title) {
+          title = formStateRef.current.createTitle?.trim() || "New Item";
+        }
+
+        // Close modal
+        setActiveModalId(null);
+        lastTypedInputRef.current = "";
+
+        // Append to collection on current screen
+        setLiveGroups((prev) =>
+          appendRecordToCollection(
+            prev,
+            current.id,
+            {
+              title,
+              description: formStateRef.current.createDesc || "Added just now",
+              imageUrl: formStateRef.current.createCover,
+              badge: formStateRef.current.createPriority || "Active",
+            },
+            title
+          )
+        );
+        return;
+      }
+
+      // ================= UNIVERSAL CANVAS CRUD HANDLERS =================
+      // 1. SAVE / CREATE RECORD (From Screen 2 to Screen 1)
+      if (a.command === "save_task" || a.command === "save_item" || a.command === "create_record") {
+        const title = formStateRef.current.createTitle?.trim() || lastTypedInputRef.current?.trim() || "New Item";
+        const description = formStateRef.current.createDesc?.trim() || "High quality item details";
+        const imageUrl = formStateRef.current.createCover || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80";
+        const priority = formStateRef.current.createPriority || "Active";
+
+        setLiveGroups((prev) =>
+          appendRecordToCollection(
+            prev,
+            frames[0]?.id,
+            {
+              title,
+              description,
+              imageUrl,
+              badge: priority,
+            },
+            title
+          )
+        );
+      }
+
+      // 2. UPDATE RECORD (From Edit Screen to Home/Detail Screen)
+      if (a.command === "update_task" || a.command === "update_item") {
+        const activeId = selectedRecordRef.current?.id || selectedTaskId;
+        const title = formStateRef.current.editTitle?.trim() || "Updated Item";
+        const description = formStateRef.current.editDesc?.trim() || "Updated description";
+        const imageUrl = formStateRef.current.editCover || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800";
+        const priority = formStateRef.current.editPriority || "Active";
+
+        setLiveGroups((prev) =>
+          updateRecordInCollection(prev, activeId, {
+            title,
+            description,
+            imageUrl,
+            badge: priority,
+          })
+        );
+      }
+
+      // 3. DELETE RECORD (From Detail or Edit Screen to Home Screen)
+      if (a.command === "delete_task" || a.command === "delete_item") {
+        const activeId = selectedRecordRef.current?.id || selectedTaskId;
+        setLiveGroups((prev) => deleteRecordFromCollection(prev, activeId));
+      }
+
+      // 4. COMPLETE / TOGGLE STATUS (From Detail or List Screen)
+      if (a.command === "complete_task" || a.command === "toggle_item") {
+        const activeId = selectedRecordRef.current?.id || selectedTaskId;
+        setLiveGroups((prev) => toggleRecordInCollection(prev, activeId, true).updatedGroups);
+      }
+
+      // 5. MONEY TRANSFER (FinTrack Wealth / Money App)
+      if (
+        a.command === "transfer_money" ||
+        ((a.to?.includes("money_dashboard") || a.to === frames[0]?.id) &&
+          (stackRef.current[stackRef.current.length - 1]?.id?.includes("transfer") ||
+            stackRef.current[stackRef.current.length - 1]?.id === frames[2]?.id))
+      ) {
+        const transferAmt = moneyTransferAmtRef.current || 250;
+        const recipient = moneyRecipientRef.current || "Sarah Miller (@sarahm)";
+
+        // Fire real HTTP POST to /api/transactions
+        fetch("/api/transactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: transferAmt,
+            recipient: recipient.replace(/\s*\(.*\)/, "").trim() || "Sarah Miller",
+            memo: "Instant Wire Transfer",
+          }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            console.log("[Transfer Network Success]", data);
+          })
+          .catch((err) => console.warn("[Transfer Network Notice]", err));
+
+        setLiveGroups((prev) => {
+          return prev.map((g) => {
+            // Update Balance Card
+            if (g.items.some((it) => it.kind === "balanceCard")) {
+              const nextItems = g.items.map((it) => {
+                if (it.kind === "balanceCard") {
+                  const currentBal = Number((it.label || "$34,580.00").replace(/[^0-9.-]+/g, "")) || 34580;
+                  const newBal = Math.max(0, currentBal - transferAmt);
+                  return {
+                    ...it,
+                    label: `$${newBal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                    supporting: `+$5,420.00 Income • -$${(2180 + transferAmt).toLocaleString("en-US", { minimumFractionDigits: 2 })} Spent (+17.4% saved)`,
+                  };
+                }
+                return it;
+              });
+              return { ...g, items: nextItems };
+            }
+
+            // Prepend new transaction to Recent Transactions group
+            if (g.items.some((it) => it.kind === "transactionItem")) {
+              const newTxItem: Item = {
+                id: `tx_${Date.now()}`,
+                kind: "transactionItem" as Kind,
+                label: `-$${transferAmt.toFixed(2)}`,
+                supporting: `${recipient} • Instant Wire • Just now`,
+                icon: "send",
+                variant: "filled",
+                size: 380,
+              };
+              return { ...g, items: [newTxItem, ...g.items] };
+            }
+
+            return g;
+          });
+        });
+      }
+
+      // 6. MONEY DEPOSIT / ADD MONEY
+      if (a.command === "deposit_money") {
+        const depositAmt = 500;
+        fetch("/api/transactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: depositAmt,
+            recipient: "Direct Bank Deposit",
+            memo: "Instant Account Top-up",
+          }),
+        }).catch(console.warn);
+
+        setLiveGroups((prev) => {
+          return prev.map((g) => {
+            if (g.items.some((it) => it.kind === "balanceCard")) {
+              const nextItems = g.items.map((it) => {
+                if (it.kind === "balanceCard") {
+                  const currentBal = Number((it.label || "$34,580.00").replace(/[^0-9.-]+/g, "")) || 34580;
+                  const newBal = currentBal + depositAmt;
+                  return {
+                    ...it,
+                    label: `$${newBal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                    supporting: `+$${(5420 + depositAmt).toLocaleString("en-US", { minimumFractionDigits: 2 })} Income • -$2,180.00 Spent (+20.2% saved)`,
+                  };
+                }
+                return it;
+              });
+              return { ...g, items: nextItems };
+            }
+
+            if (g.items.some((it) => it.kind === "transactionItem")) {
+              const newTxItem: Item = {
+                id: `tx_${Date.now()}`,
+                kind: "transactionItem" as Kind,
+                label: `+$${depositAmt.toFixed(2)}`,
+                supporting: `Bank Deposit • Account Top-up • Just now`,
+                icon: "account_balance",
+                variant: "filled",
+                size: 380,
+              };
+              return { ...g, items: [newTxItem, ...g.items] };
+            }
+
+            return g;
+          });
+        });
+      }
+
       if (!frames.some((f) => f.id === a.to)) return;
       const s = stackRef.current;
       const t = sameSize(s[s.length - 1].id, a.to) ? a.transition : "fade";
       setAnim({ t, back: false, spring });
       setStack((cur) => [...cur, { id: a.to, t }]);
     },
-    [frames, back, spring, sameSize],
+    [frames, back, spring, sameSize, selectedTaskId]
   );
+
+  // Custom interactive event listeners for canvas components
+  useEffect(() => {
+    // 1. Card click -> populate detail and edit screens universally
+    const onCardSelected = (e: any) => {
+      const { id, label, item } = e.detail || {};
+      const allPresets = getDomainMockRecords(domain);
+      const matchedPreset = allPresets.find((p) => p.id === id || p.title === label);
+      const rec: MockItemRecord = {
+        id: id || item?.id || matchedPreset?.id || "item_selected",
+        title: label || item?.label || matchedPreset?.title || "Selected Item",
+        description: item?.supporting || matchedPreset?.description || "High quality item details",
+        imageUrl: item?.icon2 || item?.imageUrl || matchedPreset?.imageUrl || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800",
+        badge: item?.badge || matchedPreset?.badge || "Active",
+        price: label && label.startsWith("$") ? label : matchedPreset?.price || "$120.00",
+        category: matchedPreset?.category || "General",
+        completed: item?.badge === "Completed",
+        rawItem: item,
+      };
+
+      selectedRecordRef.current = rec;
+      setSelectedTaskId(rec.id);
+      formStateRef.current.editTitle = rec.title;
+      formStateRef.current.editDesc = rec.description;
+      formStateRef.current.editCover = rec.imageUrl || "";
+      formStateRef.current.editPriority = rec.badge || "Urgent";
+      formStateRef.current.editDueDate = rec.dueDate || "Oct 15, 2026 • 09:00 AM";
+
+      setLiveGroups((prev) => synchronizeAllScreensState(bindSelectedRecordToDetailScreens(prev, rec)));
+    };
+
+    // 2. Card toggle checkbox
+    const onCardToggle = (e: any) => {
+      const { id, label, isCompleted } = e.detail || {};
+      setLiveGroups((prev) => toggleRecordInCollection(prev, id, isCompleted, label).updatedGroups);
+    };
+
+    // 3. Card edit icon click
+    const onCardEdit = (e: any) => {
+      onCardSelected(e);
+      const editFrame = frames.find((f) => /edit|update|modify|settings/i.test(`${f.name} ${f.id}`));
+      go({ to: editFrame ? editFrame.id : frames[2]?.id || frames[0]?.id, transition: "slide" });
+    };
+
+    // 5. Input text typing
+    const onInputChange = (e: any) => {
+      const { label, value } = e.detail || {};
+      if (typeof value === "string") lastTypedInputRef.current = value;
+      if (label?.includes("Edit Title")) formStateRef.current.editTitle = value;
+      else if (label?.includes("Edit Description")) formStateRef.current.editDesc = value;
+      else if (label?.includes("Task Title") || label?.includes("Title")) formStateRef.current.createTitle = value;
+      else if (label?.includes("Description")) formStateRef.current.createDesc = value;
+      else if (label?.includes("Due Date")) {
+        formStateRef.current.createDueDate = value;
+        formStateRef.current.editDueDate = value;
+      }
+    };
+
+    // 6. Cover photo picked / upload
+    const onCoverPicked = (e: any) => {
+      const { url } = e.detail || {};
+      formStateRef.current.createCover = url;
+      formStateRef.current.editCover = url;
+
+      setLiveGroups((prev) =>
+        prev.map((g) => {
+          if (g.items.some((it) => it.kind === "todoCreateCard" || it.kind === "todoEditCard")) {
+            return {
+              ...g,
+              items: g.items.map((it) =>
+                it.kind === "todoCreateCard" || it.kind === "todoEditCard"
+                  ? { ...it, icon2: url }
+                  : it
+              ),
+            };
+          }
+          return g;
+        })
+      );
+    };
+
+    const onCoverUpload = () => {
+      const input = prompt("Enter image URL for task cover:", formStateRef.current.createCover);
+      if (input && input.trim()) {
+        onCoverPicked({ detail: { url: input.trim() } });
+      }
+    };
+
+    // 7. Money Send button clicked on hero balance card
+    const onMoneySendClicked = () => {
+      const targetFrame =
+        frames.find((f) => {
+          const n = `${f.id} ${f.name || ""}`.toLowerCase();
+          return n.includes("transfer") || n.includes("send") || n.includes("pay");
+        }) ||
+        frames[2] ||
+        frames[0];
+      if (targetFrame) {
+        go({ to: targetFrame.id, transition: "slide" });
+      }
+    };
+
+    // 8. Money Add button clicked on hero balance card
+    const onMoneyAddClicked = () => {
+      go({ to: current.id, transition: "fade", command: "deposit_money" });
+    };
+
+    // 9. Contact selected from story bubbles
+    const onMoneyContactSelected = (e: any) => {
+      const { label } = e.detail || {};
+      const fullRecipient =
+        label === "Sarah M."
+          ? "Sarah Miller (@sarahm)"
+          : label === "David K."
+          ? "David Kim (@davidk)"
+          : label === "Elena R."
+          ? "Elena Rostova (@elena)"
+          : label === "Marcus C."
+          ? "Marcus Chen (@marcus)"
+          : `${label || "Contact"} (@user)`;
+      moneyRecipientRef.current = fullRecipient;
+
+      setLiveGroups((prev) =>
+        prev.map((g) => {
+          let mod = false;
+          const nextItems = g.items.map((it) => {
+            if (
+              it.kind === "textField" &&
+              (it.label?.includes("Recipient") || it.placeholder?.includes("Sarah"))
+            ) {
+              mod = true;
+              return { ...it, value: fullRecipient };
+            }
+            if (
+              it.kind === "button" &&
+              (it.label?.includes("Authorize & Send") || it.action?.command === "transfer_money")
+            ) {
+              mod = true;
+              return {
+                ...it,
+                label: `Authorize & Send $${moneyTransferAmtRef.current.toFixed(2)} to ${label || "Recipient"}`,
+              };
+            }
+            return it;
+          });
+          return mod ? { ...g, items: nextItems as Item[] } : g;
+        })
+      );
+    };
+
+    // 10. Amount chip selected ($50, $100, $250, $500)
+    const onMoneyAmountSelected = (e: any) => {
+      const { amount } = e.detail || {};
+      const parsedAmt = Number(String(amount).replace(/[^0-9.]/g, "")) || 250;
+      moneyTransferAmtRef.current = parsedAmt;
+
+      setLiveGroups((prev) =>
+        prev.map((g) => {
+          let mod = false;
+          const nextItems = g.items.map((it) => {
+            if (it.kind === "chip" && (it.label || "").startsWith("$")) {
+              mod = true;
+              return { ...it, checked: it.label === `$${parsedAmt}` };
+            }
+            if (
+              it.kind === "button" &&
+              (it.label?.includes("Authorize & Send") || it.action?.command === "transfer_money")
+            ) {
+              mod = true;
+              return {
+                ...it,
+                label: `Authorize & Send $${parsedAmt.toFixed(2)} Now`,
+              };
+            }
+            return it;
+          });
+          return mod ? { ...g, items: nextItems as Item[] } : g;
+        })
+      );
+    };
+
+    window.addEventListener("todo-card-selected", onCardSelected);
+    window.addEventListener("todo-card-toggle", onCardToggle);
+    window.addEventListener("todo-card-edit", onCardEdit);
+    window.addEventListener("field-input-change", onInputChange);
+    window.addEventListener("todo-cover-picked", onCoverPicked);
+    window.addEventListener("todo-cover-upload", onCoverUpload);
+    window.addEventListener("money-send-clicked", onMoneySendClicked);
+    window.addEventListener("money-add-clicked", onMoneyAddClicked);
+    window.addEventListener("money-contact-selected", onMoneyContactSelected);
+    window.addEventListener("money-amount-selected", onMoneyAmountSelected);
+
+    return () => {
+      window.removeEventListener("todo-card-selected", onCardSelected);
+      window.removeEventListener("todo-card-toggle", onCardToggle);
+      window.removeEventListener("todo-card-edit", onCardEdit);
+      window.removeEventListener("field-input-change", onInputChange);
+      window.removeEventListener("todo-cover-picked", onCoverPicked);
+      window.removeEventListener("todo-cover-upload", onCoverUpload);
+      window.removeEventListener("money-send-clicked", onMoneySendClicked);
+      window.removeEventListener("money-add-clicked", onMoneyAddClicked);
+      window.removeEventListener("money-contact-selected", onMoneyContactSelected);
+      window.removeEventListener("money-amount-selected", onMoneyAmountSelected);
+    };
+  }, [go, frames, current.id]);
 
   const [picker, setPicker] = useState(false);
   useEffect(() => {
@@ -1260,7 +1944,7 @@ export function Preview({
   const [opener] = useState(() => (typeof document === "undefined" ? null : (document.activeElement as HTMLElement | null)));
   useEffect(() => () => { if (opener?.isConnected && !opener.closest("[inert]")) opener.focus(); }, [opener]);
 
-  const groupsFor = useCallback((f: Frame) => groupsInFrame(doc.groups, f, frames, widths), [doc.groups, frames, widths]);
+  const groupsFor = useCallback((f: Frame) => groupsInFrame(liveGroups, f, frames, widths), [liveGroups, frames, widths]);
   const groups = useMemo(() => (current ? groupsFor(current) : []), [current, groupsFor]);
   const peekGroups = useMemo(() => (peekFrame ? groupsFor(peekFrame) : []), [peekFrame, groupsFor]);
 
@@ -1417,6 +2101,9 @@ export function Preview({
     onFlip: flip,
     values,
     onValue: (id: string, v: number) => setValues((m) => ({ ...m, [id]: v })),
+    allFrames: frames,
+    activeModalId,
+    setActiveModalId,
   };
 
   const barBtn: React.CSSProperties = {
@@ -1509,23 +2196,19 @@ export function Preview({
                 opacity: curOp,
               }}
             >
-              {simMode === "live" ? (
-                <MobileLiveAppSimulator palette={p} onClose={onClose} />
-              ) : (
-                <AnimatePresence initial={false} mode="popLayout" custom={anim}>
-                  <motion.div
-                    key={current.id}
-                    custom={anim}
-                    variants={screenVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    style={{ position: "absolute", inset: 0 }}
-                  >
-                    <Screen frame={current} groups={groups} {...screenProps} />
-                  </motion.div>
-                </AnimatePresence>
-              )}
+              <AnimatePresence initial={false} mode="popLayout" custom={anim}>
+                <motion.div
+                  key={current.id}
+                  custom={anim}
+                  variants={screenVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  style={{ position: "absolute", inset: 0 }}
+                >
+                  <Screen frame={current} groups={groups} {...screenProps} />
+                </motion.div>
+              </AnimatePresence>
             </motion.div>
             {peek && peekFrame && (
               <motion.div
@@ -1651,73 +2334,15 @@ export function Preview({
             maxWidth: "calc(100vw - 24px)",
           }}
         >
-          {/* Mode Switcher */}
-          <div
-            style={{
-              display: "flex",
-              borderRadius: 14,
-              padding: 3,
-              background: p.surfaceContainerHigh || "#1F2937",
-              marginBottom: wide ? 4 : 0,
-            }}
-          >
-            <button
-              onClick={() => setSimMode("live")}
-              style={{
-                flex: 1,
-                padding: "6px 8px",
-                borderRadius: 11,
-                border: "none",
-                background: simMode === "live" ? "#4F46E5" : "transparent",
-                color: simMode === "live" ? "#FFFFFF" : p.onSurfaceVariant,
-                fontSize: 11,
-                fontWeight: 800,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 4,
-                whiteSpace: "nowrap",
-              }}
-              title="Full working app with live CRUD state, forms, and network requests"
-            >
-              <Icon name="bolt" size={14} />
-              <span>⚡ Live App</span>
-            </button>
-            <button
-              onClick={() => setSimMode("canvas")}
-              style={{
-                flex: 1,
-                padding: "6px 8px",
-                borderRadius: 11,
-                border: "none",
-                background: simMode === "canvas" ? "#4F46E5" : "transparent",
-                color: simMode === "canvas" ? "#FFFFFF" : p.onSurfaceVariant,
-                fontSize: 11,
-                fontWeight: 800,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 4,
-                whiteSpace: "nowrap",
-              }}
-              title="Canvas wireframe screen transition mode"
-            >
-              <Icon name="dashboard" size={14} />
-              <span>Canvas</span>
-            </button>
-          </div>
-
           <button
             onClick={back}
-            disabled={stack.length < 2 || simMode === "live"}
+            disabled={stack.length < 2}
             title={t("back", lang)}
             className="m3-press"
             style={{
               ...barBtn,
-              color: stack.length < 2 || simMode === "live" ? p.outlineVariant : p.onSurfaceVariant,
-              cursor: stack.length < 2 || simMode === "live" ? "default" : "pointer",
+              color: stack.length < 2 ? p.outlineVariant : p.onSurfaceVariant,
+              cursor: stack.length < 2 ? "default" : "pointer",
             }}
           >
             <Icon name="arrow_back" size={20} />
@@ -1807,6 +2432,17 @@ export function Preview({
               )}
             </AnimatePresence>
           </div>
+          <button
+            onClick={() => {
+              setLiveGroups((prev) => populateDomainMockData(prev, domain));
+            }}
+            title={`Populate with dynamic ${domain} mock data`}
+            className="m3-press"
+            style={{ ...barBtn, color: p.primary, background: `${p.primaryContainer}30` }}
+          >
+            <Icon name="auto_awesome" size={20} />
+            <span style={label}>Autofill Data</span>
+          </button>
           <button
             onClick={() => {
               setOverlay(null);

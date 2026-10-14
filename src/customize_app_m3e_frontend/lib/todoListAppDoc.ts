@@ -296,8 +296,8 @@ export function buildTodoListAppDoc(): Doc {
         variant: "filled",
         size: FRAME_W,
         actions: {
-          icon: { to: "todo_board", transition: "slideLeft" },
-          icon2: { to: "todo_board", transition: "slideLeft" },
+          icon: { to: "todo_board", transition: "slideLeft", command: "cancel_task" },
+          icon2: { to: "todo_board", transition: "slideLeft", command: "save_task" },
         },
       },
     ],
@@ -484,7 +484,7 @@ export function buildTodoListAppDoc(): Doc {
         icon: "check_circle",
         variant: "filled",
         size: 236,
-        action: { to: "todo_board", transition: "slide" },
+        action: { to: "todo_board", transition: "slide", command: "save_task" },
       },
       {
         id: uid(),
@@ -493,7 +493,7 @@ export function buildTodoListAppDoc(): Doc {
         icon: "close",
         variant: "outlined",
         size: 136,
-        action: { to: "todo_board", transition: "slide" },
+        action: { to: "todo_board", transition: "slide", command: "cancel_task" },
       },
     ],
   });
@@ -549,7 +549,7 @@ export function buildTodoListAppDoc(): Doc {
         actions: {
           icon: { to: "todo_board", transition: "slideLeft" },
           icon2: { to: "todo_edit", transition: "slide" },
-          icon3: { to: "todo_board", transition: "slideLeft" },
+          icon3: { to: "todo_board", transition: "slideLeft", command: "delete_task" },
         },
       },
     ],
@@ -690,7 +690,7 @@ export function buildTodoListAppDoc(): Doc {
         icon: "check_circle",
         variant: "tonal",
         size: 192,
-        action: { to: "todo_board", transition: "slide" },
+        action: { to: "todo_board", transition: "slide", command: "complete_task" },
       },
     ],
   });
@@ -744,7 +744,7 @@ export function buildTodoListAppDoc(): Doc {
         size: FRAME_W,
         actions: {
           icon: { to: "todo_detail", transition: "slideLeft" },
-          icon2: { to: "todo_board", transition: "slideLeft" },
+          icon2: { to: "todo_board", transition: "slideLeft", command: "update_task" },
         },
       },
     ],
@@ -930,7 +930,7 @@ export function buildTodoListAppDoc(): Doc {
         icon: "save",
         variant: "filled",
         size: 236,
-        action: { to: "todo_board", transition: "slide" },
+        action: { to: "todo_board", transition: "slide", command: "update_task" },
       },
       {
         id: uid(),
@@ -939,7 +939,7 @@ export function buildTodoListAppDoc(): Doc {
         icon: "delete",
         variant: "outlined",
         size: 136,
-        action: { to: "todo_board", transition: "slide" },
+        action: { to: "todo_board", transition: "slide", command: "delete_task" },
       },
     ],
   });

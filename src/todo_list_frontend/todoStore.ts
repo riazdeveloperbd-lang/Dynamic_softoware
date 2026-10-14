@@ -288,6 +288,8 @@ export function toggleTodoComplete(id: string): boolean {
   return true;
 }
 
+export const toggleTodo = toggleTodoComplete;
+
 export function toggleSubtask(todoId: string, subtaskId: string): boolean {
   const current = getTodos();
   const item = current.find((t) => t.id === todoId);

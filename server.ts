@@ -456,71 +456,249 @@ Return JSON with:
   app.post('/api/projects/wire-features', async (req, res) => {
     const {
       prompt = '',
+      apiKey = '',
       frames = [],
       groups = [],
       featureType = 'crud',
     } = req.body || {};
 
+    if (typeof apiKey === 'string' && apiKey.trim().length > 0) {
+      process.env.GEMINI_API_KEY = apiKey.trim();
+      geminiQuotaCooldownUntil = 0; // reset cooldown for new key
+      console.log(`[AI Feature Architect] User provided Gemini API key registered`);
+    }
+
     console.log(`[AI Feature Architect] Received prompt: "${prompt}" for ${frames.length} screens`);
 
-    // Intelligently wire up all screen groups
+    let aiMessage = '✨ AI successfully wired up complete CRUD actions, state management, form inputs, and screen navigation.';
+
+    // If Gemini key is available, run generative synthesis
+    if (isGeminiAvailable()) {
+      try {
+        const ai = new GoogleGenAI({
+          apiKey: process.env.GEMINI_API_KEY,
+          httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
+        });
+        const aiResp = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: `You are an elite mobile app engineer. The user has designed ${frames.length} screens (${frames.map((f: any) => f.name).join(', ')}). Prompt: "${prompt}". In 1 short enthusiastic sentence, confirm that all requested features, buttons, and state operations have been connected and are ready in the simulator.`,
+        });
+        if (aiResp.text) {
+          aiMessage = `✨ ${aiResp.text.trim()}`;
+        }
+      } catch (e) {
+        console.warn('[AI Feature Architect] Gemini generation notice:', e);
+      }
+    }
+
+    // Universal Semantic Frame Classifier for ANY application domain
+    const findFrameByIntent = (keywords: string[], fallbackIndex = 0) => {
+      const match = frames.find((f: any) => {
+        const text = `${f.name || ''} ${f.note || ''} ${f.id || ''}`.toLowerCase();
+        return keywords.some((k) => text.includes(k));
+      });
+      return match || frames[fallbackIndex] || frames[0] || null;
+    };
+
+    // Domain Screen Classification:
+    const homeFrame = findFrameByIntent(['wallet', 'feed', 'dashboard', 'home', 'catalog', 'products', 'menu', 'list', 'board', 'tasks', 'explore', 'main'], 0);
+    const transferFrame = findFrameByIntent(['transfer', 'send', 'pay', 'wire', 'recipient'], 2);
+    const analyticsFrame = findFrameByIntent(['analytic', 'spending', 'chart', 'expense', 'stat', 'report'], 1);
+    const savingsFrame = findFrameByIntent(['saving', 'vault', 'goal', 'milestone', 'deposit'], 3);
+    const createFrame = findFrameByIntent(['create', 'add', 'new', 'write', 'compose', 'upload', 'post'], 1);
+    const detailFrame = findFrameByIntent(['detail', 'read', 'view', 'inspect', 'info', 'product', 'item', 'single', 'chat', 'dish'], 2);
+    const editFrame = findFrameByIntent(['edit', 'update', 'modify', 'settings', 'manage', 'config'], 3);
+    const checkoutFrame = findFrameByIntent(['cart', 'checkout', 'pay', 'order', 'booking', 'summary'], 2);
+
+    // 0. Detect In-Screen Modal Dialogs across screens
+    // A modal is a group/card containing an input (textField/select/otpInput)
+    // AND a submit or close action button (button/iconButton).
+    const modalGroupIds = new Set<string>();
+    const modalByFrameId = new Map<string, string>(); // frameId -> modalGroupId
+
+    frames.forEach((f: any) => {
+      const frameGroups = (groups || []).filter((g: any) => {
+        const cx = g.x + 100;
+        const cy = g.y + 40;
+        const inside = cx >= (f.x || 0) - 40 && cx <= (f.x || 0) + (f.w || 400) + 40 && cy >= (f.y || 0) - 40 && cy <= (f.y || 0) + (f.h || 844) + 40;
+        return inside || frames.length === 1;
+      });
+
+      const modalCandidate = frameGroups.find((g: any) => {
+        const hasInput = (g.items || []).some((it: any) => it.kind === 'textField' || it.kind === 'select' || it.kind === 'otpInput');
+        const hasSubmitOrClose = (g.items || []).some(
+          (it: any) =>
+            (it.kind === 'button' && /(submit|save|add|create|confirm|done|send|post)/i.test(it.label || '')) ||
+            (it.kind === 'iconButton' && /(close|clear|cancel)/i.test(it.icon || ''))
+        );
+        return hasInput && hasSubmitOrClose;
+      });
+
+      if (modalCandidate) {
+        modalGroupIds.add(modalCandidate.id);
+        modalByFrameId.set(f.id, modalCandidate.id);
+      }
+    });
+
+    // Intelligently wire up all screen groups for ANY application type
     const updatedGroups = (groups || []).map((g: any) => {
+      const isThisModal = modalGroupIds.has(g.id);
+      const frameModalId = modalByFrameId.get(frames[0]?.id);
+
       const groupCopy = {
         ...g,
+        isModal: isThisModal ? true : g.isModal,
         items: (g.items || []).map((it: any) => {
           const itemCopy = { ...it };
 
-          // 1. Wire Top App Bar actions
+          // A. If inside a Modal Group:
+          if (isThisModal) {
+            // Close / Cancel button inside modal
+            if (
+              (itemCopy.kind === 'iconButton' && /(close|clear|cancel|arrow_back)/i.test(itemCopy.icon || '')) ||
+              (itemCopy.kind === 'button' && /(cancel|close|discard|back)/i.test(itemCopy.label || ''))
+            ) {
+              itemCopy.action = {
+                to: frames[0]?.id,
+                transition: 'fade',
+                command: 'close_modal',
+                modalTarget: g.id,
+              };
+              return itemCopy;
+            }
+
+            // Submit / Save / Add button inside modal
+            if (
+              itemCopy.kind === 'button' &&
+              /(submit|save|add|create|confirm|done|send|post)/i.test(itemCopy.label || '')
+            ) {
+              itemCopy.action = {
+                to: frames[0]?.id,
+                transition: 'fade',
+                command: 'submit_modal',
+                modalTarget: g.id,
+              };
+              return itemCopy;
+            }
+          }
+
+          // B. 1. Wire Top App Bar actions
           if (itemCopy.kind === 'topAppBar') {
             const currentActions = { ...(itemCopy.actions || {}) };
-            if (frames.length > 0) {
-              currentActions.icon = { to: frames[0].id, transition: 'slideLeft' };
+            if (itemCopy.icon === 'arrow_back' || itemCopy.icon === 'chevron_left' || itemCopy.icon === 'close') {
+              if (homeFrame) {
+                currentActions.icon = { to: homeFrame.id, transition: 'slideLeft' };
+              }
             }
-            if (frames.length > 1) {
-              currentActions.icon3 = { to: frames[1].id, transition: 'slide' };
+            if (createFrame) {
+              currentActions.icon3 = { to: createFrame.id, transition: 'slide' };
             }
-            if (frames.length > 0) {
-              currentActions.icon2 = { to: frames[0].id, transition: 'slideLeft' };
+            if (itemCopy.icon2 === 'save' || itemCopy.icon2 === 'check') {
+              currentActions.icon2 = { to: homeFrame?.id || frames[0]?.id, transition: 'slideLeft', command: 'save_task' };
+            }
+            if (itemCopy.icon4 === 'delete') {
+              currentActions.icon4 = { to: homeFrame?.id || frames[0]?.id, transition: 'slideLeft', command: 'delete_task' };
             }
             itemCopy.actions = currentActions;
           }
 
-          // 2. Wire FAB actions to Create screen (Frame 2)
-          if (itemCopy.kind === 'fab') {
-            const targetFrame = frames[1] || frames[0];
-            itemCopy.action = { to: targetFrame.id, transition: 'slide' };
-          }
-
-          // 3. Wire Task Card actions to Detail screen (Frame 3)
-          if (itemCopy.kind === 'todoCard' || itemCopy.kind === 'kanbanCard') {
-            const targetFrame = frames[2] || frames[0];
-            itemCopy.action = { to: targetFrame.id, transition: 'slide' };
-          }
-
-          // 4. Wire Action Buttons
-          if (itemCopy.kind === 'button') {
-            const label = (itemCopy.label || '').toLowerCase();
-            if (label.includes('edit')) {
-              const targetFrame = frames[3] || frames[0];
+          // B. 2. Wire FAB actions to In-Screen Modal OR Create Screen
+          if (itemCopy.kind === 'fab' || itemCopy.kind === 'extendedFab') {
+            if (frameModalId) {
+              itemCopy.action = {
+                to: frames[0]?.id,
+                transition: 'fade',
+                command: 'open_modal',
+                modalTarget: frameModalId,
+              };
+              return itemCopy;
+            } else {
+              const targetFrame = createFrame || transferFrame || frames[1] || frames[0];
               itemCopy.action = { to: targetFrame.id, transition: 'slide' };
+              return itemCopy;
+            }
+          }
+
+          // B. 3. Wire Cards, Items, and Feeds to Detail / Inspection screen
+          if (
+            itemCopy.kind === 'todoCard' ||
+            itemCopy.kind === 'kanbanCard' ||
+            itemCopy.kind === 'card' ||
+            itemCopy.kind === 'listItem'
+          ) {
+            const targetFrame = detailFrame || frames[2] || frames[0];
+            itemCopy.action = { to: targetFrame.id, transition: 'slide' };
+          }
+
+          // B. 4. Wire Action Buttons universally across domains
+          if (itemCopy.kind === 'button' || itemCopy.kind === 'iconButton') {
+            const label = (itemCopy.label || itemCopy.icon || '').toLowerCase();
+
+            // Modal Trigger button check
+            if (frameModalId && (label.includes('add') || label.includes('create') || label.includes('new') || label === '+' || label === 'open')) {
+              itemCopy.action = {
+                to: frames[0]?.id,
+                transition: 'fade',
+                command: 'open_modal',
+                modalTarget: frameModalId,
+              };
+              return itemCopy;
+            }
+
+            // Money App Actions
+            if (label === 'send' || label === 'transfer' || label.startsWith('send ') || label === 'request' || label === 'pay bills') {
+              const target = transferFrame || frames[2] || frames[0];
+              itemCopy.action = { to: target.id, transition: 'slide' };
+            } else if (label.includes('authorize') || label.includes('send $') || label.includes('confirm transfer') || label.includes('pay now')) {
+              itemCopy.action = { to: homeFrame?.id || frames[0]?.id || 'money_dashboard', transition: 'fade', command: 'transfer_money' };
+            } else if (label.includes('analytic') || label.includes('spending') || label.includes('chart')) {
+              const target = analyticsFrame || frames[1] || frames[0];
+              itemCopy.action = { to: target.id, transition: 'slide' };
+            } else if (label.includes('vault') || label.includes('goal') || label.includes('saving')) {
+              const target = savingsFrame || frames[3] || frames[0];
+              itemCopy.action = { to: target.id, transition: 'slide' };
+            } else if (label.includes('edit') || label.includes('manage') || label.includes('settings')) {
+              const targetFrame = editFrame || frames[3] || frames[0];
+              itemCopy.action = { to: targetFrame.id, transition: 'slide', command: 'edit_task' };
+            } else if (label.includes('save changes') || label.includes('update') || label.includes('apply')) {
+              itemCopy.action = { to: homeFrame?.id || frames[0]?.id, transition: 'slide', command: 'update_task' };
             } else if (
+              label.includes('submit') ||
               label.includes('save') ||
               label.includes('create') ||
               label.includes('add') ||
               label.includes('publish') ||
-              label.includes('cancel') ||
-              label.includes('delete') ||
-              label.includes('mark complete')
+              label.includes('post')
             ) {
-              itemCopy.action = { to: frames[0]?.id || 'todo_board', transition: 'slide' };
+              itemCopy.action = { to: homeFrame?.id || frames[0]?.id, transition: 'slide', command: 'save_task' };
+            } else if (label.includes('cart') || label.includes('buy') || label.includes('checkout') || label.includes('order')) {
+              itemCopy.action = { to: checkoutFrame?.id || detailFrame?.id || frames[0]?.id, transition: 'slide', command: 'cart_action' };
+            } else if (label.includes('delete') || label.includes('remove') || label.includes('discard')) {
+              itemCopy.action = { to: homeFrame?.id || frames[0]?.id, transition: 'slide', command: 'delete_task' };
+            } else if (label.includes('mark complete') || label.includes('completed') || label.includes('done') || label.includes('check')) {
+              itemCopy.action = { to: homeFrame?.id || frames[0]?.id, transition: 'slide', command: 'complete_task' };
+            } else if (label.includes('cancel') || label.includes('back') || label.includes('close')) {
+              itemCopy.action = { to: homeFrame?.id || frames[0]?.id, transition: 'slideLeft', command: 'cancel_task' };
             }
           }
 
-          // 5. Wire Bottom Navigation Tabs
+          // 5. Wire Bottom Navigation Tabs to screens
           if (itemCopy.kind === 'bottomNav' && Array.isArray(itemCopy.tabs)) {
             const navActions: Record<string, { to: string; transition: 'fade' | 'slide' }> = {};
-            itemCopy.tabs.forEach((_: any, idx: number) => {
-              if (frames[idx]) {
+            itemCopy.tabs.forEach((tab: any, idx: number) => {
+              const tabLabel = (tab.label || tab.icon || '').toLowerCase();
+              if (tabLabel.includes('dashboard') || tabLabel.includes('home') || tabLabel.includes('wallet')) {
+                if (homeFrame) navActions[`tab:${idx}`] = { to: homeFrame.id, transition: 'fade' };
+              } else if (tabLabel.includes('analytic') || tabLabel.includes('spending') || tabLabel.includes('chart')) {
+                if (analyticsFrame) navActions[`tab:${idx}`] = { to: analyticsFrame.id, transition: 'fade' };
+              } else if (tabLabel.includes('transfer') || tabLabel.includes('send') || tabLabel.includes('pay')) {
+                if (transferFrame) navActions[`tab:${idx}`] = { to: transferFrame.id, transition: 'fade' };
+              } else if (tabLabel.includes('goal') || tabLabel.includes('saving') || tabLabel.includes('vault')) {
+                if (savingsFrame) navActions[`tab:${idx}`] = { to: savingsFrame.id, transition: 'fade' };
+              } else if (tabLabel.includes('card')) {
+                if (transferFrame) navActions[`tab:${idx}`] = { to: transferFrame.id, transition: 'fade' };
+                else if (frames[idx]) navActions[`tab:${idx}`] = { to: frames[idx].id, transition: 'fade' };
+              } else if (frames[idx]) {
                 navActions[`tab:${idx}`] = { to: frames[idx].id, transition: 'fade' };
               }
             });
@@ -533,14 +711,118 @@ Return JSON with:
       return groupCopy;
     });
 
+    let finalGroups = [...updatedGroups];
+    const autoInjectMissing = req.body.autoInjectMissing !== false;
+    const injectedComponents: string[] = [];
+
+    if (autoInjectMissing && !modalByFrameId.get(frames[0]?.id) && !createFrame) {
+      const primaryFrame = frames[0] || { x: 0, y: 0, w: 412, h: 892, id: 'home' };
+      const newModalId = `modal_dialog_${Date.now()}`;
+      const newModalGroup = {
+        id: newModalId,
+        x: (primaryFrame.x || 0) + 16,
+        y: (primaryFrame.y || 0) + 220,
+        axis: 'y',
+        isModal: true,
+        items: [
+          {
+            id: `modal_bar_${Date.now()}`,
+            kind: 'topAppBar',
+            label: 'Add New Record',
+            icon: 'close',
+            actions: { icon: { to: primaryFrame.id, transition: 'fade', command: 'close_modal', modalTarget: newModalId } },
+            size: 380,
+          },
+          {
+            id: `modal_in_title_${Date.now()}`,
+            kind: 'textField',
+            label: 'Title / Name',
+            placeholder: 'Enter title or name...',
+            value: '',
+            size: 380,
+          },
+          {
+            id: `modal_in_desc_${Date.now()}`,
+            kind: 'textField',
+            label: 'Description / Notes',
+            placeholder: 'Enter details...',
+            value: '',
+            size: 380,
+          },
+          {
+            id: `modal_btn_submit_${Date.now()}`,
+            kind: 'button',
+            label: 'Save & Submit',
+            icon: 'check',
+            variant: 'filled',
+            size: 380,
+            action: { to: primaryFrame.id, transition: 'fade', command: 'submit_modal', modalTarget: newModalId },
+          },
+        ],
+      };
+      finalGroups.push(newModalGroup);
+      injectedComponents.push('Input Modal Dialog');
+
+      // Check if FAB exists
+      const hasFab = finalGroups.some((g: any) => (g.items || []).some((it: any) => it.kind === 'fab' || it.kind === 'extendedFab'));
+      if (!hasFab) {
+        const newFabGroup = {
+          id: `fab_group_${Date.now()}`,
+          x: (primaryFrame.x || 0) + (primaryFrame.w || 412) - 80,
+          y: (primaryFrame.y || 0) + (primaryFrame.h || 892) - 140,
+          axis: 'x',
+          items: [
+            {
+              id: `fab_add_${Date.now()}`,
+              kind: 'fab',
+              label: '+ Add',
+              icon: 'add',
+              variant: 'filled',
+              action: { to: primaryFrame.id, transition: 'fade', command: 'open_modal', modalTarget: newModalId },
+            },
+          ],
+        };
+        finalGroups.push(newFabGroup);
+        injectedComponents.push('Floating Action Button (+ Add)');
+      }
+    }
+
+    const finalMessage = injectedComponents.length > 0
+      ? `${aiMessage} Auto-generated missing components: ${injectedComponents.join(', ')}.`
+      : aiMessage;
+
     res.json({
       success: true,
-      message: 'AI successfully wired up navigation routes, CRUD actions, form inputs, and state across all screens.',
+      message: finalMessage,
       detectedScreens: frames.length,
-      updatedGroups,
+      updatedGroups: finalGroups,
+      injectedComponents,
       serverTodosCount: serverTodos.length,
       aiTimestamp: new Date().toISOString(),
     });
+  });
+
+  // REST API for Transactions (FinTech / Money App endpoints)
+  let serverTransactions = [
+    { id: 'tx_1', amount: -250, recipient: 'Sarah Miller', memo: 'Instant Wire Transfer', date: new Date().toISOString() },
+  ];
+
+  app.get('/api/transactions', (_req, res) => {
+    res.json({ success: true, transactions: serverTransactions });
+  });
+
+  app.post('/api/transactions', (req, res) => {
+    const { amount = 250, recipient = 'Sarah Miller', memo = 'Instant Transfer' } = req.body || {};
+    const newTx = {
+      id: `tx_${Date.now()}`,
+      amount: -Math.abs(Number(amount)),
+      recipient,
+      memo,
+      date: new Date().toISOString(),
+    };
+    serverTransactions.unshift(newTx);
+    console.log(`[API /api/transactions POST] Wire transfer: $${amount} to ${recipient}`);
+    res.status(201).json({ success: true, transaction: newTx, newBalance: 34580 - Math.abs(Number(amount)) });
   });
 
   // REST API for Todos (Live CRUD endpoints called from Mobile Simulator)

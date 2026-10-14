@@ -291,7 +291,7 @@ export const spansScreen = (g: Group, frame: Frame, widths: Record<string, numbe
 };
 
 /** a part that stays put and stands nearer the foot of the screen than its head: it goes with the foot */
-const atFoot = (g: Group, bb: Rect, fr: Rect) => holdsFixedPart(g) && fr.b - bb.b < bb.t - fr.t;
+export const atFoot = (g: Group, bb: Rect, fr: Rect) => holdsFixedPart(g) && fr.b - bb.b < bb.t - fr.t;
 
 /** How a part rides on a screen whose body scrolls: "head" keeps its place on the glass, "foot"
  *  keeps its distance from the foot of the screen, and null scrolls with the body. A rail running
@@ -328,6 +328,48 @@ export function stretchFrame(groups: Group[], frame: Frame, length: number, fram
       return moves ? { ...g, y: g.y + d } : g;
     }),
   };
+}
+
+/**
+ * Calculates the required screen length so all content (body components + bottom navigation bar/FAB + comfortable padding)
+ * fits completely without overflowing or colliding.
+ */
+export function contentRequiredFrameLength(
+  groups: Group[],
+  frame: Frame,
+  frames: Frame[],
+  widths: Record<string, number>,
+  extraBottomPadding = 28
+): number {
+  const fr = frameRect(frame);
+  const devH = frameSizeOf(frame).h;
+  let maxBodyBottom = 0;
+  let footHeight = 0;
+
+  for (const g of groups) {
+    if (spansScreen(g, frame, widths)) continue;
+    const bb = groupBounds(g, widths);
+    const cx = (bb.l + bb.r) / 2;
+    // Check if group is horizontally aligned with frame and starts within or below frame head
+    const belongs =
+      (cx >= fr.l - 12 && cx <= fr.r + 12 && bb.t >= fr.t - 10) ||
+      frameOfGroup(g, frames, widths)?.id === frame.id;
+    if (!belongs) continue;
+
+    if (atFoot(g, bb, fr)) {
+      footHeight = Math.max(footHeight, bb.b - bb.t);
+    } else {
+      maxBodyBottom = Math.max(maxBodyBottom, bb.b - fr.t);
+    }
+  }
+
+  if (maxBodyBottom === 0) {
+    return Math.max(devH, frameLengthOf(frame));
+  }
+
+  const footAllowance = footHeight > 0 ? footHeight + extraBottomPadding : extraBottomPadding;
+  const needed = maxBodyBottom + footAllowance;
+  return Math.max(devH, Math.ceil(needed / 4) * 4);
 }
 
 /** The shortest a screen can be made: the device, or as much as its body needs with what stands at

@@ -94,6 +94,7 @@ import {
   PHONE_W,
   PULL_EXP,
   Radii,
+  Rect,
   SETTLE_CSS_VARS,
   SETTLE_MS,
   sizeOf,
@@ -148,7 +149,7 @@ import { BuildApkPanel } from "./components/BuildApkPanel";
 import { exportM3EExpoRouterZip } from "./utils/exportM3EExpoRouterZip";
 import { TidyState, PANEL_FADE_H } from "./components/ui";
 import { AiSettings, DEFAULT_AI, hasKey, isSecureUrl, loadAiSettings, proposeBehavior, proposeDescription, pushHistory, saveAiSettings } from "./lib/ai";
-import { barSlotOf, bodyRect, carryFrame, holdsEdgeBar, maxFrameLength, minFrameLength, pullInto, stretchFrame, tidyFrame } from "./lib/tidy";
+import { atFoot, barSlotOf, bodyRect, carryFrame, contentRequiredFrameLength, holdsEdgeBar, maxFrameLength, minFrameLength, pullInto, spansScreen, stretchFrame, tidyFrame } from "./lib/tidy";
 import { constrainModalRails, modalRailOf, updateRail } from "./lib/rail";
 import { isProject, readProject, saveProject } from "./lib/project";
 import { hasShareHash, readShareHash } from "./lib/share";
@@ -1506,6 +1507,136 @@ export default function Editor({
     setDrag({ ...d });
   };
 
+  /**
+   * Automatically expands a frame if its body content + bottom navigation bar + padding
+   * exceeds the frame's current length.
+   * If expanded, the bottom navigation bar smoothly slides down to the new bottom,
+   * keeping all content visible and comfortably spaced without collision.
+   * Manual resizing remains 100% available via drag handle or slider.
+   */
+  const autoGrowFrameIfOverflowing = useCallback(
+    (
+      targetFrame: Frame,
+      candidateGroups: Group[] = groupsRef.current,
+      extraBottomPadding = 28
+    ): { frames: Frame[]; groups: Group[]; grown: boolean } => {
+      const currentLen = frameLengthOf(targetFrame);
+      const reqLen = contentRequiredFrameLength(
+        candidateGroups,
+        targetFrame,
+        framesRef.current,
+        widthsRef.current,
+        extraBottomPadding
+      );
+
+      if (reqLen > currentLen) {
+        const laid = stretchFrame(
+          candidateGroups,
+          targetFrame,
+          reqLen,
+          framesRef.current,
+          widthsRef.current
+        );
+        return { frames: laid.frames, groups: laid.groups, grown: true };
+      }
+      return { frames: framesRef.current, groups: candidateGroups, grown: false };
+    },
+    []
+  );
+
+  /**
+   * Automatically reduces a frame's length after components/elements are removed,
+   * shifting remaining body items up to close gaps if needed, sliding the bottom navigation bar up,
+   * and clamping to at least the device height.
+   */
+  const autoReduceFrameAfterRemoval = useCallback(
+    (
+      targetFrame: Frame,
+      candidateGroups: Group[],
+      deletedRects: Rect[] = [],
+      extraBottomPadding = 28
+    ): { frames: Frame[]; groups: Group[]; reduced: boolean } => {
+      let curGroups = candidateGroups;
+
+      // 1. Shift remaining body groups in this frame up to close gaps left by completely deleted body groups
+      if (deletedRects.length > 0) {
+        const fr = frameRect(targetFrame);
+        const sortedDels = [...deletedRects].sort((a, b) => a.t - b.t);
+
+        curGroups = curGroups.map((g) => {
+          const bb = groupBounds(g, widthsRef.current);
+          const cx = (bb.l + bb.r) / 2;
+          const inFrame =
+            (cx >= fr.l - 12 && cx <= fr.r + 12 && bb.t >= fr.t - 10) ||
+            frameOfGroup(g, framesRef.current, widthsRef.current)?.id === targetFrame.id;
+
+          if (inFrame && !atFoot(g, bb, fr) && !spansScreen(g, targetFrame, widthsRef.current)) {
+            const shift = sortedDels
+              .filter((del) => del.t < bb.t)
+              .reduce((sum, del) => sum + (del.b - del.t + 12), 0);
+
+            if (shift > 0) {
+              return { ...g, y: Math.max(targetFrame.y + 16, g.y - shift) };
+            }
+          }
+          return g;
+        });
+      }
+
+      // 2. Calculate the new required length for the remaining content
+      const currentLen = frameLengthOf(targetFrame);
+      const reqLen = contentRequiredFrameLength(
+        curGroups,
+        targetFrame,
+        framesRef.current,
+        widthsRef.current,
+        extraBottomPadding
+      );
+
+      // 3. If required length is less than current length, reduce the frame!
+      if (reqLen < currentLen) {
+        const laid = stretchFrame(
+          curGroups,
+          targetFrame,
+          reqLen,
+          framesRef.current,
+          widthsRef.current
+        );
+        return { frames: laid.frames, groups: laid.groups, reduced: true };
+      }
+
+      return { frames: framesRef.current, groups: curGroups, reduced: false };
+    },
+    []
+  );
+
+  const autoReduceFramesAfterRemoval = useCallback(
+    (
+      affectedFrames: Frame[],
+      candidateGroups: Group[],
+      deletedRectsByFrame: Map<string, Rect[]>,
+      extraBottomPadding = 28
+    ): { frames: Frame[]; groups: Group[]; reduced: boolean } => {
+      let curFrames = framesRef.current;
+      let curGroups = candidateGroups;
+      let anyReduced = false;
+
+      for (const f of affectedFrames) {
+        const targetFrame = curFrames.find((item) => item.id === f.id);
+        if (!targetFrame) continue;
+
+        const dels = deletedRectsByFrame.get(f.id) ?? [];
+        const res = autoReduceFrameAfterRemoval(targetFrame, curGroups, dels, extraBottomPadding);
+        curFrames = res.frames;
+        curGroups = res.groups;
+        if (res.reduced) anyReduced = true;
+      }
+
+      return { frames: curFrames, groups: curGroups, reduced: anyReduced };
+    },
+    [autoReduceFrameAfterRemoval]
+  );
+
   /** The group a new part becomes when it lands with its top-left at rawX/rawY, on the screen
    *  under its centre if there is one. A bar spans that screen beside its rail; any other part
    *  keeps its phone-sized default (a list or a field as wide as a desktop is rarely what the
@@ -1923,6 +2054,19 @@ export default function Editor({
       if (d.overBin) {
         setSelectedIds((cur) => cur.filter((x) => x !== item.id));
         vanishDrag(d);
+        const f = framesRef.current.find((frame) => {
+          const fr = frameRect(frame);
+          return d.startX >= fr.l - 12 && d.startX <= fr.r + 12 && d.startY >= fr.t - 10 && d.startY <= fr.b + 40;
+        });
+        if (f) {
+          const { frames: nextFrames, groups: nextGroups } = autoReduceFramesAfterRemoval(
+            [f],
+            groupsRef.current,
+            new Map()
+          );
+          setFrames(nextFrames);
+          setGroups(nextGroups);
+        }
         return;
       }
 
@@ -1978,11 +2122,22 @@ export default function Editor({
       if (d.fromPalette) snapshot();
       /* Ctrl keeps the pixel the cursor chose and a guide holds its whole-pixel position */
       const ng = landNewPart(item, rawX, rawY, (axis) => loose || (axis === "x" ? d.guide?.gx : d.guide?.gy) !== undefined);
-      setGroups((prev) =>
-        prev.some((g) => g.items.some((it) => it.id === item.id))
-          ? prev
-          : [...prev, ng],
-      );
+      const targetFrame = frameOfGroup(ng, framesRef.current, widthsRef.current);
+      if (targetFrame) {
+        const baseGroups = groupsRef.current.filter((g) => !g.items.some((it) => it.id === item.id));
+        const { frames: nextFrames, groups: nextGroups, grown } = autoGrowFrameIfOverflowing(targetFrame, [...baseGroups, ng]);
+        setFrames(nextFrames);
+        setGroups(nextGroups);
+        if (grown) {
+          showToast(`${targetFrame.name} expanded automatically`);
+        }
+      } else {
+        setGroups((prev) =>
+          prev.some((g) => g.items.some((it) => it.id === item.id))
+            ? prev
+            : [...prev, ng],
+        );
+      }
       lightLands(item.id, d.offX, d.offY);
       setDrag(null);
     };
@@ -2227,7 +2382,27 @@ export default function Editor({
       setGesture(null);
       // a group dragged onto the parts panel is deleted, like a single part
       if (g?.kind === "group" && g.moved && inBin(e.clientX)) {
-        setGroups((gs) => gs.filter((x) => x.id !== g.id));
+        const delGroup = groupsRef.current.find((x) => x.id === g.id);
+        const f = delGroup ? frameOfGroup(delGroup, framesRef.current, widthsRef.current) : null;
+        const delRect = delGroup ? groupBounds(delGroup, widthsRef.current) : null;
+        const remaining = groupsRef.current.filter((x) => x.id !== g.id);
+
+        if (f) {
+          const delMap = new Map<string, Rect[]>();
+          if (delRect) delMap.set(f.id, [delRect]);
+          const { frames: nextFrames, groups: nextGroups, reduced } = autoReduceFramesAfterRemoval(
+            [f],
+            remaining,
+            delMap
+          );
+          setFrames(nextFrames);
+          setGroups(nextGroups);
+          if (reduced) {
+            showToast(`${f.name} reduced to fit content`);
+          }
+        } else {
+          setGroups(remaining);
+        }
         setSelectedIds([]);
       }
       if (g?.kind === "frame" && g.moved) {
@@ -2482,28 +2657,63 @@ export default function Editor({
     snapshot();
     /* some of the selection sits in a locked group: the rest goes, and the author is told why that part stayed */
     if (groupsRef.current.some((g) => g.locked && g.items.some((it) => ids.has(it.id)))) showToast(t("lockedKept", getLang()));
-    setGroups((prev) =>
-      prev
-        .map((g) => {
-          /* Delete / Backspace leaves a locked group and its parts alone */
-          if (g.locked) return g;
-          if (g.free) return collapseFree({ ...g, items: g.items.filter((it) => !ids.has(it.id)) }, widthsRef.current);
-          let x = g.x;
-          let y = g.y;
-          let items = g.items;
-          while (items.length && ids.has(items[0].id)) {
-            const sz = sizeOf(items[0], widthsRef.current);
-            if (g.axis === "x") x += sz.w + GAP;
-            else y += sz.h + GAP;
-            items = items.slice(1);
-          }
-          if (x !== g.x || y !== g.y) instantRef.current.add(g.id);
-          return { ...g, x, y, items: items.filter((it) => !ids.has(it.id)) };
-        })
-        .filter((g) => g.items.length > 0),
-    );
+
+    // Collect deleted group rects grouped by frame before removal
+    const deletedRectsByFrame = new Map<string, Rect[]>();
+    const affectedFramesSet = new Set<Frame>();
+
+    for (const g of groupsRef.current) {
+      if (g.locked) continue;
+      const f = frameOfGroup(g, framesRef.current, widthsRef.current);
+      if (!f) continue;
+
+      if (g.items.some((it) => ids.has(it.id))) {
+        affectedFramesSet.add(f);
+        if (g.items.every((it) => ids.has(it.id))) {
+          const rect = groupBounds(g, widthsRef.current);
+          const list = deletedRectsByFrame.get(f.id) ?? [];
+          list.push(rect);
+          deletedRectsByFrame.set(f.id, list);
+        }
+      }
+    }
+
+    const remainingGroups = groupsRef.current
+      .map((g) => {
+        /* Delete / Backspace leaves a locked group and its parts alone */
+        if (g.locked) return g;
+        if (g.free) return collapseFree({ ...g, items: g.items.filter((it) => !ids.has(it.id)) }, widthsRef.current);
+        let x = g.x;
+        let y = g.y;
+        let items = g.items;
+        while (items.length && ids.has(items[0].id)) {
+          const sz = sizeOf(items[0], widthsRef.current);
+          if (g.axis === "x") x += sz.w + GAP;
+          else y += sz.h + GAP;
+          items = items.slice(1);
+        }
+        if (x !== g.x || y !== g.y) instantRef.current.add(g.id);
+        return { ...g, x, y, items: items.filter((it) => !ids.has(it.id)) };
+      })
+      .filter((g) => g.items.length > 0);
+
+    const affectedFrames = Array.from(affectedFramesSet);
+    if (affectedFrames.length > 0) {
+      const { frames: nextFrames, groups: nextGroups, reduced } = autoReduceFramesAfterRemoval(
+        affectedFrames,
+        remainingGroups,
+        deletedRectsByFrame
+      );
+      setFrames(nextFrames);
+      setGroups(nextGroups);
+      if (reduced) {
+        showToast("Removed element — Screen reduced to fit content");
+      }
+    } else {
+      setGroups(remainingGroups);
+    }
     setSelectedIds([]);
-  }, [selectedIds, snapshot]);
+  }, [selectedIds, snapshot, autoReduceFramesAfterRemoval]);
 
   /** every group holding a selected part is locked, so the menu offers to unlock instead */
   const selectedLocked = useMemo(() => {
@@ -2569,9 +2779,17 @@ export default function Editor({
     const copies = units.map((u) => rekeyed(u, 24, 24));
     const primaryAt = units.flatMap((u) => u.items.map((it) => it.id)).indexOf(primaryId ?? "");
     snapshot();
-    setGroups((prev) => [...prev, ...copies]);
+    const all = [...groupsRef.current, ...copies];
+    const targetF = frameOfGroup(copies[0], framesRef.current, widthsRef.current);
+    if (targetF) {
+      const { frames: nextFrames, groups: nextGroups } = autoGrowFrameIfOverflowing(targetF, all);
+      setFrames(nextFrames);
+      setGroups(nextGroups);
+    } else {
+      setGroups(all);
+    }
     setSelectedIds(copiedIds(copies, primaryAt));
-  }, [selectionUnits, primaryId, snapshot]);
+  }, [selectionUnits, primaryId, snapshot, autoGrowFrameIfOverflowing]);
 
   /* The in-app clipboard: Ctrl+C keeps a copy of the selection (whole groups where the
    * selection covers them) with its offset inside its screen, so Ctrl+V can put it at the
@@ -2618,10 +2836,17 @@ export default function Editor({
     }
     const copies = clip.groups.map((u) => rekeyed(u, dx, dy));
     snapshot();
-    setGroups((prev) => [...prev, ...copies]);
+    const all = [...groupsRef.current, ...copies];
+    if (target) {
+      const { frames: nextFrames, groups: nextGroups } = autoGrowFrameIfOverflowing(target, all);
+      setFrames(nextFrames);
+      setGroups(nextGroups);
+    } else {
+      setGroups(all);
+    }
     setSelectedIds(copiedIds(copies, clip.primaryAt));
     setSelectedFrameId(null);
-  }, [selected, selectedFrameId, itemRects, snapshot]);
+  }, [selected, selectedFrameId, itemRects, snapshot, autoGrowFrameIfOverflowing]);
 
   /** the free group the whole selection belongs to, if it is exactly one */
   const selectedGroup = useMemo(() => {
@@ -3028,12 +3253,9 @@ export default function Editor({
     let y = targetFrame.y + 68;
 
     const existingInFrame = groupsRef.current.filter((g) => {
-      return (
-        g.x >= targetFrame.x - 10 &&
-        g.x <= targetFrame.x + w + 10 &&
-        g.y >= targetFrame.y &&
-        g.y <= targetFrame.y + h + 120
-      );
+      const gb = groupBounds(g, widthsRef.current);
+      const cx = (gb.l + gb.r) / 2;
+      return cx >= targetFrame.x - 10 && cx <= targetFrame.x + w + 10 && gb.t >= targetFrame.y - 10;
     });
 
     if (kind === "topAppBar") {
@@ -3041,10 +3263,14 @@ export default function Editor({
       y = targetFrame.y;
     } else if (kind === "bottomNav") {
       x = targetFrame.x;
-      y = targetFrame.y + PHONE_H - 80;
+      const bodyGroups = existingInFrame.filter(
+        (g) => !g.items.some((it) => it.kind === "bottomNav" || it.kind === "fab")
+      );
+      const maxBottom = bodyGroups.length > 0 ? Math.max(...bodyGroups.map((g) => groupBounds(g, widthsRef.current).b)) : targetFrame.y;
+      y = Math.max(targetFrame.y + h - 80, maxBottom + 20);
     } else if (kind === "fab") {
-      x = targetFrame.x + PHONE_W - 76;
-      y = targetFrame.y + PHONE_H - 146;
+      x = targetFrame.x + w - 76;
+      y = targetFrame.y + h - 146;
     } else {
       const bodyGroups = existingInFrame.filter((g) => {
         return !g.items.some((it) => it.kind === "bottomNav" || it.kind === "fab");
@@ -3064,10 +3290,13 @@ export default function Editor({
 
     snapshot();
     const ng = landNewPart(item, x, y, () => false);
-    setGroups((gs) => [...gs, ng]);
+    const candidateGroups = [...groupsRef.current, ng];
+    const { frames: nextFrames, groups: nextGroups, grown } = autoGrowFrameIfOverflowing(targetFrame, candidateGroups);
+    setFrames(nextFrames);
+    setGroups(nextGroups);
     setSelectedIds([item.id]);
     setSelectedFrameId(targetFrame.id);
-    showToast(`Added ${KIND_SPEC[kind]?.label || kind} to ${targetFrame.name}`);
+    showToast(`Added ${KIND_SPEC[kind]?.label || kind} to ${targetFrame.name}${grown ? " (Screen expanded)" : ""}`);
   };
 
   /** Adds a new blank Expo screen frame representing an Expo <SafeAreaView> */
@@ -3148,7 +3377,10 @@ export default function Editor({
     const f =
       frameRef.current !== "phone"
         ? undefined
-        : framesRef.current.find((fr) => {
+        : (selectedFrameId
+            ? framesRef.current.find((fr) => fr.id === selectedFrameId)
+            : undefined) ??
+          framesRef.current.find((fr) => {
             const fr2 = frameRect(fr);
             return cx >= fr2.l && cx <= fr2.r && cy >= fr2.t && cy <= fr2.b;
           }) ?? (mobileRef.current ? framesRef.current[0] : undefined);
@@ -3156,15 +3388,26 @@ export default function Editor({
     let y = cy - totalH / 2;
     if (f) {
       const { w } = frameSizeOf(f);
-      const h = frameLengthOf(f);
-      const lx = f.x + Math.min(FRAME_MARGIN, (w - totalW) / 2);
-      const ly = f.y + Math.min(FRAME_MARGIN, (h - totalH) / 2);
-      x = clamp(x, lx, Math.max(lx, f.x + w - FRAME_MARGIN - totalW));
-      y = clamp(y, ly, Math.max(ly, f.y + h - FRAME_MARGIN - totalH));
-      const taken = (yy: number) =>
-        itemRects().some((o) => o.l < x + totalW && o.r > x && o.t < yy + totalH && o.b > yy);
-      let tries = 0;
-      while (taken(y) && y + totalH * 2 < f.y + h && tries++ < 12) y += totalH + 12;
+      x = f.x + Math.max(PHONE_MARGIN, Math.round((w - totalW) / 2));
+      const existingInFrame = groupsRef.current.filter((g) => {
+        const gb = groupBounds(g, widthsRef.current);
+        const gcx = (gb.l + gb.r) / 2;
+        return gcx >= f.x - 10 && gcx <= f.x + w + 10 && gb.t >= f.y - 10;
+      });
+      const bodyGroups = existingInFrame.filter(
+        (g) => !g.items.some((it) => it.kind === "bottomNav" || it.kind === "fab")
+      );
+      if (bodyGroups.length === 0) {
+        const hasTopBar = existingInFrame.some((g) =>
+          g.items.some((it) => it.kind === "topAppBar")
+        );
+        y = f.y + (hasTopBar ? 68 : 16);
+      } else {
+        const maxBottom = Math.max(
+          ...bodyGroups.map((g) => groupBounds(g, widthsRef.current).b)
+        );
+        y = maxBottom + 12;
+      }
     }
     snapshot();
     const ng: Group = {
@@ -3174,12 +3417,21 @@ export default function Editor({
       axis,
       items,
     };
-    setGroups((gs) => [...gs, ng]);
+    if (f) {
+      const candidateGroups = [...groupsRef.current, ng];
+      const { frames: nextFrames, groups: nextGroups, grown } = autoGrowFrameIfOverflowing(f, candidateGroups);
+      setFrames(nextFrames);
+      setGroups(nextGroups);
+      setSelectedFrameId(f.id);
+      showToast(`Added ${preset.title} to ${f.name}${grown ? " (Screen expanded)" : ""}`);
+    } else {
+      setGroups((gs) => [...gs, ng]);
+      setSelectedFrameId(null);
+      showToast(`Added ${preset.title} to canvas`);
+    }
     setSelectedIds(items.map((it) => it.id));
-    setSelectedFrameId(null);
     setRightTab("edit");
     setSheet(null);
-    showToast(`Added ${preset.title} to canvas`);
   };
 
   const onPresetPointerDown = (e: React.PointerEvent, preset: EcommercePreset) => {
@@ -3294,9 +3546,13 @@ export default function Editor({
 
     const newGroups = buildScreenGroupsForTemplate(templateId, newX, newY);
 
-    setFrames((fs) => [...fs, f]);
     if (newGroups.length > 0) {
-      setGroups((gs) => [...gs, ...newGroups]);
+      const candidateGroups = [...groupsRef.current, ...newGroups];
+      const { frames: nextFrames, groups: nextGroups } = autoGrowFrameIfOverflowing(f, candidateGroups);
+      setFrames(nextFrames);
+      setGroups(nextGroups);
+    } else {
+      setFrames((fs) => [...fs, f]);
     }
     setSelectedFrameId(f.id);
     setSelectedIds([]);
@@ -3424,6 +3680,7 @@ export default function Editor({
     };
     lengthRun.current = null;
     setLengthDragId(f.id);
+    setSelectedFrameId(f.id);
     /* captured, the pointer's events reach the window through the handle wherever it is let go;
      * should the handle go away mid-drag, they reach the window directly */
     (e.currentTarget as HTMLElement).setPointerCapture(pointerId);
@@ -4935,6 +5192,8 @@ export default function Editor({
               {frame === "phone" &&
                 frames.map((f) => {
                   const on = f.id === selectedFrameId;
+                  const hasSelectedChild = selectedIds.length > 0 && groups.some((g) => g.items.some((it) => selectedIds.includes(it.id)) && frameOf.get(g.id) === f.id);
+                  const showResizeHandle = on || hasSelectedChild || lengthDragId === f.id;
                   const isWireTarget = wireDrag?.targetFrameId === f.id;
                   const bg = resolveColor(f.bg, p);
                   const { w, h: fold } = frameSizeOf(f);
@@ -5152,8 +5411,8 @@ export default function Editor({
                           )}
                         </div>
                       </div>
-                      {/* the chosen screen's length grip, a small nub on its bottom bezel: drag it down and the body runs on */}
-                      {on && !handMode && !draftBusy && (
+                      {/* the screen's length grip on its bottom bezel: drag it down/up to manually resize screen height */}
+                      {showResizeHandle && !handMode && !draftBusy && (
                         <div
                           role="slider"
                           tabIndex={0}
@@ -5163,22 +5422,55 @@ export default function Editor({
                           aria-valuenow={h}
                           onPointerDown={(e) => onLengthHandleDown(e, f)}
                           onKeyDown={(e) => onLengthHandleKey(e, f)}
+                          title={`Screen Height: ${h}dp — Drag up/down to manually resize`}
                           style={{
                             position: "absolute",
-                            left: w / 2 - 32,
-                            top: h - 4,
-                            width: 64,
-                            height: BEZEL + 8,
-                            display: "grid",
-                            placeItems: "center",
-                            transform: `scale(${clamp(1 / view.z, 1, 2)})`,
+                            left: w / 2 - 40,
+                            top: h - 6,
+                            width: 80,
+                            height: BEZEL + 16,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 3,
+                            transform: `scale(${clamp(1 / view.z, 0.9, 1.8)})`,
                             cursor: "ns-resize",
                             touchAction: "none",
-                            zIndex: 1,
+                            zIndex: 20,
                             transition: lengthDragId === f.id ? undefined : `top ${SETTLE_MS}ms cubic-bezier(0.2, 0, 0, 1)`,
                           }}
                         >
-                          <div style={{ width: 40, height: 4, borderRadius: 2, background: p.onPrimary, opacity: 0.9 }} />
+                          <div
+                            style={{
+                              width: 48,
+                              height: 6,
+                              borderRadius: 3,
+                              background: lengthDragId === f.id ? "#3574F0" : on ? "#FFFFFF" : p.primary,
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.3)",
+                              transition: "background 140ms ease, width 140ms ease",
+                            }}
+                          />
+                          {lengthDragId === f.id && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: 26,
+                                background: "#0F172A",
+                                color: "#38BDF8",
+                                padding: "3px 9px",
+                                borderRadius: 8,
+                                fontSize: 11,
+                                fontWeight: 800,
+                                whiteSpace: "nowrap",
+                                boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
+                                border: "1px solid rgba(56, 189, 248, 0.3)",
+                                pointerEvents: "none",
+                              }}
+                            >
+                              ↕ {h} dp
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -5468,8 +5760,8 @@ export default function Editor({
                         }}
                         title="Click to configure interaction (Figma mode)"
                       >
-                        <span>{isOverlay ? "🪟" : l.action.trigger === "delay" ? "⏱️" : "⚡"}</span>
-                        <span>{isOverlay ? (l.action.overlayPosition || "sheet") : l.action.trigger === "delay" ? `${l.action.delayMs || 1500}ms` : l.t}</span>
+                        <span>{isOverlay ? "🪟" : l.action.command === "open_modal" ? "✨" : l.action.command === "submit_modal" ? "💾" : l.action.command === "close_modal" ? "✕" : l.action.trigger === "delay" ? "⏱️" : "⚡"}</span>
+                        <span>{l.action.command === "open_modal" ? "Open Modal" : l.action.command === "submit_modal" ? "Submit & Add" : l.action.command === "close_modal" ? "Close Modal" : isOverlay ? (l.action.overlayPosition || "sheet") : l.action.trigger === "delay" ? `${l.action.delayMs || 1500}ms` : l.t}</span>
                       </div>
                     );
                   })}

@@ -1002,6 +1002,11 @@ function FabMenuContent({ item, p, shown = true }: { item: Item; p: Palette; sho
 function InteractiveTextField({ item, p }: { item: Item; p: Palette }) {
   const [val, setVal] = useState(item.value ?? "");
   const [showPwd, setShowPwd] = useState(false);
+
+  useEffect(() => {
+    if (item.value !== undefined) setVal(item.value);
+  }, [item.value]);
+
   const filled = item.variant === "filled";
   const hasLabel = (item.label ?? "").trim().length > 0;
   const hasSupporting = !!item.supporting?.trim();
@@ -1027,7 +1032,16 @@ function InteractiveTextField({ item, p }: { item: Item; p: Palette }) {
         <input
           type={isPwd ? (showPwd ? "text" : "password") : "text"}
           value={val}
-          onChange={(e) => setVal(e.target.value)}
+          onChange={(e) => {
+            const next = e.target.value;
+            setVal(next);
+            item.value = next;
+            window.dispatchEvent(
+              new CustomEvent("field-input-change", {
+                detail: { id: item.id, label: item.label, value: next },
+              })
+            );
+          }}
           placeholder={item.placeholder || (hasLabel ? "" : item.label)}
           onPointerDown={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
@@ -3399,6 +3413,10 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <div
+              onClick={(e) => {
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent("money-send-clicked"));
+              }}
               style={{
                 flex: 1,
                 padding: "6px 10px",
@@ -3418,6 +3436,10 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
               <span>Send</span>
             </div>
             <div
+              onClick={(e) => {
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent("money-add-clicked"));
+              }}
               style={{
                 flex: 1,
                 padding: "6px 10px",
@@ -3665,8 +3687,16 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             gap: 4,
             width: "100%",
             boxSizing: "border-box",
+            cursor: "pointer",
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            window.dispatchEvent(
+              new CustomEvent("money-contact-selected", {
+                detail: { label: item.label, icon2: avatarSrc },
+              })
+            );
+          }}
         >
           <div
             style={{
@@ -7107,8 +7137,15 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             boxSizing: "border-box",
             overflow: "hidden",
             position: "relative",
+            cursor: "pointer",
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={() => {
+            window.dispatchEvent(
+              new CustomEvent("todo-card-selected", {
+                detail: { id: item.id, label: item.label, item },
+              })
+            );
+          }}
         >
           {/* Cover image banner with scrim */}
           <div
@@ -7195,6 +7232,14 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
           >
             {/* Checkbox toggle */}
             <div
+              onClick={(e) => {
+                e.stopPropagation();
+                window.dispatchEvent(
+                  new CustomEvent("todo-card-toggle", {
+                    detail: { id: item.id, label: item.label, isCompleted: !isCompleted },
+                  })
+                );
+              }}
               style={{
                 width: 22,
                 height: 22,
@@ -7244,6 +7289,14 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             {/* Quick CRUD Action Icons */}
             <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
               <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.dispatchEvent(
+                    new CustomEvent("todo-card-edit", {
+                      detail: { id: item.id, label: item.label },
+                    })
+                  );
+                }}
                 style={{
                   width: 24,
                   height: 24,
@@ -7264,6 +7317,9 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
     }
 
     case "todoStatsCard": {
+      const match = item.supporting?.match(/(\d+)%/);
+      const percent = typeof item.value === "number" ? item.value : (match ? parseInt(match[1], 10) : 60);
+
       return (
         <div
           style={{
@@ -7281,7 +7337,6 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             position: "relative",
             overflow: "hidden",
           }}
-          onClick={(e) => e.stopPropagation()}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -7291,7 +7346,7 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
               </span>
             </div>
             <div style={{ fontSize: 10, color: p.onSurfaceVariant }}>
-              {item.supporting || "60% Completed • 3 Active Milestones"}
+              {item.supporting || `${percent}% Completed • 3 Active Milestones`}
             </div>
             {/* Progress track */}
             <div
@@ -7306,10 +7361,11 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             >
               <div
                 style={{
-                  width: "60%",
+                  width: `${percent}%`,
                   height: "100%",
                   background: `linear-gradient(90deg, ${p.primary} 0%, #10B981 100%)`,
                   borderRadius: 3,
+                  transition: "width 300ms ease",
                 }}
               />
             </div>
@@ -7330,7 +7386,7 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
               flexShrink: 0,
             }}
           >
-            <span style={{ fontSize: 13, fontWeight: 900, lineHeight: 1 }}>60%</span>
+            <span style={{ fontSize: 13, fontWeight: 900, lineHeight: 1 }}>{percent}%</span>
             <span style={{ fontSize: 8, opacity: 0.85, fontWeight: 700 }}>DONE</span>
           </div>
         </div>
@@ -7359,7 +7415,6 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             position: "relative",
             overflow: "hidden",
           }}
-          onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -7370,6 +7425,10 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
               </span>
             </div>
             <span
+              onClick={(e) => {
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent("todo-cover-upload"));
+              }}
               style={{
                 fontSize: 9.5,
                 padding: "2px 8px",
@@ -7421,18 +7480,22 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             ].map((url, idx) => (
               <div
                 key={idx}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.dispatchEvent(new CustomEvent("todo-cover-picked", { detail: { url } }));
+                }}
                 style={{
                   flex: 1,
                   height: 30,
                   borderRadius: 6,
                   overflow: "hidden",
-                  border: idx === 0 ? `2px solid ${p.primary}` : `1px solid ${p.outlineVariant}30`,
+                  border: url === coverImg ? `2px solid ${p.primary}` : `1px solid ${p.outlineVariant}30`,
                   cursor: "pointer",
                   position: "relative",
                 }}
               >
                 <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                {idx === 0 && (
+                {url === coverImg && (
                   <div
                     style={{
                       position: "absolute",
@@ -7472,7 +7535,6 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             overflow: "hidden",
             position: "relative",
           }}
-          onClick={(e) => e.stopPropagation()}
         >
           {/* Hero Banner with Priority & Due Date Badges */}
           <div style={{ height: 116, position: "relative", overflow: "hidden", background: "#18181B" }}>
@@ -7501,12 +7563,12 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
                   fontWeight: 800,
                   padding: "3px 8px",
                   borderRadius: 6,
-                  background: "#EF4444",
+                  background: item.badge?.includes("Completed") ? "#10B981" : "#EF4444",
                   color: "#FFFFFF",
                   letterSpacing: 0.3,
                 }}
               >
-                URGENT PRIORITY
+                {item.badge || "URGENT PRIORITY"}
               </span>
               <span style={{ fontSize: 9.5, color: "#FFFFFF", opacity: 0.9 }}>Due Oct 15</span>
             </div>
@@ -7548,7 +7610,6 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             position: "relative",
             overflow: "hidden",
           }}
-          onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -7559,6 +7620,10 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
               </span>
             </div>
             <span
+              onClick={(e) => {
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent("todo-cover-upload"));
+              }}
               style={{
                 fontSize: 9.5,
                 padding: "2px 8px",
@@ -7610,18 +7675,22 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
             ].map((url, idx) => (
               <div
                 key={idx}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.dispatchEvent(new CustomEvent("todo-cover-picked", { detail: { url } }));
+                }}
                 style={{
                   flex: 1,
                   height: 30,
                   borderRadius: 6,
                   overflow: "hidden",
-                  border: idx === 0 ? `2px solid ${p.primary}` : `1px solid ${p.outlineVariant}30`,
+                  border: url === coverImg ? `2px solid ${p.primary}` : `1px solid ${p.outlineVariant}30`,
                   cursor: "pointer",
                   position: "relative",
                 }}
               >
                 <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                {idx === 0 && (
+                {url === coverImg && (
                   <div
                     style={{
                       position: "absolute",
